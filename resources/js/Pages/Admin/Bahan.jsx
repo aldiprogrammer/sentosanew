@@ -1,8 +1,8 @@
 import AdminLayout from "@/Layouts/AdminLayout";
-import { useForm } from "@inertiajs/react";
+import { router, useForm } from "@inertiajs/react";
 import React, { useRef } from "react";
 
-export default function Pengguna({ pengguna, jabatan }) {
+export default function Bahan({ bahan }) {
   const {
     data,
     setData,
@@ -12,14 +12,14 @@ export default function Pengguna({ pengguna, jabatan }) {
     processing,
     reset,
   } = useForm({
-    username: "",
-    password: "",
-    role: "",
+    id: 0,
+    kode: "",
+    bahan: "",
+    kategori: "",
   });
   const modalRef = useRef(null);
   const openModal = () => {
     modalRef.current.showModal();
-    setData("kode", kode);
   };
 
   const closeModal = () => {
@@ -27,14 +27,14 @@ export default function Pengguna({ pengguna, jabatan }) {
   };
 
   const editmodalRef = useRef(null);
-  const openModalEdit = (id, username, role, password) => {
+  const openModalEdit = (id, kode, bahan, kategori) => {
     editmodalRef.current.showModal();
-    setData({
-      id: id,
-      username: username,
-      role: role,
-      password: password,
-    });
+    // setData({
+    //   id: id,
+    //   kode: kode,
+    //   bahan: bahan,
+    //   kategori: kategori,
+    // });
   };
 
   const closeModalEdit = () => {
@@ -44,7 +44,7 @@ export default function Pengguna({ pengguna, jabatan }) {
 
   const save = (e) => {
     e.preventDefault();
-    post("/pengguna", {
+    post("/bahan", {
       onSuccess: () => {
         console.log("berhasil");
         reset();
@@ -55,13 +55,13 @@ export default function Pengguna({ pengguna, jabatan }) {
 
   const hapus = (id) => {
     if (confirm("Yakin ingin menghapus")) {
-      destroy("/pengguna/" + id);
+      destroy("/bahan/" + id);
     }
   };
 
   const update = (e) => {
     e.preventDefault();
-    put("/pengguna/" + data.id, {
+    put("/bahan/" + data.id, {
       onSuccess: () => {
         closeModalEdit();
         reset();
@@ -75,7 +75,7 @@ export default function Pengguna({ pengguna, jabatan }) {
         <div class="xl:col-span-2 card bg-base-100 shadow-md border border-base-300">
           <div class="card-body">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-              <h2 class="card-title">Data Pengguna</h2>
+              <h2 class="card-title">Data Bahan</h2>
               <div class="flex gap-2">
                 <button className="btn btn-success" onClick={openModal}>
                   <i className="fas fa-plus"></i>
@@ -97,48 +97,47 @@ export default function Pengguna({ pengguna, jabatan }) {
                     <form onSubmit={save}>
                       <label className="form-control w-full mt-2">
                         <div className="label">
-                          <span className="label-text">Username</span>
+                          <span className="label-text">Kode</span>
                         </div>
                         <input
                           type="text"
                           name="kode"
-                          value={data.username}
+                          value={data.kode}
                           className="input input-bordered input-success w-full"
                           required
-                          onChange={(e) => setData("username", e.target.value)}
+                          onChange={(e) => setData("kode", e.target.value)}
                         />
                       </label>
 
                       <label className="form-control w-full mt-2">
                         <div className="label">
-                          <span className="label-text">Role </span>
+                          <span className="label-text">Bahan</span>
+                        </div>
+                        <input
+                          type="text"
+                          name="nama"
+                          value={data.bahan}
+                          className="input input-bordered input-success w-full"
+                          required
+                          onChange={(e) => setData("bahan", e.target.value)}
+                        />
+                      </label>
+
+                      <label className="form-control w-full mt-2">
+                        <div className="label">
+                          <span className="label-text">Kategori</span>
                         </div>
                         <select
                           name=""
-                          className="input input-bordered iput-success"
+                          className="input input-bordered input-success"
                           id=""
                           required
-                          onChange={(e) => setData("role", e.target.value)}
+                          onChange={(e) => setData("kategori", e.target.value)}
                         >
-                          <option>-- Pilih Role --</option>
-                          {jabatan.map((rr, index) => (
-                            <option>{rr.jabatan}</option>
-                          ))}
+                          <option value=""> -- Pilih Kategori --</option>
+                          <option value="DIGITAL">DIGITAL</option>
+                          <option value="OFSIDE">OFSIDE</option>
                         </select>
-                      </label>
-
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">Password</span>
-                        </div>
-                        <input
-                          type="password"
-                          name="kode"
-                          value={data.password}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("password", e.target.value)}
-                        />
                       </label>
 
                       <div className="mt-4 flex gap-2">
@@ -178,46 +177,49 @@ export default function Pengguna({ pengguna, jabatan }) {
                     <form onSubmit={update}>
                       <label className="form-control w-full mt-2">
                         <div className="label">
-                          <span className="label-text">Username</span>
+                          <span className="label-text">Kode</span>
                         </div>
                         <input
                           type="text"
                           name="kode"
-                          value={data.username}
+                          value={data.kode}
                           className="input input-bordered input-success w-full"
                           required
-                          onChange={(e) => setData("username", e.target.value)}
+                          onChange={(e) => setData("kode", e.target.value)}
                         />
                       </label>
 
                       <label className="form-control w-full mt-2">
                         <div className="label">
-                          <span className="label-text">Role</span>
-                        </div>
-
-                        <select
-                          name=""
-                          className="input input-bordered iput-success"
-                          id=""
-                          required
-                        >
-                          <option value={data.role}>{data.role}</option>
-                          {jabatan.map((rr, index) => (
-                            <option key={index}>{rr.jabatan}</option>
-                          ))}
-                        </select>
-                      </label>
-
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">New Password</span>
+                          <span className="label-text">Bahan</span>
                         </div>
                         <input
-                          type="password"
-                          name="kode"
+                          type="text"
+                          name="nama"
+                          value={data.bahan}
                           className="input input-bordered input-success w-full"
-                          onChange={(e) => setData("password", e.target.value)}
+                          required
+                          onChange={(e) => setData("bahan", e.target.value)}
                         />
+                      </label>
+
+                      <label className="form-control w-full mt-2">
+                        <div className="label">
+                          <span className="label-text">
+                            Kategori {data.kategori}
+                          </span>
+                        </div>
+                        <select
+                          name=""
+                          className="input input-bordered input-success"
+                          id=""
+                          required
+                          onChange={(e) => setData("kategori", e.target.value)}
+                        >
+                          <option value={data.kategori}>{data.kategori}</option>
+                          <option value="DIGITAL">DIGITAL</option>
+                          <option value="OFSIDE">OFSIDE</option>
+                        </select>
                       </label>
 
                       <div className="mt-4 flex gap-2">
@@ -248,17 +250,19 @@ export default function Pengguna({ pengguna, jabatan }) {
                 <thead>
                   <tr>
                     <th>No</th>
-                    <th>Username</th>
-                    <th>Role</th>
+                    <th>Kode</th>
+                    <th>Bahan</th>
+                    <th>Kategori</th>
                     <th>Opsi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {pengguna.map((item, index) => (
+                  {bahan.map((item, index) => (
                     <tr>
                       <td>{index + 1}</td>
-                      <td>{item.username}</td>
-                      <td>{item.role}</td>
+                      <td>{item.kode}</td>
+                      <td>{item.bahan}</td>
+                      <td>{item.kategori}</td>
                       <td>
                         <div className="flex gap-2">
                           <button
@@ -272,9 +276,9 @@ export default function Pengguna({ pengguna, jabatan }) {
                             onClick={() =>
                               openModalEdit(
                                 item.id,
-                                item.username,
-                                item.role,
-                                item.password,
+                                item.kode,
+                                item.bahan,
+                                item.kategori,
                               )
                             }
                           >

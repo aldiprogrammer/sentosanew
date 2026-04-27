@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\admin\BahanController;
 use App\Http\Controllers\admin\CustomerController;
 use App\Http\Controllers\admin\DashboardController;
 use App\Http\Controllers\admin\JabatanController;
@@ -51,6 +52,11 @@ Route::get('/pengguna', [PenggunaController::class, 'index'])->name('kategorides
 Route::post('/pengguna', [PenggunaController::class, 'store'])->name('store.pengguna');
 Route::delete('/pengguna/{id}', [PenggunaController::class, 'delete'])->name('delete.pengguna');
 Route::put('/pengguna/{id}', [PenggunaController::class, 'update'])->name('update.pengguna');
+
+Route::get('/bahan', [BahanController::class, 'index'])->name('kategoridesain');
+Route::post('/bahan', [BahanController::class, 'store'])->name('store.bahan');
+Route::delete('/bahan/{id}', [BahanController::class, 'delete'])->name('delete.bahan');
+Route::put('/bahan/{id}', [BahanController::class, 'update'])->name('update.bahan');
 
 
 

@@ -22,7 +22,7 @@ class PenggunaController extends Controller
     {
         $pg = new Pengguna();
         $pg->username = $request->username;
-        $pg->role = $request->roele;
+        $pg->role = $request->role;
         $pg->password = Hash::make($request->password);
         $pg->save();
         return redirect()->back()->with('success', 'Data berhasil ditambah');
@@ -32,8 +32,10 @@ class PenggunaController extends Controller
     {
         $pg = Pengguna::find($id);
         $pg->username = $request->username;
-        $pg->role = $request->roele;
-        $pg->password = Hash::make($request->password);
+        $pg->role = $request->role;
+        if ($request->password != null) {
+            $pg->password = Hash::make($request->password);
+        }
         $pg->update();
         return redirect()->back()->with('success', 'Data berhasil diubah');
     }
