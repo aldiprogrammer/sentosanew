@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('keterangan');
             $table->string('satuan', 30);
             $table->string('tinggi', 11);
-            $table->string('leber', 11);
+            $table->string('lebar', 11);
             $table->string('qty', 11);
             $table->string('catatan');
             $table->string('metode_pengantaran', 50);

@@ -7,6 +7,7 @@ use App\Http\Controllers\admin\DesainController;
 use App\Http\Controllers\admin\JabatanController;
 use App\Http\Controllers\admin\KategoriDesainController;
 use App\Http\Controllers\admin\PenggunaController;
+use App\Http\Controllers\admin\ProduksiController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -65,6 +66,11 @@ Route::get('/desain', [DesainController::class, 'index'])->name('desain');
 Route::post('/desain', [DesainController::class, 'store'])->name('store.desain');
 Route::put('/desain/{id}', [DesainController::class, 'update'])->name('update.desain');
 Route::delete('/desain/{id}', [DesainController::class, 'delete'])->name('delete.desain');
+
+Route::get('/produksi', [ProduksiController::class, 'index'])->name('produksi');
+Route::post('/produksi', [ProduksiController::class, 'store'])->name('store.produksi');
+
+
 
 
 
