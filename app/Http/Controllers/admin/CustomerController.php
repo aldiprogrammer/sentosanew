@@ -16,6 +16,13 @@ class CustomerController extends Controller
         return Inertia::render('Admin/Customer', compact('customer', 'kode'));
     }
 
+
+    function show($id)
+    {
+        $customer = Customer::find($id);
+        return response()->json($customer);
+    }
+
     function store(Request $request)
     {
         $cs = new Customer();

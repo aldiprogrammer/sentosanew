@@ -16,6 +16,12 @@ class KategoriDesainController extends Controller
         return Inertia::render('Admin/Kategoridesain', compact('kategori', 'kode'));
     }
 
+    function show($id)
+    {
+        $kategori = Kategoridesain::find($id);
+        return response()->json($kategori);
+    }
+
     function store(Request $request)
     {
         $cs = new Kategoridesain();

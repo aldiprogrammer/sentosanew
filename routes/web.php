@@ -3,6 +3,7 @@
 use App\Http\Controllers\admin\BahanController;
 use App\Http\Controllers\admin\CustomerController;
 use App\Http\Controllers\admin\DashboardController;
+use App\Http\Controllers\admin\DesainController;
 use App\Http\Controllers\admin\JabatanController;
 use App\Http\Controllers\admin\KategoriDesainController;
 use App\Http\Controllers\admin\PenggunaController;
@@ -33,6 +34,7 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/home', [DashboardController::class, 'index'])->name('home');
 Route::get('/customer', [CustomerController::class, 'index'])->name('customer');
+Route::get('/customer/{id}', [CustomerController::class, 'show'])->name('show');
 Route::post('/customer', [CustomerController::class, 'store'])->name('store.customer');
 Route::delete('/customer/{id}', [CustomerController::class, 'delete'])->name('delete.customer');
 Route::put('/customer/{id}', [CustomerController::class, 'update'])->name('update.customer');
@@ -44,6 +46,7 @@ Route::delete('/jabatan/{id}', [JabatanController::class, 'delete'])->name('dele
 Route::put('/jabatan/{id}', [JabatanController::class, 'update'])->name('update.jabatan');
 
 Route::get('/kategoridesain', [KategoriDesainController::class, 'index'])->name('kategoridesain');
+Route::get('/kategoridesain/{id}', [KategoriDesainController::class, 'show'])->name('show');
 Route::post('/kategoridesain', [KategoriDesainController::class, 'store'])->name('store.kategoridesain');
 Route::delete('/kategoridesain/{id}', [KategoriDesainController::class, 'delete'])->name('delete.kategoridesain');
 Route::put('/kategoridesain/{id}', [KategoriDesainController::class, 'update'])->name('update.kategoridesain');
@@ -57,6 +60,17 @@ Route::get('/bahan', [BahanController::class, 'index'])->name('kategoridesain');
 Route::post('/bahan', [BahanController::class, 'store'])->name('store.bahan');
 Route::delete('/bahan/{id}', [BahanController::class, 'delete'])->name('delete.bahan');
 Route::put('/bahan/{id}', [BahanController::class, 'update'])->name('update.bahan');
+
+Route::get('/desain', [DesainController::class, 'index'])->name('desain');
+Route::post('/desain', [DesainController::class, 'store'])->name('store.desain');
+Route::put('/desain/{id}', [DesainController::class, 'update'])->name('update.desain');
+Route::delete('/desain/{id}', [DesainController::class, 'delete'])->name('delete.desain');
+
+
+
+
+
+
 
 
 
