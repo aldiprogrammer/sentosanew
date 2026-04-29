@@ -1,5 +1,5 @@
 import AdminLayout from "@/Layouts/AdminLayout";
-import { useForm } from "@inertiajs/react";
+import { Link, useForm } from "@inertiajs/react";
 import axios from "axios";
 import React, { useRef } from "react";
 
@@ -272,6 +272,9 @@ export default function Desain({
                           >
                             <i className="fas fa-file"></i> Simpan
                           </button>
+                          <Link href="/customer" className="btn btn-warning">
+                            Tambah Customer
+                          </Link>
 
                           <button
                             type="button"

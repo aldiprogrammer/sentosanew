@@ -21,6 +21,12 @@ class BahanController extends Controller
         $bh->kode = $request->kode;
         $bh->bahan = $request->bahan;
         $bh->kategori = $request->kategori;
+        $bh->jenis = $request->jenis;
+        $bh->satuan = $request->satuan;
+        $bh->kategori_cetak = $request->kategori_cetak;
+        $bh->jenis_bahan = $request->jenis_bahan;
+        $bh->klik = $request->klik;
+        $bh->cara_perhitungan = $request->cara_perhitungan;
         $bh->save();
         return redirect()->back()->with('success', 'Data berhasil ditambah');
     }
@@ -31,6 +37,12 @@ class BahanController extends Controller
         $bh->kode = $request->kode;
         $bh->bahan = $request->bahan;
         $bh->kategori = $request->kategori;
+        $bh->jenis = $request->jenis;
+        $bh->satuan = $request->satuan;
+        $bh->kategori_cetak = $request->kategori_cetak;
+        $bh->jenis_bahan = $request->jenis_bahan;
+        $bh->klik = $request->klik;
+        $bh->cara_perhitungan = $request->cara_perhitungan;
         $bh->update();
         return redirect()->back()->with('success', 'Data berhasil diubah');
     }

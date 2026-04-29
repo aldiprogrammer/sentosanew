@@ -8,6 +8,8 @@ use App\Http\Controllers\admin\JabatanController;
 use App\Http\Controllers\admin\KategoriDesainController;
 use App\Http\Controllers\admin\PenggunaController;
 use App\Http\Controllers\admin\ProduksiController;
+use App\Http\Controllers\admin\DistributorController;
+use App\Http\Controllers\admin\KurirController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -69,6 +71,20 @@ Route::delete('/desain/{id}', [DesainController::class, 'delete'])->name('delete
 
 Route::get('/produksi', [ProduksiController::class, 'index'])->name('produksi');
 Route::post('/produksi', [ProduksiController::class, 'store'])->name('store.produksi');
+Route::put('/produksi/{id}', [ProduksiController::class, 'update'])->name('update.produksi');
+Route::delete('/produksi/{id}', [ProduksiController::class, 'delete'])->name('delete.produksi');
+
+
+Route::get('/distributor', [DistributorController::class, 'index'])->name('distributor');
+Route::post('/distributor', [DistributorController::class, 'store'])->name('store.distributor');
+Route::put('/distributor/{id}', [DistributorController::class, 'update'])->name('update.distributor');
+Route::delete('/distributor/{id}', [DistributorController::class, 'delete'])->name('delete.distribusi');
+
+Route::get('/kurir', [KurirController::class, 'index'])->name('kurir');
+Route::post('/kurir', [KurirController::class, 'store'])->name('store.kurir');
+Route::put('/kurir/{id}', [KurirController::class, 'update'])->name('update.kurir');
+Route::delete('/kurir/{id}', [KurirController::class, 'delete'])->name('delete.kurir');
+
 
 
 

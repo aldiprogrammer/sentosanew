@@ -18,8 +18,8 @@ class DesainController extends Controller
         $kategoridesain = Kategoridesain::all();
         $customer = Customer::all();
         $kodespk = 'SPK-' . date('ymd') . rand(0, 10000);
-        $cek = Desain::all();
-        if ($cek == null) {
+        $cek = Desain::first();
+        if ($cek == false) {
             $kode_antrian = 'ANT-00001';
         } else {
             $ant = Desain::orderBy('id', 'desc')->first();
