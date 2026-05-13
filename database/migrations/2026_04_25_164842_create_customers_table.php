@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('nohp', 16);
             $table->string('alamat');
             $table->string('kategori', 35);
+            $table->string('limit', 35);
             $table->timestamps();
         });
     }

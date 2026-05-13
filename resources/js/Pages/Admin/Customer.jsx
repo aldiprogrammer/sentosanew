@@ -2,6 +2,19 @@ import AdminLayout from '@/Layouts/AdminLayout'
 import { router, useForm } from '@inertiajs/react';
 import React, { useRef } from 'react'
 
+function formatPhone(value) {
+    const digits = value.replace(/\D/g, '').slice(0, 13);
+    if (digits.length <= 4) return digits;
+    if (digits.length <= 8) return digits.slice(0, 4) + '-' + digits.slice(4);
+    return digits.slice(0, 4) + '-' + digits.slice(4, 8) + '-' + digits.slice(8);
+}
+
+function formatRupiah(value) {
+    const digits = value.replace(/\D/g, '');
+    if (!digits) return '';
+    return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
 export default function Customer({ customer, kode }) {
     const { data, setData, post, delete: destroy, put, processing, reset } = useForm({
         id: 0,
@@ -10,6 +23,7 @@ export default function Customer({ customer, kode }) {
         alamat: '',
         nohp: '',
         kategori: '',
+        limit: '',
     });
     const modalRef = useRef(null);
     const openModal = () => {
@@ -21,7 +35,7 @@ export default function Customer({ customer, kode }) {
     };
 
     const editmodalRef = useRef(null);
-    const openModalEdit = (id, nama, alamat, kode, nohp, kategori) => {
+    const openModalEdit = (id, nama, alamat, kode, nohp, kategori, limit) => {
         editmodalRef.current.showModal();
         setData({
             'id': id,
@@ -29,7 +43,8 @@ export default function Customer({ customer, kode }) {
             'alamat': alamat,
             'kode': kode,
             'nohp': nohp,
-            'kategori': kategori
+            'kategori': kategori,
+            'limit': limit,
         })
     }
 
@@ -150,14 +165,14 @@ export default function Customer({ customer, kode }) {
                                                     </span>
                                                 </div>
                                                 <input
-                                                    type="number"
-                                                    value={data.nohp}
+                                                    type="text"
+                                                    value={formatPhone(data.nohp)}
                                                     className="input input-bordered input-success w-full"
                                                     required
                                                     onChange={(e) =>
                                                         setData(
                                                             "nohp",
-                                                            e.target.value,
+                                                            e.target.value.replace(/-/g, ''),
                                                         )
                                                     }
                                                 />
@@ -184,6 +199,25 @@ export default function Customer({ customer, kode }) {
                                                     </span>
                                                 </div>
                                                 <textarea className='input input-bordered input-succcess' id="" required value={data.alamat} onChange={(e) => setData('alamat', e.target.value)}></textarea>
+                                            </label>
+
+                                            <label className="form-control w-full mt-2">
+                                                <div className="label">
+                                                    <span className="label-text">
+                                                        Limit
+                                                    </span>
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={data.limit ? formatRupiah(String(data.limit)) : ''}
+                                                    className="input input-bordered input-success w-full"
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            "limit",
+                                                            e.target.value.replace(/\D/g, ''),
+                                                        )
+                                                    }
+                                                />
                                             </label>
 
                                             <div className="mt-4 flex gap-2">
@@ -266,14 +300,14 @@ export default function Customer({ customer, kode }) {
                                                     </span>
                                                 </div>
                                                 <input
-                                                    type="number"
-                                                    value={data.nohp}
+                                                    type="text"
+                                                    value={formatPhone(data.nohp)}
                                                     className="input input-bordered input-success w-full"
                                                     required
                                                     onChange={(e) =>
                                                         setData(
                                                             "nohp",
-                                                            e.target.value,
+                                                            e.target.value.replace(/-/g, ''),
                                                         )
                                                     }
                                                 />
@@ -300,6 +334,25 @@ export default function Customer({ customer, kode }) {
                                                     </span>
                                                 </div>
                                                 <textarea className='input input-bordered input-succcess' id="" required value={data.alamat} onChange={(e) => setData('alamat', e.target.value)}></textarea>
+                                            </label>
+
+                                            <label className="form-control w-full mt-2">
+                                                <div className="label">
+                                                    <span className="label-text">
+                                                        Limit
+                                                    </span>
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={data.limit ? formatRupiah(String(data.limit)) : ''}
+                                                    className="input input-bordered input-success w-full"
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            "limit",
+                                                            e.target.value.replace(/\D/g, ''),
+                                                        )
+                                                    }
+                                                />
                                             </label>
 
                                             <div className="mt-4 flex gap-2">
@@ -335,6 +388,7 @@ export default function Customer({ customer, kode }) {
                                         <th>No Hp</th>
                                         <th>Kategori</th>
                                         <th>Alamat</th>
+                                        <th>Limit</th>
                                         <th>Opsi</th>
                                     </tr>
                                 </thead>
@@ -344,9 +398,10 @@ export default function Customer({ customer, kode }) {
                                             <td>{index + 1}</td>
                                             <td>{item.kode}</td>
                                             <td>{item.nama}</td>
-                                            <td>{item.nohp}</td>
+                                            <td>{formatPhone(item.nohp)}</td>
                                             <td>{item.kategori}</td>
                                             <td>{item.alamat}</td>
+                                            <td>{item.limit ? 'Rp ' + formatRupiah(String(item.limit)) : '-'}</td>
                                             <td>
                                                 <div className="flex gap-2">
                                                     <button
@@ -366,8 +421,8 @@ export default function Customer({ customer, kode }) {
                                                                 item.alamat,
                                                                 item.kode,
                                                                 item.nohp,
-
                                                                 item.kategori,
+                                                                item.limit,
                                                             )
                                                         }
                                                     >

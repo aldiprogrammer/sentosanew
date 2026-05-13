@@ -29,8 +29,9 @@ class CustomerController extends Controller
         $cs->kode = $request->kode;
         $cs->nama = $request->nama;
         $cs->alamat = $request->alamat;
-        $cs->nohp = $request->nohp;
+        $cs->nohp = str_replace('-', '', $request->nohp);
         $cs->kategori = $request->kategori;
+        $cs->limit = str_replace('.', '', $request->limit ?: 0);
         $cs->save();
         return redirect()->back()->with('success', 'Data berhasil ditambah');
     }
@@ -41,8 +42,9 @@ class CustomerController extends Controller
         $cs->kode = $request->kode;
         $cs->nama = $request->nama;
         $cs->alamat = $request->alamat;
-        $cs->nohp = $request->nohp;
+        $cs->nohp = str_replace('-', '', $request->nohp);
         $cs->kategori = $request->kategori;
+        $cs->limit = str_replace('.', '', $request->limit ?: 0);
         $cs->update();
         return redirect()->back()->with('success', 'Data berhasil diubah');
     }

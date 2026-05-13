@@ -65,6 +65,12 @@ export default function Kategoridesain({ kategori, kode }) {
         })
     }
 
+    function formatRupiah(value) {
+        const digits = value.replace(/\D/g, '');
+        if (!digits) return '';
+        return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
     return (
         <AdminLayout>
             <div class="grid grid-cols-1 xl:grid-cols-1 gap-">
@@ -145,15 +151,15 @@ export default function Kategoridesain({ kategori, kode }) {
                                                     </span>
                                                 </div>
                                                 <input
-                                                    type="number"
+                                                    type="text"
                                                     name="nama"
-                                                    value={data.harga}
+                                                    value={data.harga ? formatRupiah(String(data.harga)) : ''}
                                                     className="input input-bordered input-success w-full"
                                                     required
                                                     onChange={(e) =>
                                                         setData(
                                                             "harga",
-                                                            e.target.value,
+                                                            e.target.value.replace(/\D/g, ''),
                                                         )
                                                     }
                                                 />
@@ -241,15 +247,15 @@ export default function Kategoridesain({ kategori, kode }) {
                                                     </span>
                                                 </div>
                                                 <input
-                                                    type="number"
+                                                    type="text"
                                                     name="nama"
-                                                    value={data.harga}
+                                                    value={data.harga ? formatRupiah(String(data.harga)) : ''}
                                                     className="input input-bordered input-success w-full"
                                                     required
                                                     onChange={(e) =>
                                                         setData(
                                                             "harga",
-                                                            e.target.value,
+                                                            e.target.value.replace(/\D/g, ''),
                                                         )
                                                     }
                                                 />

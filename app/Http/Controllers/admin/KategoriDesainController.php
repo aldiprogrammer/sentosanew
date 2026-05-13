@@ -27,7 +27,7 @@ class KategoriDesainController extends Controller
         $cs = new Kategoridesain();
         $cs->kode = $request->kode;
         $cs->kategori = $request->kategori;
-        $cs->harga = $request->harga;
+        $cs->harga = str_replace('.', '', $request->harga ?: 0);;
         $cs->save();
         return redirect()->back()->with('success', 'Data berhasil ditambah');
     }
@@ -37,7 +37,7 @@ class KategoriDesainController extends Controller
         $cs = Kategoridesain::find($id);
         $cs->kode = $request->kode;
         $cs->kategori = $request->kategori;
-        $cs->harga = $request->harga;
+        $cs->harga = str_replace('.', '', $request->harga ?: 0);;
         $cs->update();
         return redirect()->back()->with('success', 'Data berhasil diubah');
     }
