@@ -6,27 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('pinisings', function (Blueprint $table) {
+        Schema::create('mata_ayams', function (Blueprint $table) {
             $table->id();
             $table->string('kode_spk', 50);
-            $table->string('atas', 30);
-            $table->string('bawah', 30);
-            $table->string('kanan', 30);
-            $table->string('kiri', 30);
+            $table->boolean('atas')->default(false);
+            $table->boolean('bawah')->default(false);
+            $table->boolean('kiri')->default(false);
+            $table->boolean('kanan')->default(false);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('pinisings');
+        Schema::dropIfExists('mata_ayams');
     }
 };

@@ -12,7 +12,8 @@ class BahanController extends Controller
     function index()
     {
         $bahan = Bahan::all();
-        return Inertia::render('Admin/Bahan', compact('bahan'));
+        $kode = 'BH-' . rand(0, 100000);
+        return Inertia::render('Admin/Bahan', compact('bahan', 'kode'));
     }
 
     function store(Request $request)

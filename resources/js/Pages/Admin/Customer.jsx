@@ -367,9 +367,16 @@ export default function Customer({ customer, kode }) {
                                                 <button
                                                     type="button"
                                                     onClick={closeModalEdit}
+                                                    className="btn btn-warning"
+                                                >
+                                                    Batal
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => hapus(data.id)}
                                                     className="btn btn-error"
                                                 >
-                                                    Keluar
+                                                    <i className="fas fa-trash"></i> Hapus
                                                 </button>
                                             </div>
                                         </form>
@@ -389,12 +396,15 @@ export default function Customer({ customer, kode }) {
                                         <th>Kategori</th>
                                         <th>Alamat</th>
                                         <th>Limit</th>
-                                        <th>Opsi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {customer.map((item, index) => (
-                                        <tr>
+                                        <tr
+                                          key={item.id}
+                                          onClick={() => openModalEdit(item.id, item.nama, item.alamat, item.kode, item.nohp, item.kategori, item.limit)}
+                                          className="cursor-pointer hover:bg-base-200"
+                                        >
                                             <td>{index + 1}</td>
                                             <td>{item.kode}</td>
                                             <td>{item.nama}</td>
@@ -402,34 +412,6 @@ export default function Customer({ customer, kode }) {
                                             <td>{item.kategori}</td>
                                             <td>{item.alamat}</td>
                                             <td>{item.limit ? 'Rp ' + formatRupiah(String(item.limit)) : '-'}</td>
-                                            <td>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        className="btn btn-error btn-sm"
-                                                        onClick={() =>
-                                                            hapus(item.id)
-                                                        }
-                                                    >
-                                                        Hapus
-                                                    </button>
-                                                    <button
-                                                        className="btn btn-success btn-sm"
-                                                        onClick={() =>
-                                                            openModalEdit(
-                                                                item.id,
-                                                                item.nama,
-                                                                item.alamat,
-                                                                item.kode,
-                                                                item.nohp,
-                                                                item.kategori,
-                                                                item.limit,
-                                                            )
-                                                        }
-                                                    >
-                                                        Edit
-                                                    </button>
-                                                </div>
-                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>

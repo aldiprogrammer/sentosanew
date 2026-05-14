@@ -12,7 +12,8 @@ class DistributorController extends Controller
     function index()
     {
         $ds = Distributor::all();
-        return Inertia::render('Admin/Distributor', compact('ds'));
+        $kode = 'DS-' . rand(0, 100000);
+        return Inertia::render('Admin/Distributor', compact('ds', 'kode'));
     }
 
     function store(Request $request)

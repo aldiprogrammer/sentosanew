@@ -118,6 +118,12 @@ export default function Desain({
     } catch (error) {}
   };
 
+  function formatRupiah(value) {
+    const digits = String(value).replace(/\D/g, "");
+    if (!digits) return "";
+    return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
+
   return (
     <>
       <AdminLayout>
@@ -237,41 +243,41 @@ export default function Desain({
                             </select>
                           </label>
 
-                          <label className="form-control w-full mt-2">
-                            <div className="label">
-                              <span className="label-text">Harga</span>
-                            </div>
-                            <input
-                              type="text"
-                              name="nama"
-                              value={data.harga}
-                              className="input input-bordered input-success w-full"
-                              required
-                            />
-                          </label>
+                           <label className="form-control w-full mt-2">
+                             <div className="label">
+                               <span className="label-text">Harga</span>
+                             </div>
+                             <input
+                               type="text"
+                               name="nama"
+                               value={data.harga ? formatRupiah(data.harga) : ""}
+                               className="input input-bordered input-success w-full"
+                               required
+                             />
+                           </label>
 
-                          <label className="form-control w-full mt-2">
-                            <div className="label">
-                              <span className="label-text">QTY</span>
-                            </div>
-                            <input
-                              type="number"
-                              value={data.qty}
-                              className="input input-bordered input-success w-full"
-                              required
-                              onChange={(e) => setData("qty", e.target.value)}
-                            />
-                          </label>
-                        </div>
+                           <label className="form-control w-full mt-2">
+                             <div className="label">
+                               <span className="label-text">QTY</span>
+                             </div>
+                             <input
+                               type="number"
+                               value={data.qty}
+                               className="input input-bordered input-success w-full"
+                               required
+                               onChange={(e) => setData("qty", e.target.value)}
+                             />
+                           </label>
+                         </div>
 
-                        <div className="mt-4 flex gap-2">
-                          <button
-                            type="submit"
-                            disabled={processing}
-                            className="btn btn-success"
-                          >
-                            <i className="fas fa-file"></i> Simpan
-                          </button>
+                         <div className="mt-4 flex gap-2">
+                           <button
+                             type="submit"
+                             disabled={processing}
+                             className="btn btn-success"
+                           >
+                             <i className="fas fa-file"></i> Simpan
+                           </button>
                           <Link href="/customer" className="btn btn-warning">
                             Tambah Customer
                           </Link>
@@ -396,51 +402,58 @@ export default function Desain({
                             </select>
                           </label>
 
-                          <label className="form-control w-full mt-2">
-                            <div className="label">
-                              <span className="label-text">Harga</span>
-                            </div>
-                            <input
-                              type="text"
-                              name="nama"
-                              value={data.harga}
-                              className="input input-bordered input-success w-full"
-                              required
-                            />
-                          </label>
+                           <label className="form-control w-full mt-2">
+                             <div className="label">
+                               <span className="label-text">Harga</span>
+                             </div>
+                             <input
+                               type="text"
+                               name="nama"
+                               value={data.harga ? formatRupiah(data.harga) : ""}
+                               className="input input-bordered input-success w-full"
+                               required
+                             />
+                           </label>
 
-                          <label className="form-control w-full mt-2">
-                            <div className="label">
-                              <span className="label-text">QTY</span>
-                            </div>
-                            <input
-                              type="number"
-                              value={data.qty}
-                              className="input input-bordered input-success w-full"
-                              required
-                              onChange={(e) => setData("qty", e.target.value)}
-                            />
-                          </label>
-                        </div>
+                           <label className="form-control w-full mt-2">
+                             <div className="label">
+                               <span className="label-text">QTY</span>
+                             </div>
+                             <input
+                               type="number"
+                               value={data.qty}
+                               className="input input-bordered input-success w-full"
+                               required
+                               onChange={(e) => setData("qty", e.target.value)}
+                             />
+                           </label>
+                         </div>
 
-                        <div className="mt-4 flex gap-2">
-                          <button
-                            type="submit"
-                            disabled={processing}
-                            className="btn btn-success"
-                          >
-                            Edit data
-                          </button>
+                         <div className="mt-4 flex gap-2">
+                           <button
+                             type="submit"
+                             disabled={processing}
+                             className="btn btn-success"
+                           >
+                             Edit data
+                           </button>
 
-                          <button
-                            type="button"
-                            onClick={closeModalEdit}
-                            className="btn btn-error"
-                          >
-                            Keluar
-                          </button>
-                        </div>
-                      </form>
+                           <button
+                             type="button"
+                             onClick={closeModalEdit}
+                             className="btn btn-warning"
+                           >
+                             Batal
+                           </button>
+                           <button
+                             type="button"
+                             onClick={() => hapus(data.id)}
+                             className="btn btn-error"
+                           >
+                             <i className="fas fa-trash"></i> Hapus
+                           </button>
+                         </div>
+                       </form>
                     </div>
                   </dialog>
                 </div>
@@ -458,12 +471,15 @@ export default function Desain({
                       <th>Desain</th>
                       <th>Qty</th>
                       <th>Desainer</th>
-                      <th>Opsi</th>
                     </tr>
                   </thead>
                   <tbody>
                     {desain.map((item, index) => (
-                      <tr>
+                      <tr
+                        key={item.id}
+                        onClick={() => openModalEdit(item.id, item.tanggal, item.no_antrian, item.kode_spk, item.id_customer, item.customer.nama, item.id_kategori_desain, item.kategoridesain.kategori, item.kategoridesain.harga, item.qty)}
+                        className="cursor-pointer hover:bg-base-200"
+                      >
                         <td>{index + 1}</td>
                         <td>{item.tanggal}</td>
                         <td>{item.no_antrian}</td>
@@ -472,35 +488,6 @@ export default function Desain({
                         <td>{item.kategoridesain.kategori}</td>
                         <td>{item.qty}</td>
                         <td>32</td>
-                        <td>
-                          <div className="flex gap-2">
-                            <button
-                              className="btn btn-error btn-sm"
-                              onClick={() => hapus(item.id)}
-                            >
-                              Hapus
-                            </button>
-                            <button
-                              className="btn btn-success btn-sm"
-                              onClick={() =>
-                                openModalEdit(
-                                  item.id,
-                                  item.tanggal,
-                                  item.no_antrian,
-                                  item.kode_spk,
-                                  item.id_customer,
-                                  item.customer.nama,
-                                  item.id_kategori_desain,
-                                  item.kategoridesain.kategori,
-                                  item.kategoridesain.harga,
-                                  item.qty,
-                                )
-                              }
-                            >
-                              Edit
-                            </button>
-                          </div>
-                        </td>
                       </tr>
                     ))}
                   </tbody>

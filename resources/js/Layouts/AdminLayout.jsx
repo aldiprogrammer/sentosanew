@@ -1,10 +1,21 @@
+import { Link, router, usePage } from '@inertiajs/react'
 import React from 'react'
 
 export default function AdminLayout({ children }) {
+    const { auth } = usePage().props
+    const role = auth?.user?.role
+
+    const getInitial = (name) => {
+        return name?.charAt(0).toUpperCase() || 'U'
+    }
+
+    const handleLogout = () => {
+        router.post(route('logout'))
+    }
+
     return (
         <div className="drawer lg:drawer-open">
             <input id="sidebar" type="checkbox" className="drawer-toggle" />
-
 
             <div className="drawer-content flex flex-col">
                 <div className="navbar bg-base-100 border-b border-base-300 px-4 shadow-sm">
@@ -38,26 +49,29 @@ export default function AdminLayout({ children }) {
                             <div tabindex="0" role="button" className="btn btn-ghost flex items-center gap-2">
                                 <div className="avatar placeholder">
                                     <div className="bg-primaryGreen text-white rounded-full w-10">
-                                        <span>A</span>
+                                        <span>{getInitial(auth?.user?.username)}</span>
                                     </div>
                                 </div>
-                                <span className="hidden md:block font-medium">Admin</span>
+                                <span className="hidden md:block font-medium">{auth.user.use}</span>
                             </div>
 
                             <ul tabindex="0"
                                 className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-                                <li><a>Profile</a></li>
-                                <li><a>Pengaturan</a></li>
-                                <li><a className="text-error">Logout</a></li>
+                                <li>
+                                    <Link href={route('profile.edit')}>Profile</Link>
+                                </li>
+                                <li>
+                                    <button onClick={handleLogout} className="text-error w-full text-left">
+                                        Logout
+                                    </button>
+                                </li>
                             </ul>
                         </div>
                     </div>
                 </div>
 
-                {/* Main Content */}
                 <main className="p-6">{children}</main>
             </div>
-
 
             <div className="drawer-side z-50">
                 <label for="sidebar" className="drawer-overlay"></label>
@@ -65,40 +79,78 @@ export default function AdminLayout({ children }) {
                 <aside className="w-72 min-h-full bg-base-100 border-r border-base-300">
                     <div className="p-6 border-b border-base-300">
                         <h2 className="text-2xl font-bold text-primaryGreen">Sentosa</h2>
-                        <p className="text-sm text-gray-500 mt-1">DaisyUI v5 Panel</p>
+                        <p className="text-sm text-gray-500 mt-1">Admin Panel</p>
                     </div>
 
                     <ul className="menu p-4 text-base-content w-full gap-1">
                         <li>
-                            <a className="active bg-success text-success-content rounded-xl">
+                            <Link href={route('home')} className="rounded-xl">
+                                <i className="fas fa-home"></i>
                                 Dashboard
-                            </a>
+                            </Link>
                         </li>
-
+                        {role !== 'desainer' && (
+                            <li>
+                                <Link href={route('pengguna')} className="rounded-xl">
+                                    <i className="fas fa-users"></i>
+                                    Pengguna
+                                </Link>
+                            </li>
+                        )}
                         <li>
-                            <a className="rounded-xl">User</a>
+                            <Link href={route('customer')} className="rounded-xl">
+                                <i className="fas fa-user-tie"></i>
+                                Customer
+                            </Link>
                         </li>
-
+                        {role !== 'desainer' && (
+                            <li>
+                                <Link href={route('distributor')} className="rounded-xl">
+                                    <i className="fas fa-truck"></i>
+                                    Distributor
+                                </Link>
+                            </li>
+                        )}
+                        {role !== 'desainer' && (
+                            <li>
+                                <Link href={route('kurir')} className="rounded-xl">
+                                    <i className="fas fa-shipping-fast"></i>
+                                    Kurir
+                                </Link>
+                            </li>
+                        )}
+                        {role !== 'desainer' && (
+                            <li>
+                                <details>
+                                    <summary className="rounded-xl">
+                                        <i className="fas fa-box"></i>
+                                        Master Data
+                                    </summary>
+                                    <ul>
+                                        <li>
+                                            <Link href={route('bahan')}>Bahan</Link>
+                                        </li>
+                                        <li>
+                                            <Link href={route('kategoridesain')}>Kategori Desain</Link>
+                                        </li>
+                                        <li>
+                                            <Link href={route('jabatan')}>Jabatan</Link>
+                                        </li>
+                                    </ul>
+                                </details>
+                            </li>
+                        )}
                         <li>
-                            <a className="rounded-xl">Produk</a>
+                            <Link href={route('desain')} className="rounded-xl">
+                                <i className="fas fa-palette"></i>
+                                Desain
+                            </Link>
                         </li>
-
                         <li>
-                            <a className="rounded-xl">Pesanan</a>
-                        </li>
-
-                        <li>
-                            <details>
-                                <summary className="rounded-xl">Laporan</summary>
-                                <ul>
-                                    <li><a>Penjualan</a></li>
-                                    <li><a>Keuangan</a></li>
-                                </ul>
-                            </details>
-                        </li>
-
-                        <li>
-                            <a className="rounded-xl">Pengaturan</a>
+                            <Link href={route('produksi')} className="rounded-xl">
+                                <i className="fas fa-industry"></i>
+                                Produksi
+                            </Link>
                         </li>
                     </ul>
                 </aside>

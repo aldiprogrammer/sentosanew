@@ -24,6 +24,8 @@ return new class extends Migration
             $table->string('tinggi', 11);
             $table->string('lebar', 11);
             $table->string('qty', 11);
+            $table->string('sisi', 11);
+
             $table->string('catatan');
             $table->string('metode_pengantaran', 50);
             $table->string('tgl_kirim', 15);

@@ -1,8 +1,8 @@
 import AdminLayout from "@/Layouts/AdminLayout";
-import { router, useForm } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 import React, { useRef } from "react";
 
-export default function Distributor({ ds }) {
+export default function Distributor({ ds, kode }) {
   const {
     data,
     setData,
@@ -22,9 +22,11 @@ export default function Distributor({ ds }) {
     norek: "",
     jt: "",
   });
+
   const modalRef = useRef(null);
   const openModal = () => {
     modalRef.current.showModal();
+    setData("kode", kode);
   };
 
   const closeModal = () => {
@@ -58,7 +60,6 @@ export default function Distributor({ ds }) {
     e.preventDefault();
     post("/distributor", {
       onSuccess: () => {
-        console.log("berhasil");
         reset();
         closeModal();
       },
@@ -81,20 +82,29 @@ export default function Distributor({ ds }) {
     });
   };
 
+  function formatNoHP(value) {
+    const digits = String(value).replace(/\D/g, "");
+    if (!digits) return "";
+    return digits.match(/.{1,4}/g)?.join("-") || digits;
+  }
+
+  function parseNoHP(value) {
+    return String(value).replace(/\D/g, "");
+  }
+
   return (
     <AdminLayout>
-      <div class="grid grid-cols-1 xl:grid-cols-1 gap-">
-        <div class="xl:col-span-2 card bg-base-100 shadow-md border border-base-300">
-          <div class="card-body">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-              <h2 class="card-title">Data Distributor</h2>
-              <div class="flex gap-2">
+      <div className="grid grid-cols-1 xl:grid-cols-1">
+        <div className="xl:col-span-2 card bg-base-100 shadow-md border border-base-300">
+          <div className="card-body">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+              <h2 className="card-title">Data Distributor</h2>
+              <div className="flex gap-2">
                 <button className="btn btn-success" onClick={openModal}>
-                  <i className="fas fa-plus"></i>
-                  Tambah data
+                  <i className="fas fa-plus"></i> Tambah Distributor
                 </button>
 
-                <dialog ref={modalRef} className="modal ">
+                <dialog ref={modalRef} className="modal">
                   <div className="modal-box">
                     <button
                       type="button"
@@ -104,142 +114,139 @@ export default function Distributor({ ds }) {
                       ✕
                     </button>
 
-                    <h3 className="text-lg font-bold">Tambah data</h3>
+                    <h3 className="text-lg font-bold mb-4">Tambah Distributor</h3>
 
                     <form onSubmit={save}>
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">Kode</span>
-                        </div>
-                        <input
-                          type="text"
-                          name="kode"
-                          value={data.kode}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("kode", e.target.value)}
-                        />
-                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Kode</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.kode}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) => setData("kode", e.target.value)}
+                          />
+                        </label>
 
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">Nama</span>
-                        </div>
-                        <input
-                          type="text"
-                          name="nama"
-                          value={data.nama}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("nama", e.target.value)}
-                        />
-                      </label>
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Nama</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.nama}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) => setData("nama", e.target.value)}
+                          />
+                        </label>
 
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">Alamat</span>
-                        </div>
-                        <input
-                          type="text"
-                          name="nama"
-                          value={data.alamat}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("alamat", e.target.value)}
-                        />
-                      </label>
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">No HP</span>
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="0812-3456-7890"
+                            value={data.nohp ? formatNoHP(data.nohp) : ""}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) =>
+                              setData("nohp", parseNoHP(e.target.value))
+                            }
+                          />
+                        </label>
 
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">Kota</span>
-                        </div>
-                        <input
-                          type="text"
-                          name="nama"
-                          value={data.kota}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("kota", e.target.value)}
-                        />
-                      </label>
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Kota</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.kota}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) => setData("kota", e.target.value)}
+                          />
+                        </label>
 
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">No Hp</span>
-                        </div>
-                        <input
-                          type="number"
-                          value={data.nohp}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("nohp", e.target.value)}
-                        />
-                      </label>
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Bank</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.bank}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) => setData("bank", e.target.value)}
+                          />
+                        </label>
 
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">Bank</span>
-                        </div>
-                        <input
-                          type="text"
-                          name="nama"
-                          value={data.bank}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("bank", e.target.value)}
-                        />
-                      </label>
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">No. Rekening</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.norek}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) => setData("norek", e.target.value)}
+                          />
+                        </label>
 
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">No.Rek</span>
-                        </div>
-                        <input
-                          type="text"
-                          name="nama"
-                          value={data.norek}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("norek", e.target.value)}
-                        />
-                      </label>
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Jatuh Tempo (JT)</span>
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="misal: 14 atau NET 14"
+                            value={data.jt}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) => setData("jt", e.target.value)}
+                          />
+                        </label>
 
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">JT</span>
-                        </div>
-                        <input
-                          type="text"
-                          name="nama"
-                          value={data.jt}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("jt", e.target.value)}
-                        />
-                      </label>
+                        <label className="form-control md:col-span-2">
+                          <div className="label">
+                            <span className="label-text">Alamat</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.alamat}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) => setData("alamat", e.target.value)}
+                          />
+                        </label>
+                      </div>
 
-                      <div className="mt-4 flex gap-2">
+                      <div className="mt-6 flex gap-2">
                         <button
                           type="submit"
                           disabled={processing}
                           className="btn btn-success"
                         >
-                          Tambah data
+                          <i className="fas fa-save"></i> Simpan
                         </button>
-
                         <button
                           type="button"
                           onClick={closeModal}
                           className="btn btn-error"
                         >
-                          Keluar
+                          Batal
                         </button>
                       </div>
                     </form>
                   </div>
                 </dialog>
 
-                {/* Dialog Edi */}
                 <dialog ref={editmodalRef} className="modal">
                   <div className="modal-box">
                     <button
@@ -250,134 +257,139 @@ export default function Distributor({ ds }) {
                       ✕
                     </button>
 
-                    <h3 className="text-lg font-bold">Edit data</h3>
+                    <h3 className="text-lg font-bold mb-4">Edit Distributor</h3>
 
                     <form onSubmit={update}>
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">Kode</span>
-                        </div>
-                        <input
-                          type="text"
-                          name="kode"
-                          value={data.kode}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("kode", e.target.value)}
-                        />
-                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Kode</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.kode}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) => setData("kode", e.target.value)}
+                          />
+                        </label>
 
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">Nama</span>
-                        </div>
-                        <input
-                          type="text"
-                          name="nama"
-                          value={data.nama}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("nama", e.target.value)}
-                        />
-                      </label>
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Nama</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.nama}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) => setData("nama", e.target.value)}
+                          />
+                        </label>
 
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">Alamat</span>
-                        </div>
-                        <input
-                          type="text"
-                          name="nama"
-                          value={data.alamat}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("alamat", e.target.value)}
-                        />
-                      </label>
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">No HP</span>
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="0812-3456-7890"
+                            value={data.nohp ? formatNoHP(data.nohp) : ""}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) =>
+                              setData("nohp", parseNoHP(e.target.value))
+                            }
+                          />
+                        </label>
 
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">Kota</span>
-                        </div>
-                        <input
-                          type="text"
-                          name="nama"
-                          value={data.kota}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("kota", e.target.value)}
-                        />
-                      </label>
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Kota</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.kota}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) => setData("kota", e.target.value)}
+                          />
+                        </label>
 
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">No Hp</span>
-                        </div>
-                        <input
-                          type="number"
-                          value={data.nohp}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("nohp", e.target.value)}
-                        />
-                      </label>
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Bank</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.bank}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) => setData("bank", e.target.value)}
+                          />
+                        </label>
 
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">Bank</span>
-                        </div>
-                        <input
-                          type="text"
-                          name="nama"
-                          value={data.bank}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("bank", e.target.value)}
-                        />
-                      </label>
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">No. Rekening</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.norek}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) => setData("norek", e.target.value)}
+                          />
+                        </label>
 
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">No.Rek</span>
-                        </div>
-                        <input
-                          type="text"
-                          name="nama"
-                          value={data.norek}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("norek", e.target.value)}
-                        />
-                      </label>
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Jatuh Tempo (JT)</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.jt}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) => setData("jt", e.target.value)}
+                          />
+                        </label>
 
-                      <label className="form-control w-full mt-2">
-                        <div className="label">
-                          <span className="label-text">JT</span>
-                        </div>
-                        <input
-                          type="text"
-                          name="nama"
-                          value={data.jt}
-                          className="input input-bordered input-success w-full"
-                          required
-                          onChange={(e) => setData("jt", e.target.value)}
-                        />
-                      </label>
-                      <div className="mt-4 flex gap-2">
+                        <label className="form-control md:col-span-2">
+                          <div className="label">
+                            <span className="label-text">Alamat</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.alamat}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) => setData("alamat", e.target.value)}
+                          />
+                        </label>
+                      </div>
+
+                      <div className="mt-6 flex gap-2">
                         <button
                           type="submit"
                           disabled={processing}
                           className="btn btn-success"
                         >
-                          Edit data
+                          <i className="fas fa-save"></i> Update
                         </button>
-
                         <button
                           type="button"
                           onClick={closeModalEdit}
+                          className="btn btn-warning"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => hapus(data.id)}
                           className="btn btn-error"
                         >
-                          Keluar
+                          <i className="fas fa-trash"></i> Hapus
                         </button>
                       </div>
                     </form>
@@ -393,43 +405,28 @@ export default function Distributor({ ds }) {
                     <th>No</th>
                     <th>Kode</th>
                     <th>Nama</th>
-                    <th>Alamat</th>
+                    <th>No HP</th>
                     <th>Kota</th>
-                    <th>No Hp</th>
                     <th>Bank</th>
-                    <th>No.Rek</th>
+                    <th>No. Rek</th>
                     <th>JT</th>
-                    <th>Opsi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {ds.map((item, index) => (
-                    <tr>
+                    <tr
+                      key={item.id}
+                      onClick={() => openModalEdit(item.id)}
+                      className="cursor-pointer hover:bg-base-200"
+                    >
                       <td>{index + 1}</td>
                       <td>{item.kode}</td>
                       <td>{item.nama}</td>
-                      <td>{item.alamat}</td>
+                      <td>{formatNoHP(item.nohp)}</td>
                       <td>{item.kota}</td>
-                      <td>{item.nohp}</td>
                       <td>{item.bank}</td>
                       <td>{item.norek}</td>
                       <td>{item.jt}</td>
-                      <td>
-                        <div className="flex gap-2">
-                          <button
-                            className="btn btn-error btn-sm"
-                            onClick={() => hapus(item.id)}
-                          >
-                            Hapus
-                          </button>
-                          <button
-                            className="btn btn-success btn-sm"
-                            onClick={() => openModalEdit(item.id)}
-                          >
-                            Edit
-                          </button>
-                        </div>
-                      </td>
                     </tr>
                   ))}
                 </tbody>

@@ -27,15 +27,17 @@ export default function Produksi({ produksi, desain, bahan }) {
     tinggi: "",
     lebar: "",
     qty: "",
+    sisi: "1 SISI",
     catatan: "",
     metode_pengambilan: "",
     tgl_kirim: "",
-    kantongan: "",
-    sisa_putih: "",
-    mata_ayam: "",
-    potong_pas_gambar: "",
-    lipat_sisa_putih: "",
-    lipat_pas_gambar: "",
+    pinising: {
+      atas: "",
+      bawah: "",
+      kanan: "",
+      kiri: "",
+    },
+    mata_ayam: [],
   });
 
   const modalRef = useRef(null);
@@ -66,8 +68,25 @@ export default function Produksi({ produksi, desain, bahan }) {
       tinggi: pd.tinggi,
       lebar: pd.lebar,
       qty: pd.qty,
+      sisi: pd.sisi,
       metode_pengambilan: pd.metode_pengantaran,
       tgl_kirim: pd.tgl_kirim,
+      pinising: pd.pinising
+        ? {
+          atas: pd.pinising.atas || "",
+          bawah: pd.pinising.bawah || "",
+          kanan: pd.pinising.kanan || "",
+          kiri: pd.pinising.kiri || "",
+        }
+        : { atas: "", bawah: "", kanan: "", kiri: "" },
+      mata_ayam: pd.mata_ayam
+        ? [
+          ...(pd.mata_ayam.atas ? ["Atas"] : []),
+          ...(pd.mata_ayam.bawah ? ["Bawah"] : []),
+          ...(pd.mata_ayam.kiri ? ["Kiri"] : []),
+          ...(pd.mata_ayam.kanan ? ["Kanan"] : []),
+        ]
+        : [],
     });
   };
 
@@ -228,176 +247,270 @@ export default function Produksi({ produksi, desain, bahan }) {
                           </div>
 
                           <div className="p-5 bg-base-200 rounded-lg">
-                            {/* Bahan */}
                             <label className="form-control w-full">
                               <div className="label">
-                                <span className="label-text">Pinising</span>
-                              </div>
-                              <input
-                                type="text"
-                                name="bahan"
-                                value={data.bahan}
-                                onChange={handleChange}
-                                className="input input-bordered input-success w-full"
-                                placeholder="Contoh: ACP, Kaca, Besi"
-                                required
-                              />
-                            </label>
-                          </div>
-                        </div>
-                        {/* Keterangan */}
-                        <div className="p-5 bg-base-200 rounded-lg mt-2">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            {/* Bahan */}
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">Bahan</span>
-                              </div>
-                              <select
-                                name="satuan"
-                                onChange={(e) =>
-                                  setData("id_bahan", e.target.value)
-                                }
-                                className="select select-bordered select-success w-full"
-                                required
-                              >
-                                <option value="">Pilih Bahan</option>
-                                {bahan.map((bh, index) => (
-                                  <option value={bh.id}>
-                                    {bh.bahan} - {bh.kategori}
-                                  </option>
-                                ))}
-                              </select>
-                            </label>
-
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">Keterangan</span>
-                              </div>
-                              <textarea
-                                name="keterangan"
-                                value={data.keterangan}
-                                onChange={(e) =>
-                                  setData("keterangan", e.target.value)
-                                }
-                                className="textarea textarea-bordered textarea-success w-full h-10"
-                              ></textarea>
-                            </label>
-
-                            {/* Satuan */}
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">Satuan</span>
-                              </div>
-                              <select
-                                name="satuan"
-                                value={data.satuan}
-                                onChange={(e) =>
-                                  setData("satuan", e.target.value)
-                                }
-                                className="select select-bordered select-success w-full"
-                                required
-                              >
-                                <option value="">Pilih Satuan</option>
-                                <option value="Meter">Meter</option>
-                                <option value="Cm">Cm</option>
-                                <option value="Mm">Mm</option>
-                                <option value="Unit">Unit</option>
-                              </select>
-                            </label>
-
-                            {/* Tinggi */}
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">Tinggi</span>
-                              </div>
-                              <input
-                                type="number"
-                                name="tinggi"
-                                value={data.tinggi}
-                                onChange={(e) =>
-                                  setData("tinggi", e.target.value)
-                                }
-                                className="input input-bordered input-success w-full"
-                                required
-                              />
-                            </label>
-
-                            {/* Lebar */}
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">Lebar</span>
-                              </div>
-                              <input
-                                type="number"
-                                name="lebar"
-                                value={data.lebar}
-                                onChange={(e) =>
-                                  setData("lebar", e.target.value)
-                                }
-                                className="input input-bordered input-success w-full"
-                                required
-                              />
-                            </label>
-
-                            {/* Qty */}
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">Qty</span>
-                              </div>
-                              <input
-                                type="number"
-                                name="qty"
-                                value={data.qty}
-                                onChange={(e) => setData("qty", e.target.value)}
-                                className="input input-bordered input-success w-full"
-                                required
-                              />
-                            </label>
-
-                            {/* Metode Pengambilan */}
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">
-                                  Metode Pengambilan
-                                </span>
-                              </div>
-                              <select
-                                name="metode_pengambilan"
-                                value={data.metode_pengambilan}
-                                onChange={(e) =>
-                                  setData("metode_pengambilan", e.target.value)
-                                }
-                                className="select select-bordered select-success w-full"
-                                required
-                              >
-                                <option value="">Pilih Metode</option>
-                                <option value="Diambil Sendiri">
-                                  Diambil Sendiri
-                                </option>
-                                <option value="Diantar">Diantar</option>
-                              </select>
-                            </label>
-
-                            {/* Tanggal Ambil */}
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">
-                                  Tanggal Kirim / Tanggal Ambil
-                                </span>
+                                <span className="label-text">Tanggal Produksi</span>
                               </div>
                               <input
                                 type="date"
-                                name="tgl_ambil"
-                                value={data.tgl_kirim}
-                                onChange={(e) =>
-                                  setData("tgl_kirim", e.target.value)
-                                }
+                                value={new Date().toISOString().split("T")[0]}
                                 className="input input-bordered input-success w-full"
-                                required
+                                disabled
                               />
                             </label>
+                            <div className="divider mt-4 mb-6">Pinising</div>
+                            <div className="grid grid-cols-2 gap-2">
+                              {["atas", "bawah", "kanan", "kiri"].map(
+                                (sisi) => (
+                                  <label key={sisi} className="form-control">
+                                    <div className="label py-1">
+                                      <span className="label-text capitalize">
+                                        {sisi}
+                                      </span>
+                                    </div>
+                                    <select
+                                      value={data.pinising[sisi]}
+                                      onChange={(e) => {
+                                        const updated = {
+                                          ...data.pinising,
+                                          [sisi]: e.target.value,
+                                        };
+                                        setData("pinising", updated);
+                                      }}
+                                      className="select select-bordered select-success  w-full"
+                                    >
+                                      <option value="">--</option>
+                                      <option value="Kantongan">
+                                        Kantongan
+                                      </option>
+                                      <option value="Lipat Pas Gambar">
+                                        Lipat Pas Gambar
+                                      </option>
+                                      <option value="Potong Pas Gambar">
+                                        Potong Pas Gambar
+                                      </option>
+                                      <option value="Lipat Sisa Putih">
+                                        Lipat Sisa Putih
+                                      </option>
+                                      <option value="Sisa Putih">
+                                        Sisa Putih
+                                      </option>
+                                    </select>
+                                  </label>
+                                )
+                              )}
+                            </div>
                           </div>
+
+                        </div>
+
+
+                        <div className="grid grid-cols-2 gap-2 items-start">
+                          <div className="p-5 bg-base-200 rounded-lg mt-2">
+                            <div className="grid grid-cols-2 md:grid-cols-2 gap-2">
+                              {/* Bahan */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Bahan</span>
+                                </div>
+                                <select
+                                  name="satuan"
+                                  onChange={(e) =>
+                                    setData("id_bahan", e.target.value)
+                                  }
+                                  className="select select-bordered select-success w-full"
+                                  required
+                                >
+                                  <option value="">Pilih Bahan</option>
+                                  {bahan.map((bh, index) => (
+                                    <option value={bh.id}>
+                                      {bh.bahan} - {bh.kategori}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Keterangan</span>
+                                </div>
+                                <textarea
+                                  name="keterangan"
+                                  value={data.keterangan}
+                                  onChange={(e) =>
+                                    setData("keterangan", e.target.value)
+                                  }
+                                  className="textarea textarea-bordered textarea-success w-full h-10"
+                                ></textarea>
+                              </label>
+
+                              {/* Satuan */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Satuan</span>
+                                </div>
+                                <select
+                                  name="satuan"
+                                  value={data.satuan}
+                                  onChange={(e) =>
+                                    setData("satuan", e.target.value)
+                                  }
+                                  className="select select-bordered select-success w-full"
+                                  required
+                                >
+                                  <option value="">Pilih Satuan</option>
+                                  <option value="Meter">Meter</option>
+                                  <option value="Cm">Cm</option>
+                                  <option value="Mm">Mm</option>
+                                  <option value="Unit">Unit</option>
+                                </select>
+                              </label>
+
+                              {/* Tinggi */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Tinggi</span>
+                                </div>
+                                <input
+                                  type="number"
+                                  name="tinggi"
+                                  value={data.tinggi}
+                                  onChange={(e) =>
+                                    setData("tinggi", e.target.value)
+                                  }
+                                  className="input input-bordered input-success w-full"
+                                  required
+                                />
+                              </label>
+
+                              {/* Lebar */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Lebar</span>
+                                </div>
+                                <input
+                                  type="number"
+                                  name="lebar"
+                                  value={data.lebar}
+                                  onChange={(e) =>
+                                    setData("lebar", e.target.value)
+                                  }
+                                  className="input input-bordered input-success w-full"
+                                  required
+                                />
+                              </label>
+
+                              {/* Qty */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Qty</span>
+                                </div>
+                                <input
+                                  type="number"
+                                  name="qty"
+                                  value={data.qty}
+                                  onChange={(e) => setData("qty", e.target.value)}
+                                  className="input input-bordered input-success w-full"
+                                  required
+                                />
+                              </label>
+
+                              {/* Sisi */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Sisi</span>
+                                </div>
+                                <select
+                                  name="sisi"
+                                  value={data.sisi}
+                                  onChange={(e) =>
+                                    setData("sisi", e.target.value)
+                                  }
+                                  className="select select-bordered select-success w-full"
+                                  required
+                                >
+                                  <option value="">Pilih sisi</option>
+                                  <option value="1 SISI">1 SISI</option>
+                                  <option value="2 SISI">2 SISI</option>
+                                </select>
+                              </label>
+
+                              {/* Metode Pengambilan */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">
+                                    Metode Pengambilan
+                                  </span>
+                                </div>
+                                <select
+                                  name="metode_pengambilan"
+                                  value={data.metode_pengambilan}
+                                  onChange={(e) =>
+                                    setData("metode_pengambilan", e.target.value)
+                                  }
+                                  className="select select-bordered select-success w-full"
+                                  required
+                                >
+                                  <option value="">Pilih Metode</option>
+                                  <option value="Diambil Sendiri">
+                                    Diambil Sendiri
+                                  </option>
+                                  <option value="Diantar">Diantar</option>
+                                </select>
+                              </label>
+
+                              {/* Tanggal Ambil */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">
+                                    Tanggal Kirim / Tanggal Ambil
+                                  </span>
+                                </div>
+                                <input
+                                  type="date"
+                                  name="tgl_ambil"
+                                  value={data.tgl_kirim}
+                                  onChange={(e) =>
+                                    setData("tgl_kirim", e.target.value)
+                                  }
+                                  className="input input-bordered input-success w-full"
+                                  required
+                                />
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="p-5 bg-base-200 rounded-lg mt-2">
+                            <div className="divider mt-4 mb-6 ">Mata Ayam</div>
+                            <div className="flex flex-wrap gap-4">
+                              {["Atas", "Bawah", "Kiri", "Kanan"].map(
+                                (sisi) => (
+                                  <label
+                                    key={sisi}
+                                    className="flex items-center gap-2 cursor-pointer"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      className="checkbox checkbox-success checkbox-sm"
+                                      checked={data.mata_ayam.includes(
+                                        sisi
+                                      )}
+                                      onChange={(e) => {
+                                        const updated = e.target.checked
+                                          ? [...data.mata_ayam, sisi]
+                                          : data.mata_ayam.filter(
+                                            (s) => s !== sisi
+                                          );
+                                        setData("mata_ayam", updated);
+                                      }}
+                                    />
+                                    <span className="text-sm">{sisi}</span>
+                                  </label>
+                                )
+                              )}
+                            </div>
+                          </div>
+
                         </div>
 
                         <div className="mt-4 flex gap-2">
@@ -432,7 +545,7 @@ export default function Produksi({ produksi, desain, bahan }) {
                         ✕
                       </button>
 
-                      <h3 className="text-lg font-bold">Edit data</h3>
+                      <h3 className="text-lg font-bold">Edit Produksi</h3>
 
                       <form onSubmit={update}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -444,7 +557,7 @@ export default function Produksi({ produksi, desain, bahan }) {
                                   <span className="label-text">Customer</span>
                                 </div>
                                 <select
-                                  name="customer_id"
+                                  name="id_customer"
                                   value={data.id_customer}
                                   onChange={(e) =>
                                     handleCustomer(e.target.value)
@@ -513,182 +626,271 @@ export default function Produksi({ produksi, desain, bahan }) {
                           </div>
 
                           <div className="p-5 bg-base-200 rounded-lg">
-                            {/* Bahan */}
                             <label className="form-control w-full">
                               <div className="label">
-                                <span className="label-text">Pinising</span>
-                              </div>
-                              <input
-                                type="text"
-                                name="bahan"
-                                value={data.bahan}
-                                onChange={handleChange}
-                                className="input input-bordered input-success w-full"
-                                placeholder="Contoh: ACP, Kaca, Besi"
-                                required
-                              />
-                            </label>
-                          </div>
-                        </div>
-                        {/* Keterangan */}
-                        <div className="p-5 bg-base-200 rounded-lg mt-2">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            {/* Bahan */}
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">Bahan</span>
-                              </div>
-                              <select
-                                name="satuan"
-                                onChange={(e) =>
-                                  setData("id_bahan", e.target.value)
-                                }
-                                className="select select-bordered select-success w-full"
-                                required
-                              >
-                                <option value={data.id_bahan}>
-                                  {data.bahan}
-                                </option>
-                                {bahan.map((bh, index) => (
-                                  <option value={bh.id}>
-                                    {bh.bahan} - {bh.kategori}
-                                  </option>
-                                ))}
-                              </select>
-                            </label>
-
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">Keterangan</span>
-                              </div>
-                              <textarea
-                                name="keterangan"
-                                value={data.keterangan}
-                                onChange={(e) =>
-                                  setData("keterangan", e.target.value)
-                                }
-                                className="textarea textarea-bordered textarea-success w-full h-10"
-                              ></textarea>
-                            </label>
-
-                            {/* Satuan */}
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">Satuan</span>
-                              </div>
-                              <select
-                                name="satuan"
-                                value={data.satuan}
-                                onChange={(e) =>
-                                  setData("satuan", e.target.value)
-                                }
-                                className="select select-bordered select-success w-full"
-                                required
-                              >
-                                <option value={data.satuan}>
-                                  {data.satuan}
-                                </option>
-                                <option value="Meter">Meter</option>
-                                <option value="Cm">Cm</option>
-                                <option value="Mm">Mm</option>
-                                <option value="Unit">Unit</option>
-                              </select>
-                            </label>
-
-                            {/* Tinggi */}
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">Tinggi</span>
-                              </div>
-                              <input
-                                type="number"
-                                name="tinggi"
-                                value={data.tinggi}
-                                onChange={(e) =>
-                                  setData("tinggi", e.target.value)
-                                }
-                                className="input input-bordered input-success w-full"
-                                required
-                              />
-                            </label>
-
-                            {/* Lebar */}
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">Lebar</span>
-                              </div>
-                              <input
-                                type="number"
-                                name="lebar"
-                                value={data.lebar}
-                                onChange={(e) =>
-                                  setData("lebar", e.target.value)
-                                }
-                                className="input input-bordered input-success w-full"
-                                required
-                              />
-                            </label>
-
-                            {/* Qty */}
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">Qty</span>
-                              </div>
-                              <input
-                                type="number"
-                                name="qty"
-                                value={data.qty}
-                                onChange={(e) => setData("qty", e.target.value)}
-                                className="input input-bordered input-success w-full"
-                                required
-                              />
-                            </label>
-
-                            {/* Metode Pengambilan */}
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">
-                                  Metode Pengambilan
-                                </span>
-                              </div>
-                              <select
-                                name="metode_pengambilan"
-                                value={data.metode_pengambilan}
-                                onChange={(e) =>
-                                  setData("metode_pengambilan", e.target.value)
-                                }
-                                className="select select-bordered select-success w-full"
-                                required
-                              >
-                                <option value={data.metode_pengambilan}>
-                                  {data.metode_pengambilan}
-                                </option>
-                                <option value="Diambil Sendiri">
-                                  Diambil Sendiri
-                                </option>
-                                <option value="Diantar">Diantar</option>
-                              </select>
-                            </label>
-
-                            {/* Tanggal Ambil */}
-                            <label className="form-control w-full">
-                              <div className="label">
-                                <span className="label-text">
-                                  Tanggal Kirim / Tanggal Ambil
-                                </span>
+                                <span className="label-text">Tanggal Produksi</span>
                               </div>
                               <input
                                 type="date"
-                                name="tgl_ambil"
-                                value={data.tgl_kirim}
-                                onChange={(e) =>
-                                  setData("tgl_kirim", e.target.value)
-                                }
+                                value={new Date().toISOString().split("T")[0]}
                                 className="input input-bordered input-success w-full"
-                                required
+                                disabled
                               />
                             </label>
+                            <div className="divider mt-4 mb-6">Pinising</div>
+                            <div className="grid grid-cols-2 gap-2">
+                              {["atas", "bawah", "kanan", "kiri"].map(
+                                (sisi) => (
+                                  <label key={sisi} className="form-control">
+                                    <div className="label py-1">
+                                      <span className="label-text capitalize text-xs">
+                                        {sisi}
+                                      </span>
+                                    </div>
+                                    <select
+                                      value={data.pinising[sisi]}
+                                      onChange={(e) => {
+                                        const updated = {
+                                          ...data.pinising,
+                                          [sisi]: e.target.value,
+                                        };
+                                        setData("pinising", updated);
+                                      }}
+                                      className="select select-bordered select-success  w-full"
+                                    >
+                                      <option value="">--</option>
+                                      <option value="Kantongan">
+                                        Kantongan
+                                      </option>
+                                      <option value="Lipat Pas Gambar">
+                                        Lipat Pas Gambar
+                                      </option>
+                                      <option value="Potong Pas Gambar">
+                                        Potong Pas Gambar
+                                      </option>
+                                      <option value="Lipat Sisa Putih">
+                                        Lipat Sisa Putih
+                                      </option>
+                                      <option value="Sisa Putih">
+                                        Sisa Putih
+                                      </option>
+                                    </select>
+                                  </label>
+                                )
+                              )}
+                            </div>
                           </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 items-start">
+                          <div className="p-5 bg-base-200 rounded-lg mt-2">
+                            <div className="grid grid-cols-2 md:grid-cols-2 gap-2">
+                              {/* Bahan */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Bahan</span>
+                                </div>
+                                <select
+                                  name="satuan"
+                                  value={data.id_bahan}
+                                  onChange={(e) =>
+                                    setData("id_bahan", e.target.value)
+                                  }
+                                  className="select select-bordered select-success w-full"
+                                  required
+                                >
+                                  <option value={data.id_bahan}>
+                                    {data.bahan}
+                                  </option>
+                                  {bahan.map((bh, index) => (
+                                    <option value={bh.id}>
+                                      {bh.bahan} - {bh.kategori}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Keterangan</span>
+                                </div>
+                                <textarea
+                                  name="keterangan"
+                                  value={data.keterangan}
+                                  onChange={(e) =>
+                                    setData("keterangan", e.target.value)
+                                  }
+                                  className="textarea textarea-bordered textarea-success w-full h-10"
+                                ></textarea>
+                              </label>
+
+                              {/* Satuan */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Satuan</span>
+                                </div>
+                                <select
+                                  name="satuan"
+                                  value={data.satuan}
+                                  onChange={(e) =>
+                                    setData("satuan", e.target.value)
+                                  }
+                                  className="select select-bordered select-success w-full"
+                                  required
+                                >
+                                  <option value="">Pilih Satuan</option>
+                                  <option value="Meter">Meter</option>
+                                  <option value="Cm">Cm</option>
+                                  <option value="Mm">Mm</option>
+                                  <option value="Unit">Unit</option>
+                                </select>
+                              </label>
+
+                              {/* Tinggi */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Tinggi</span>
+                                </div>
+                                <input
+                                  type="number"
+                                  name="tinggi"
+                                  value={data.tinggi}
+                                  onChange={(e) =>
+                                    setData("tinggi", e.target.value)
+                                  }
+                                  className="input input-bordered input-success w-full"
+                                  required
+                                />
+                              </label>
+
+                              {/* Lebar */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Lebar</span>
+                                </div>
+                                <input
+                                  type="number"
+                                  name="lebar"
+                                  value={data.lebar}
+                                  onChange={(e) =>
+                                    setData("lebar", e.target.value)
+                                  }
+                                  className="input input-bordered input-success w-full"
+                                  required
+                                />
+                              </label>
+
+                              {/* Qty */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Qty</span>
+                                </div>
+                                <input
+                                  type="number"
+                                  name="qty"
+                                  value={data.qty}
+                                  onChange={(e) => setData("qty", e.target.value)}
+                                  className="input input-bordered input-success w-full"
+                                  required
+                                />
+                              </label>
+
+                              {/* Sisi */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Sisi</span>
+                                </div>
+                                <select
+                                  name="sisi"
+                                  value={data.sisi}
+                                  onChange={(e) =>
+                                    setData("sisi", e.target.value)
+                                  }
+                                  className="select select-bordered select-success w-full"
+                                  required
+                                >
+                                  <option value="">Pilih sisi</option>
+                                  <option value="1 SISI">1 SISI</option>
+                                  <option value="2 SISI">2 SISI</option>
+                                </select>
+                              </label>
+
+                              {/* Metode Pengambilan */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">
+                                    Metode Pengambilan
+                                  </span>
+                                </div>
+                                <select
+                                  name="metode_pengambilan"
+                                  value={data.metode_pengambilan}
+                                  onChange={(e) =>
+                                    setData("metode_pengambilan", e.target.value)
+                                  }
+                                  className="select select-bordered select-success w-full"
+                                  required
+                                >
+                                  <option value="">Pilih Metode</option>
+                                  <option value="Diambil Sendiri">
+                                    Diambil Sendiri
+                                  </option>
+                                  <option value="Diantar">Diantar</option>
+                                </select>
+                              </label>
+
+                              {/* Tanggal Ambil */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">
+                                    Tanggal Kirim / Tanggal Ambil
+                                  </span>
+                                </div>
+                                <input
+                                  type="date"
+                                  name="tgl_ambil"
+                                  value={data.tgl_kirim}
+                                  onChange={(e) =>
+                                    setData("tgl_kirim", e.target.value)
+                                  }
+                                  className="input input-bordered input-success w-full"
+                                  required
+                                />
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="p-5 bg-base-200 rounded-lg mt-2">
+                            <div className="divider mt-4 mb-6">Mata Ayam</div>
+                            <div className="flex flex-wrap gap-4">
+                              {["Atas", "Bawah", "Kiri", "Kanan"].map(
+                                (sisi) => (
+                                  <label
+                                    key={sisi}
+                                    className="flex items-center gap-2 cursor-pointer"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      className="checkbox checkbox-success checkbox-sm"
+                                      checked={data.mata_ayam.includes(
+                                        sisi
+                                      )}
+                                      onChange={(e) => {
+                                        const updated = e.target.checked
+                                          ? [...data.mata_ayam, sisi]
+                                          : data.mata_ayam.filter(
+                                            (s) => s !== sisi
+                                          );
+                                        setData("mata_ayam", updated);
+                                      }}
+                                    />
+                                    <span className="text-sm">{sisi}</span>
+                                  </label>
+                                )
+                              )}
+                            </div>
+                          </div>
+
                         </div>
 
                         <div className="mt-4 flex gap-2">
@@ -697,15 +899,22 @@ export default function Produksi({ produksi, desain, bahan }) {
                             disabled={processing}
                             className="btn btn-success"
                           >
-                            Edit data
+                            <i className="fas fa-save"></i> Update
                           </button>
 
                           <button
                             type="button"
                             onClick={closeModalEdit}
+                            className="btn btn-warning"
+                          >
+                            Batal
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => hapus(data.id)}
                             className="btn btn-error"
                           >
-                            Keluar
+                            <i className="fas fa-trash"></i> Hapus
                           </button>
                         </div>
                       </form>
@@ -727,15 +936,18 @@ export default function Produksi({ produksi, desain, bahan }) {
                       <th>Tinggi</th>
                       <th>Lebar</th>
                       <th>Qty</th>
+                      <th>Sisi</th>
                       <th>Metode P</th>
                       <th>Tgl Kirim /Ambil</th>
-
-                      <th>Opsi</th>
                     </tr>
                   </thead>
                   <tbody>
                     {produksi.map((item, index) => (
-                      <tr>
+                      <tr
+                        key={item.id}
+                        onClick={() => openModalEdit(item.id)}
+                        className="cursor-pointer hover:bg-base-200"
+                      >
                         <td>{index + 1}</td>
                         <td>{item.kode_spk}</td>
                         <td>{item.customer.nama}</td>
@@ -745,24 +957,9 @@ export default function Produksi({ produksi, desain, bahan }) {
                         <td>{item.tinggi}</td>
                         <td>{item.lebar}</td>
                         <td>{item.qty}</td>
+                        <td>{item.sisi}</td>
                         <td>{item.metode_pengantaran}</td>
                         <td>{item.tgl_kirim}</td>
-                        <td>
-                          <div className="flex gap-2">
-                            <button
-                              className="btn btn-error btn-sm"
-                              onClick={() => hapus(item.id)}
-                            >
-                              Hapus
-                            </button>
-                            <button
-                              className="btn btn-success btn-sm"
-                              onClick={() => openModalEdit(item.id)}
-                            >
-                              Edit
-                            </button>
-                          </div>
-                        </td>
                       </tr>
                     ))}
                   </tbody>

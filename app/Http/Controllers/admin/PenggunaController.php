@@ -43,7 +43,7 @@ class PenggunaController extends Controller
     function delete($id)
     {
         $pg = Pengguna::find($id);
-        $pg->update();
+        $pg->delete();
         return redirect()->back()->with('success', 'Data berhasil dihapus');
     }
 }

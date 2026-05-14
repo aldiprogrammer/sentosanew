@@ -232,9 +232,16 @@ export default function Pengguna({ pengguna, jabatan }) {
                         <button
                           type="button"
                           onClick={closeModalEdit}
+                          className="btn btn-warning"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => hapus(data.id)}
                           className="btn btn-error"
                         >
-                          Keluar
+                          <i className="fas fa-trash"></i> Hapus
                         </button>
                       </div>
                     </form>
@@ -250,38 +257,18 @@ export default function Pengguna({ pengguna, jabatan }) {
                     <th>No</th>
                     <th>Username</th>
                     <th>Role</th>
-                    <th>Opsi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pengguna.map((item, index) => (
-                    <tr>
+                    <tr
+                      key={item.id}
+                      onClick={() => openModalEdit(item.id, item.username, item.role, item.password)}
+                      className="cursor-pointer hover:bg-base-200"
+                    >
                       <td>{index + 1}</td>
                       <td>{item.username}</td>
                       <td>{item.role}</td>
-                      <td>
-                        <div className="flex gap-2">
-                          <button
-                            className="btn btn-error btn-sm"
-                            onClick={() => hapus(item.id)}
-                          >
-                            Hapus
-                          </button>
-                          <button
-                            className="btn btn-success btn-sm"
-                            onClick={() =>
-                              openModalEdit(
-                                item.id,
-                                item.username,
-                                item.role,
-                                item.password,
-                              )
-                            }
-                          >
-                            Edit
-                          </button>
-                        </div>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
