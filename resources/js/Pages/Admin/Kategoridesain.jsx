@@ -8,6 +8,7 @@ export default function Kategoridesain({ kategori, kode }) {
         kode: '',
         kategori: '',
         harga: '',
+        status_point: 0,
 
     });
     const modalRef = useRef(null);
@@ -21,13 +22,14 @@ export default function Kategoridesain({ kategori, kode }) {
     };
 
     const editmodalRef = useRef(null);
-    const openModalEdit = (id, kode, kategori, harga) => {
+    const openModalEdit = (id, kode, kategori, harga, status_point) => {
         editmodalRef.current.showModal();
         setData({
             'id': id,
             'kode': kode,
             'kategori': kategori,
             'harga': harga,
+            'status_point': status_point,
         })
     }
 
@@ -165,6 +167,35 @@ export default function Kategoridesain({ kategori, kode }) {
                                                 />
                                             </label>
 
+                                            <label className="form-control w-full mt-2">
+                                                <div className="label">
+                                                    <span className="label-text">Status Point</span>
+                                                </div>
+                                                <div className="flex gap-4">
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="status_point"
+                                                            value="1"
+                                                            checked={data.status_point == 1}
+                                                            onChange={() => setData('status_point', 1)}
+                                                            className="radio radio-success"
+                                                        />
+                                                        Aktif
+                                                    </label>
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="status_point"
+                                                            value="0"
+                                                            checked={data.status_point == 0}
+                                                            onChange={() => setData('status_point', 0)}
+                                                            className="radio radio-error"
+                                                        />
+                                                        Tidak Aktif
+                                                    </label>
+                                                </div>
+                                            </label>
 
                                             <div className="mt-4 flex gap-2">
                                                 <button
@@ -261,6 +292,35 @@ export default function Kategoridesain({ kategori, kode }) {
                                                 />
                                             </label>
 
+                                            <label className="form-control w-full mt-2">
+                                                <div className="label">
+                                                    <span className="label-text">Status Point</span>
+                                                </div>
+                                                <div className="flex gap-4">
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="status_point_edit"
+                                                            value="1"
+                                                            checked={data.status_point == 1}
+                                                            onChange={() => setData('status_point', 1)}
+                                                            className="radio radio-success"
+                                                        />
+                                                        Aktif
+                                                    </label>
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="status_point_edit"
+                                                            value="0"
+                                                            checked={data.status_point == 0}
+                                                            onChange={() => setData('status_point', 0)}
+                                                            className="radio radio-error"
+                                                        />
+                                                        Tidak Aktif
+                                                    </label>
+                                                </div>
+                                            </label>
 
                                             <div className="mt-4 flex gap-2">
                                                 <button
@@ -300,19 +360,27 @@ export default function Kategoridesain({ kategori, kode }) {
                                         <th>Kode</th>
                                         <th>Kategori</th>
                                         <th>Harga</th>
+                                        <th>Status Point</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {kategori.map((item, index) => (
                                         <tr
-                                          key={item.id}
-                                          onClick={() => openModalEdit(item.id, item.kode, item.kategori, item.harga)}
-                                          className="cursor-pointer hover:bg-base-200"
+                                            key={item.id}
+                                            onClick={() => openModalEdit(item.id, item.kode, item.kategori, item.harga, item.status_point)}
+                                            className="cursor-pointer hover:bg-base-200"
                                         >
                                             <td>{index + 1}</td>
                                             <td>{item.kode}</td>
                                             <td>{item.kategori}</td>
                                             <td>{Number(item.harga).toLocaleString('id-ID')}</td>
+                                            <td>
+                                                {item.status_point == 1 ? (
+                                                    <span className="badge badge-success">Aktif</span>
+                                                ) : (
+                                                    <span className="badge badge-error">Tidak Aktif</span>
+                                                )}
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>

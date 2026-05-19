@@ -11,24 +11,26 @@ use Inertia\Inertia;
 
 class PenggunaController extends Controller
 {
-    function index()
+    public function index()
     {
         $pengguna = Pengguna::all();
         $jabatan = Jabatan::all();
+
         return Inertia::render('Admin/Pengguna', compact('pengguna', 'jabatan'));
     }
 
-    function store(Request $request)
+    public function store(Request $request)
     {
-        $pg = new Pengguna();
+        $pg = new Pengguna;
         $pg->username = $request->username;
         $pg->role = $request->role;
         $pg->password = Hash::make($request->password);
         $pg->save();
+
         return redirect()->back()->with('success', 'Data berhasil ditambah');
     }
 
-    function update(Request $request, $id)
+    public function update(Request $request, $id)
     {
         $pg = Pengguna::find($id);
         $pg->username = $request->username;
@@ -37,13 +39,15 @@ class PenggunaController extends Controller
             $pg->password = Hash::make($request->password);
         }
         $pg->update();
+
         return redirect()->back()->with('success', 'Data berhasil diubah');
     }
 
-    function delete($id)
+    public function delete($id)
     {
         $pg = Pengguna::find($id);
         $pg->delete();
+
         return redirect()->back()->with('success', 'Data berhasil dihapus');
     }
 }

@@ -121,6 +121,14 @@ export default function AdminLayout({ children }) {
                         )}
                         {role !== 'desainer' && (
                             <li>
+                                <Link href={route('suplayer')} className="rounded-xl">
+                                    <i className="fas fa-boxes"></i>
+                                    Suplayer
+                                </Link>
+                            </li>
+                        )}
+                        {role !== 'desainer' && (
+                            <li>
                                 <details>
                                     <summary className="rounded-xl">
                                         <i className="fas fa-box"></i>

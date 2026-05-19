@@ -13,17 +13,18 @@ use Inertia\Inertia;
 
 class ProduksiController extends Controller
 {
-    function index()
+    public function index()
     {
         $produksi = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')->get();
         $desain = Desain::where('status', 0)->with('customer', 'kategoridesain')->get();
         $bahan = Bahan::all();
+
         return Inertia::render('Admin/Produksi', compact('produksi', 'desain', 'bahan'));
     }
 
-    function store(Request $request)
+    public function store(Request $request)
     {
-        $pr = new Produksi();
+        $pr = new Produksi;
         $pr->tanggal = date('Y-m-d');
         $pr->id_customer = $request->id_customer;
         $pr->id_desain = $request->id_desain;
@@ -68,7 +69,7 @@ class ProduksiController extends Controller
         return redirect()->back()->with('success', 'Data barhasil ditambah');
     }
 
-    function update(Request $request, $id)
+    public function update(Request $request, $id)
     {
         $pr = Produksi::find($id);
         $pr->id_customer = $request->id_customer;
@@ -113,7 +114,7 @@ class ProduksiController extends Controller
         return redirect()->back()->with('success', 'Data barhasil diubah');
     }
 
-    function delete($id)
+    public function delete($id)
     {
         $pr = Produksi::find($id);
         if ($pr->kode_spk) {
@@ -121,6 +122,7 @@ class ProduksiController extends Controller
             Pinising::where('kode_spk', $pr->kode_spk)->delete();
         }
         $pr->delete();
+
         return redirect()->back()->with('success', 'Data barhasil dihapus');
     }
 }

@@ -9,16 +9,17 @@ use Inertia\Inertia;
 
 class BahanController extends Controller
 {
-    function index()
+    public function index()
     {
         $bahan = Bahan::all();
-        $kode = 'BH-' . rand(0, 100000);
+        $kode = 'BH-'.rand(0, 100000);
+
         return Inertia::render('Admin/Bahan', compact('bahan', 'kode'));
     }
 
-    function store(Request $request)
+    public function store(Request $request)
     {
-        $bh = new Bahan();
+        $bh = new Bahan;
         $bh->kode = $request->kode;
         $bh->bahan = $request->bahan;
         $bh->kategori = $request->kategori;
@@ -29,10 +30,11 @@ class BahanController extends Controller
         $bh->klik = $request->klik;
         $bh->cara_perhitungan = $request->cara_perhitungan;
         $bh->save();
+
         return redirect()->back()->with('success', 'Data berhasil ditambah');
     }
 
-    function update(Request $request, $id)
+    public function update(Request $request, $id)
     {
         $bh = Bahan::find($id);
         $bh->kode = $request->kode;
@@ -45,13 +47,15 @@ class BahanController extends Controller
         $bh->klik = $request->klik;
         $bh->cara_perhitungan = $request->cara_perhitungan;
         $bh->update();
+
         return redirect()->back()->with('success', 'Data berhasil diubah');
     }
 
-    function delete($id)
+    public function delete($id)
     {
         $bh = Bahan::find($id);
         $bh->delete();
+
         return redirect()->back()->with('success', 'Data berhasil dihapus');
     }
 }

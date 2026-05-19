@@ -1,4 +1,3 @@
-
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -12,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('kategoridesains', function (Blueprint $table) {
+        Schema::create('rekening_suplayers', function (Blueprint $table) {
             $table->id();
-            $table->string('kode', 15);
-            $table->string('kategori', 30);
-            $table->string('harga', 11);
-            $table->string('status_point', 11);
+            $table->string('id_suplayaer', 11);
+            $table->string('nama_bank', 30);
+            $table->string('no_rekening', 30);
+            $table->string('nama_rekening');
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('kategoridesains');
+        Schema::dropIfExists('rekening_suplayers');
     }
 };

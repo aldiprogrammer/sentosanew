@@ -9,23 +9,24 @@ use Inertia\Inertia;
 
 class CustomerController extends Controller
 {
-    function index()
+    public function index()
     {
         $customer = Customer::all();
-        $kode = 'CS-' . rand(0, 100000);
+        $kode = 'CS-'.rand(0, 100000);
+
         return Inertia::render('Admin/Customer', compact('customer', 'kode'));
     }
 
-
-    function show($id)
+    public function show($id)
     {
         $customer = Customer::find($id);
+
         return response()->json($customer);
     }
 
-    function store(Request $request)
+    public function store(Request $request)
     {
-        $cs = new Customer();
+        $cs = new Customer;
         $cs->kode = $request->kode;
         $cs->nama = $request->nama;
         $cs->alamat = $request->alamat;
@@ -33,10 +34,11 @@ class CustomerController extends Controller
         $cs->kategori = $request->kategori;
         $cs->limit = str_replace('.', '', $request->limit ?: 0);
         $cs->save();
+
         return redirect()->back()->with('success', 'Data berhasil ditambah');
     }
 
-    function update(Request $request, $id)
+    public function update(Request $request, $id)
     {
         $cs = Customer::find($id);
         $cs->kode = $request->kode;
@@ -46,13 +48,15 @@ class CustomerController extends Controller
         $cs->kategori = $request->kategori;
         $cs->limit = str_replace('.', '', $request->limit ?: 0);
         $cs->update();
+
         return redirect()->back()->with('success', 'Data berhasil diubah');
     }
 
-    function delete($id)
+    public function delete($id)
     {
         $cs = Customer::find($id);
         $cs->delete();
+
         return redirect()->back()->with('success', 'Data berhasil diubah');
     }
 }

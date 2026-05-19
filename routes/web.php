@@ -4,12 +4,13 @@ use App\Http\Controllers\admin\BahanController;
 use App\Http\Controllers\admin\CustomerController;
 use App\Http\Controllers\admin\DashboardController;
 use App\Http\Controllers\admin\DesainController;
+use App\Http\Controllers\admin\DistributorController;
 use App\Http\Controllers\admin\JabatanController;
 use App\Http\Controllers\admin\KategoriDesainController;
+use App\Http\Controllers\admin\KurirController;
 use App\Http\Controllers\admin\PenggunaController;
 use App\Http\Controllers\admin\ProduksiController;
-use App\Http\Controllers\admin\DistributorController;
-use App\Http\Controllers\admin\KurirController;
+use App\Http\Controllers\admin\SuplayerController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -81,6 +82,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/kurir', [KurirController::class, 'store'])->name('store.kurir');
     Route::put('/kurir/{id}', [KurirController::class, 'update'])->name('update.kurir');
     Route::delete('/kurir/{id}', [KurirController::class, 'delete'])->name('delete.kurir');
+
+    Route::get('/suplayer', [SuplayerController::class, 'index'])->name('suplayer');
+    Route::post('/suplayer', [SuplayerController::class, 'store'])->name('store.suplayer');
+    Route::put('/suplayer/{id}', [SuplayerController::class, 'update'])->name('update.suplayer');
+    Route::delete('/suplayer/{id}', [SuplayerController::class, 'delete'])->name('delete.suplayer');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

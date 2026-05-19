@@ -9,16 +9,17 @@ use Inertia\Inertia;
 
 class DistributorController extends Controller
 {
-    function index()
+    public function index()
     {
         $ds = Distributor::all();
-        $kode = 'DS-' . rand(0, 100000);
+        $kode = 'DS-'.rand(0, 100000);
+
         return Inertia::render('Admin/Distributor', compact('ds', 'kode'));
     }
 
-    function store(Request $request)
+    public function store(Request $request)
     {
-        $ds = new Distributor();
+        $ds = new Distributor;
         $ds->kode = $request->kode;
         $ds->nama = $request->nama;
         $ds->alamat = $request->alamat;
@@ -29,10 +30,11 @@ class DistributorController extends Controller
         $ds->jt = $request->jt;
 
         $ds->save();
+
         return redirect()->back()->with('success', 'Data berhasil ditambah');
     }
 
-    function update(Request $request, $id)
+    public function update(Request $request, $id)
     {
         $ds = Distributor::find($id);
         $ds->kode = $request->kode;
@@ -44,13 +46,15 @@ class DistributorController extends Controller
         $ds->norek = $request->norek;
         $ds->jt = $request->jt;
         $ds->update();
+
         return redirect()->back()->with('success', 'Data berhasil diubah');
     }
 
-    function delete($id)
+    public function delete($id)
     {
         $ds = Distributor::find($id);
         $ds->delete();
+
         return redirect()->back()->with('success', 'Data berhasil diubah');
     }
 }
