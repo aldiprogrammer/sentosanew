@@ -1,6 +1,8 @@
 import AdminLayout from '@/Layouts/AdminLayout'
 import { useForm } from '@inertiajs/react';
 import React, { useRef } from 'react'
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 function formatPhone(value) {
     const digits = String(value).replace(/\D/g, '').slice(0, 13);
@@ -155,6 +157,22 @@ export default function Suplayer({ suplayer, kode }) {
         </>
     );
 
+    const exportPDF = () => {
+        try {
+            const doc = new jsPDF("l", "mm", "a4");
+            doc.setFontSize(16);
+            doc.text("Data Suplayer", 14, 20);
+            doc.setFontSize(10);
+            doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
+            const rows = suplayer.map((item, index) => [index + 1, item.kode, item.nama_suplayer, item.alamat, formatPhone(item.nohp), item.produk, formatRupiah(item.harga), item.rekening ? item.rekening.map(r => r.nama_bank).join(", ") : "-"]);
+            autoTable(doc, { startY: 32, head: [["No", "Kode", "Nama Suplayer", "Alamat", "No HP", "Produk", "Harga", "Rekening"]], body: rows, styles: { fontSize: 7 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
+            doc.save("data_suplayer.pdf");
+        } catch (error) {
+            console.error("Gagal export PDF:", error);
+            alert("Gagal mengexport PDF: " + error.message);
+        }
+    };
+
     return (
         <AdminLayout>
             <div className="grid grid-cols-1 xl:grid-cols-1 gap-">
@@ -163,6 +181,9 @@ export default function Suplayer({ suplayer, kode }) {
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
                             <h2 className="card-title">Data Suplayer</h2>
                             <div className="flex gap-2">
+                                <button className="btn btn-primary" onClick={exportPDF}>
+                                    <i className="fas fa-file-pdf"></i> Export PDF
+                                </button>
                                 <button className="btn btn-success" onClick={openModal}>
                                     <i className="fas fa-plus"></i>
                                     Tambah data

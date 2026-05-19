@@ -1,6 +1,8 @@
 import AdminLayout from "@/Layouts/AdminLayout";
 import { useForm } from "@inertiajs/react";
 import React, { useRef } from "react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function Pengguna({ pengguna, jabatan }) {
   const {
@@ -70,6 +72,22 @@ export default function Pengguna({ pengguna, jabatan }) {
     });
   };
 
+  const exportPDF = () => {
+    try {
+      const doc = new jsPDF();
+      doc.setFontSize(16);
+      doc.text("Data Pengguna", 14, 20);
+      doc.setFontSize(10);
+      doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
+      const rows = pengguna.map((item, index) => [index + 1, item.username, item.role]);
+      autoTable(doc, { startY: 32, head: [["No", "Username", "Role"]], body: rows, styles: { fontSize: 10 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
+      doc.save("data_pengguna.pdf");
+    } catch (error) {
+      console.error("Gagal export PDF:", error);
+      alert("Gagal mengexport PDF: " + error.message);
+    }
+  };
+
   return (
     <AdminLayout>
       <div class="grid grid-cols-1 xl:grid-cols-1 gap-">
@@ -78,6 +96,9 @@ export default function Pengguna({ pengguna, jabatan }) {
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
               <h2 class="card-title">Data Pengguna</h2>
               <div class="flex gap-2">
+                <button className="btn btn-primary" onClick={exportPDF}>
+                  <i className="fas fa-file-pdf"></i> Export PDF
+                </button>
                 <button className="btn btn-success" onClick={openModal}>
                   <i className="fas fa-plus"></i>
                   Tambah data

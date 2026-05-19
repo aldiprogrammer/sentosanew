@@ -1,6 +1,8 @@
 import AdminLayout from '@/Layouts/AdminLayout'
 import { router, useForm } from '@inertiajs/react';
 import React, { useRef } from 'react'
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 function formatPhone(value) {
     const digits = value.replace(/\D/g, '').slice(0, 13);
@@ -86,6 +88,22 @@ export default function Customer({ customer, kode }) {
     }
 
 
+    const exportPDF = () => {
+        try {
+            const doc = new jsPDF("l", "mm", "a4");
+            doc.setFontSize(16);
+            doc.text("Data Customer", 14, 20);
+            doc.setFontSize(10);
+            doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
+            const rows = customer.map((item, index) => [index + 1, item.kode, item.nama, item.nohp, item.kategori, item.alamat, item.limit ? "Rp " + formatRupiah(String(item.limit)) : "-"]);
+            autoTable(doc, { startY: 32, head: [["No", "Kode", "Nama", "No Hp", "Kategori", "Alamat", "Limit"]], body: rows, styles: { fontSize: 8 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
+            doc.save("data_customer.pdf");
+        } catch (error) {
+            console.error("Gagal export PDF:", error);
+            alert("Gagal mengexport PDF: " + error.message);
+        }
+    };
+
     return (
         <AdminLayout>
             <div class="grid grid-cols-1 xl:grid-cols-1 gap-">
@@ -94,6 +112,9 @@ export default function Customer({ customer, kode }) {
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
                             <h2 class="card-title">Data Customer</h2>
                             <div class="flex gap-2">
+                                <button className="btn btn-primary" onClick={exportPDF}>
+                                    <i className="fas fa-file-pdf"></i> Export PDF
+                                </button>
                                 <button
                                     className="btn btn-success"
                                     onClick={openModal}

@@ -15,6 +15,7 @@ class Bahan extends Model
         'kategori_cetak',
         'jenis_bahan',
         'klik',
+        'harga',
         'cara_perhitungan',
     ];
 }

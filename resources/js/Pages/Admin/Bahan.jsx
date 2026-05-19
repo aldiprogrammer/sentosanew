@@ -1,6 +1,8 @@
 import AdminLayout from "@/Layouts/AdminLayout";
 import { useForm } from "@inertiajs/react";
 import React, { useRef } from "react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function Bahan({ bahan, kode }) {
   const {
@@ -21,6 +23,7 @@ export default function Bahan({ bahan, kode }) {
     kategori_cetak: "",
     jenis_bahan: "",
     klik: "",
+    harga: "",
     cara_perhitungan: "",
   });
 
@@ -35,6 +38,17 @@ export default function Bahan({ bahan, kode }) {
   };
 
   const editmodalRef = useRef(null);
+  function formatRupiah(value) {
+    const digits = String(value).replace(/\D/g, "");
+    if (!digits) return "";
+    return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
+
+  function handleHargaInput(e) {
+    const raw = e.target.value.replace(/\D/g, "");
+    setData("harga", raw);
+  }
+
   const openModalEdit = (
     id,
     kode,
@@ -45,6 +59,7 @@ export default function Bahan({ bahan, kode }) {
     kategori_cetak,
     jenis_bahan,
     klik,
+    harga,
     cara_perhitungan
   ) => {
     editmodalRef.current.showModal();
@@ -58,6 +73,7 @@ export default function Bahan({ bahan, kode }) {
       kategori_cetak,
       jenis_bahan,
       klik,
+      harga,
       cara_perhitungan,
     });
   };
@@ -94,6 +110,44 @@ export default function Bahan({ bahan, kode }) {
     });
   };
 
+  const exportPDF = () => {
+    try {
+      const doc = new jsPDF("l", "mm", "a4");
+      doc.setFontSize(16);
+      doc.text("Data Bahan", 14, 20);
+      doc.setFontSize(10);
+      doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
+
+      const rows = bahan.map((item, index) => [
+        index + 1,
+        item.kode,
+        item.bahan,
+        item.satuan,
+        item.kategori,
+        item.jenis,
+        item.kategori_cetak,
+        item.jenis_bahan,
+        item.klik,
+        item.harga ? "Rp " + formatRupiah(item.harga) : "-",
+        item.cara_perhitungan,
+      ]);
+
+      autoTable(doc, {
+        startY: 32,
+        head: [["No", "Kode", "Bahan", "Satuan", "Kategori", "Jenis", "Kat. Cetak", "Jenis Bahan", "Klik", "Harga", "Perhitungan"]],
+        body: rows,
+        styles: { fontSize: 7 },
+        headStyles: { fillColor: [22, 163, 74] },
+        theme: "grid",
+      });
+
+      doc.save("data_bahan.pdf");
+    } catch (error) {
+      console.error("Gagal export PDF:", error);
+      alert("Gagal mengexport PDF: " + error.message);
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="grid grid-cols-1 xl:grid-cols-1">
@@ -102,6 +156,9 @@ export default function Bahan({ bahan, kode }) {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
               <h2 className="card-title">Data Bahan</h2>
               <div className="flex gap-2">
+                <button className="btn btn-primary" onClick={exportPDF}>
+                  <i className="fas fa-file-pdf"></i> Export PDF
+                </button>
                 <button className="btn btn-success" onClick={openModal}>
                   <i className="fas fa-plus"></i> Tambah Bahan
                 </button>
@@ -252,7 +309,7 @@ export default function Bahan({ bahan, kode }) {
                           </select>
                         </label>
 
-                        <label className="form-control md:col-span-2">
+                        <label className="form-control">
                           <div className="label">
                             <span className="label-text">Klik</span>
                           </div>
@@ -262,6 +319,19 @@ export default function Bahan({ bahan, kode }) {
                             className="input input-bordered input-success w-full"
                             required
                             onChange={(e) => setData("klik", e.target.value)}
+                          />
+                        </label>
+
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Harga</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.harga ? formatRupiah(data.harga) : ""}
+                            className="input input-bordered input-success w-full"
+                            placeholder="Rp 0"
+                            onChange={handleHargaInput}
                           />
                         </label>
                       </div>
@@ -432,7 +502,7 @@ export default function Bahan({ bahan, kode }) {
                           </select>
                         </label>
 
-                        <label className="form-control md:col-span-2">
+                        <label className="form-control">
                           <div className="label">
                             <span className="label-text">Klik</span>
                           </div>
@@ -442,6 +512,19 @@ export default function Bahan({ bahan, kode }) {
                             className="input input-bordered input-success w-full"
                             required
                             onChange={(e) => setData("klik", e.target.value)}
+                          />
+                        </label>
+
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Harga</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.harga ? formatRupiah(data.harga) : ""}
+                            className="input input-bordered input-success w-full"
+                            placeholder="Rp 0"
+                            onChange={handleHargaInput}
                           />
                         </label>
                       </div>
@@ -489,13 +572,14 @@ export default function Bahan({ bahan, kode }) {
                     <th>Jenis Bahan</th>
                     <th>Klik</th>
                     <th>Perhitungan</th>
+                    <th>Harga</th>
                   </tr>
                 </thead>
                 <tbody>
                   {bahan.map((item, index) => (
                     <tr
                       key={item.id}
-                      onClick={() => openModalEdit(item.id, item.kode, item.bahan, item.kategori, item.satuan, item.jenis, item.kategori_cetak, item.jenis_bahan, item.klik, item.cara_perhitungan)}
+                      onClick={() => openModalEdit(item.id, item.kode, item.bahan, item.kategori, item.satuan, item.jenis, item.kategori_cetak, item.jenis_bahan, item.klik, item.harga, item.cara_perhitungan)}
                       className="cursor-pointer hover:bg-base-200"
                     >
                       <td>{index + 1}</td>
@@ -508,6 +592,7 @@ export default function Bahan({ bahan, kode }) {
                       <td>{item.jenis_bahan}</td>
                       <td>{item.klik}</td>
                       <td>{item.cara_perhitungan}</td>
+                      <td>{item.harga ? 'Rp ' + formatRupiah(item.harga) : '-'}</td>
                     </tr>
                   ))}
                 </tbody>

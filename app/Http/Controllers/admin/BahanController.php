@@ -28,6 +28,7 @@ class BahanController extends Controller
         $bh->kategori_cetak = $request->kategori_cetak;
         $bh->jenis_bahan = $request->jenis_bahan;
         $bh->klik = $request->klik;
+        $bh->harga = $request->harga;
         $bh->cara_perhitungan = $request->cara_perhitungan;
         $bh->save();
 
@@ -45,6 +46,7 @@ class BahanController extends Controller
         $bh->kategori_cetak = $request->kategori_cetak;
         $bh->jenis_bahan = $request->jenis_bahan;
         $bh->klik = $request->klik;
+        $bh->harga = $request->harga;
         $bh->cara_perhitungan = $request->cara_perhitungan;
         $bh->update();
 

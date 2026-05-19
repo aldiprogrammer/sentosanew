@@ -2,6 +2,8 @@ import AdminLayout from "@/Layouts/AdminLayout";
 import { Link, useForm } from "@inertiajs/react";
 import axios from "axios";
 import React, { useRef } from "react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function Desain({
   customer,
@@ -127,6 +129,22 @@ export default function Desain({
     return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   }
 
+  const exportPDF = () => {
+    try {
+      const doc = new jsPDF("l", "mm", "a4");
+      doc.setFontSize(16);
+      doc.text("Data Desain", 14, 20);
+      doc.setFontSize(10);
+      doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
+      const rows = desain.map((item, index) => [index + 1, item.tanggal, item.no_antrian, item.kode_spk, item.customer.nama, item.kategoridesain.kategori, item.qty, item.total_harga ? "Rp " + formatRupiah(String(item.total_harga)) : "-"]);
+      autoTable(doc, { startY: 32, head: [["No", "Tgl", "No Antrian", "Kode SPK", "Customer", "Desain", "Qty", "Total Harga"]], body: rows, styles: { fontSize: 8 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
+      doc.save("data_desain.pdf");
+    } catch (error) {
+      console.error("Gagal export PDF:", error);
+      alert("Gagal mengexport PDF: " + error.message);
+    }
+  };
+
   return (
     <>
       <AdminLayout>
@@ -136,6 +154,9 @@ export default function Desain({
               <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
                 <h2 class="card-title">Data Desain</h2>
                 <div class="flex gap-2">
+                  <button className="btn btn-primary" onClick={exportPDF}>
+                    <i className="fas fa-file-pdf"></i> Export PDF
+                  </button>
                   <button className="btn btn-success" onClick={openModal}>
                     <i className="fas fa-plus"></i>
                     Tambah Desain
