@@ -82,6 +82,7 @@ export default function Suplayer({ suplayer, kode }) {
     const hapus = (id) => {
         if (confirm('Yakin ingin menghapus')) {
             destroy('/suplayer/' + id);
+            closeModalEdit();
         }
     };
 

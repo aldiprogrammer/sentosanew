@@ -53,6 +53,7 @@ export default function Desain({
     kategori,
     harga,
     qty,
+    total_harga,
   ) => {
     editmodalRef.current.showModal();
     setData({
@@ -66,6 +67,7 @@ export default function Desain({
       kategori: kategori,
       harga: harga,
       qty: qty,
+      total_harga: total_harga,
     });
   };
 
@@ -88,6 +90,7 @@ export default function Desain({
   const hapus = (id) => {
     if (confirm("Yakin ingin menghapus")) {
       destroy("/desain/" + id);
+      closeModalEdit();
     }
   };
 
@@ -106,7 +109,7 @@ export default function Desain({
     try {
       const response = await axios.get("/customer/" + id);
       setData("kategori", response.data.kategori);
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const handleKategori = async (id) => {
@@ -115,7 +118,7 @@ export default function Desain({
       const response = await axios.get("/kategoridesain/" + id);
       console.log(response.data);
       setData("harga", response.data.harga);
-    } catch (error) {}
+    } catch (error) { }
   };
 
   function formatRupiah(value) {
@@ -243,41 +246,57 @@ export default function Desain({
                             </select>
                           </label>
 
-                           <label className="form-control w-full mt-2">
-                             <div className="label">
-                               <span className="label-text">Harga</span>
-                             </div>
-                             <input
-                               type="text"
-                               name="nama"
-                               value={data.harga ? formatRupiah(data.harga) : ""}
-                               className="input input-bordered input-success w-full"
-                               required
-                             />
-                           </label>
+                          <label className="form-control w-full mt-2">
+                            <div className="label">
+                              <span className="label-text">Harga</span>
+                            </div>
+                            <input
+                              type="text"
+                              name="nama"
+                              value={data.harga ? formatRupiah(data.harga) : ""}
+                              className="input input-bordered input-success w-full"
+                              required
+                            />
+                          </label>
 
-                           <label className="form-control w-full mt-2">
-                             <div className="label">
-                               <span className="label-text">QTY</span>
-                             </div>
-                             <input
-                               type="number"
-                               value={data.qty}
-                               className="input input-bordered input-success w-full"
-                               required
-                               onChange={(e) => setData("qty", e.target.value)}
-                             />
-                           </label>
-                         </div>
+                          <label className="form-control w-full mt-2">
+                            <div className="label">
+                              <span className="label-text">QTY</span>
+                            </div>
+                            <input
+                              type="number"
+                              value={data.qty}
+                              className="input input-bordered input-success w-full"
+                              required
+                              onChange={(e) => setData("qty", e.target.value)}
+                            />
+                          </label>
 
-                         <div className="mt-4 flex gap-2">
-                           <button
-                             type="submit"
-                             disabled={processing}
-                             className="btn btn-success"
-                           >
-                             <i className="fas fa-file"></i> Simpan
-                           </button>
+                          <label className="form-control w-full mt-2">
+                            <div className="label">
+                              <span className="label-text">Total Harga</span>
+                            </div>
+                            <input
+                              type="text"
+                              value={
+                                data.harga && data.qty
+                                  ? "Rp " + formatRupiah(String(Number(data.harga) * Number(data.qty)))
+                                  : "Rp 0"
+                              }
+                              className="input input-bordered input-success w-full font-bold"
+                              readOnly
+                            />
+                          </label>
+                        </div>
+
+                        <div className="mt-4 flex gap-2">
+                          <button
+                            type="submit"
+                            disabled={processing}
+                            className="btn btn-success"
+                          >
+                            <i className="fas fa-file"></i> Simpan
+                          </button>
                           <Link href="/customer" className="btn btn-warning">
                             Tambah Customer
                           </Link>
@@ -402,58 +421,74 @@ export default function Desain({
                             </select>
                           </label>
 
-                           <label className="form-control w-full mt-2">
-                             <div className="label">
-                               <span className="label-text">Harga</span>
-                             </div>
-                             <input
-                               type="text"
-                               name="nama"
-                               value={data.harga ? formatRupiah(data.harga) : ""}
-                               className="input input-bordered input-success w-full"
-                               required
-                             />
-                           </label>
+                          <label className="form-control w-full mt-2">
+                            <div className="label">
+                              <span className="label-text">Harga</span>
+                            </div>
+                            <input
+                              type="text"
+                              name="nama"
+                              value={data.harga ? formatRupiah(data.harga) : ""}
+                              className="input input-bordered input-success w-full"
+                              required
+                            />
+                          </label>
 
-                           <label className="form-control w-full mt-2">
-                             <div className="label">
-                               <span className="label-text">QTY</span>
-                             </div>
-                             <input
-                               type="number"
-                               value={data.qty}
-                               className="input input-bordered input-success w-full"
-                               required
-                               onChange={(e) => setData("qty", e.target.value)}
-                             />
-                           </label>
-                         </div>
+                          <label className="form-control w-full mt-2">
+                            <div className="label">
+                              <span className="label-text">QTY</span>
+                            </div>
+                            <input
+                              type="number"
+                              value={data.qty}
+                              className="input input-bordered input-success w-full"
+                              required
+                              onChange={(e) => setData("qty", e.target.value)}
+                            />
+                          </label>
 
-                         <div className="mt-4 flex gap-2">
-                           <button
-                             type="submit"
-                             disabled={processing}
-                             className="btn btn-success"
-                           >
-                             Edit data
-                           </button>
+                          <label className="form-control w-full mt-2">
+                            <div className="label">
+                              <span className="label-text">Total Harga</span>
+                            </div>
+                            <input
+                              type="text"
+                              value={
+                                data.harga && data.qty
+                                  ? "Rp " + formatRupiah(String(Number(data.harga) * Number(data.qty)))
+                                  : "Rp 0"
+                              }
+                              className="input input-bordered input-success w-full font-bold"
+                              readOnly
+                            />
+                          </label>
+                        </div>
 
-                           <button
-                             type="button"
-                             onClick={closeModalEdit}
-                             className="btn btn-warning"
-                           >
-                             Batal
-                           </button>
-                           <button
-                             type="button"
-                             onClick={() => hapus(data.id)}
-                             className="btn btn-error"
-                           >
-                             <i className="fas fa-trash"></i> Hapus
-                           </button>
-                         </div>
-                       </form>
+                        <div className="mt-4 flex gap-2">
+                          <button
+                            type="submit"
+                            disabled={processing}
+                            className="btn btn-success"
+                          >
+                            Edit data
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={closeModalEdit}
+                            className="btn btn-warning"
+                          >
+                            Batal
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => hapus(data.id)}
+                            className="btn btn-error"
+                          >
+                            <i className="fas fa-trash"></i> Hapus
+                          </button>
+                        </div>
+                      </form>
                     </div>
                   </dialog>
                 </div>
@@ -470,6 +505,7 @@ export default function Desain({
                       <th>Customer</th>
                       <th>Desain</th>
                       <th>Qty</th>
+                      <th>Total Harga</th>
                       <th>Desainer</th>
                     </tr>
                   </thead>
@@ -477,7 +513,7 @@ export default function Desain({
                     {desain.map((item, index) => (
                       <tr
                         key={item.id}
-                        onClick={() => openModalEdit(item.id, item.tanggal, item.no_antrian, item.kode_spk, item.id_customer, item.customer.nama, item.id_kategori_desain, item.kategoridesain.kategori, item.kategoridesain.harga, item.qty)}
+                        onClick={() => openModalEdit(item.id, item.tanggal, item.no_antrian, item.kode_spk, item.id_customer, item.customer.nama, item.id_kategori_desain, item.kategoridesain.kategori, item.kategoridesain.harga, item.qty, item.total_harga)}
                         className="cursor-pointer hover:bg-base-200"
                       >
                         <td>{index + 1}</td>
@@ -487,7 +523,8 @@ export default function Desain({
                         <td>{item.customer.nama}</td>
                         <td>{item.kategoridesain.kategori}</td>
                         <td>{item.qty}</td>
-                        <td>32</td>
+                        <td>Rp {formatRupiah(item.total_harga)}</td>
+                        <td>{item.desainer?.username || item.desainer?.username || '-'}</td>
                       </tr>
                     ))}
                   </tbody>

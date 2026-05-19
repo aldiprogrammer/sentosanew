@@ -109,6 +109,7 @@ export default function Produksi({ produksi, desain, bahan }) {
   const hapus = (id) => {
     if (confirm("Yakin ingin menghapus")) {
       destroy("/produksi/" + id);
+      closeModalEdit();
     }
   };
 

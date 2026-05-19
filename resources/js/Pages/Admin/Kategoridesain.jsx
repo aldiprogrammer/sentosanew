@@ -54,6 +54,7 @@ export default function Kategoridesain({ kategori, kode }) {
     const hapus = (id) => {
         if (confirm("Yakin ingin menghapus")) {
             destroy("/kategoridesain/" + id);
+            closeModalEdit();
         }
     }
 

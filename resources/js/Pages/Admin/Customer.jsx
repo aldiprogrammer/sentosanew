@@ -69,6 +69,7 @@ export default function Customer({ customer, kode }) {
     const hapus = (id) => {
         if (confirm("Yakin ingin menghapus")) {
             destroy("/customer/" + id);
+            closeModalEdit();
         }
 
     }
@@ -401,9 +402,9 @@ export default function Customer({ customer, kode }) {
                                 <tbody>
                                     {customer.map((item, index) => (
                                         <tr
-                                          key={item.id}
-                                          onClick={() => openModalEdit(item.id, item.nama, item.alamat, item.kode, item.nohp, item.kategori, item.limit)}
-                                          className="cursor-pointer hover:bg-base-200"
+                                            key={item.id}
+                                            onClick={() => openModalEdit(item.id, item.nama, item.alamat, item.kode, item.nohp, item.kategori, item.limit)}
+                                            className="cursor-pointer hover:bg-base-200"
                                         >
                                             <td>{index + 1}</td>
                                             <td>{item.kode}</td>

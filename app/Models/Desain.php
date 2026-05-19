@@ -15,4 +15,9 @@ class Desain extends Model
     {
         return $this->belongsTo(Kategoridesain::class, 'id_kategori_desain');
     }
+
+    public function desainer()
+    {
+        return $this->belongsTo(Pengguna::class, 'id_desain');
+    }
 }

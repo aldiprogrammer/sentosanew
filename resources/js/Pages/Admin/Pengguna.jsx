@@ -56,6 +56,7 @@ export default function Pengguna({ pengguna, jabatan }) {
   const hapus = (id) => {
     if (confirm("Yakin ingin menghapus")) {
       destroy("/pengguna/" + id);
+      closeModalEdit();
     }
   };
 

@@ -13,7 +13,7 @@ class DesainController extends Controller
 {
     public function index()
     {
-        $desain = Desain::with('customer', 'kategoridesain')->get();
+        $desain = Desain::with('customer', 'kategoridesain', 'desainer')->get();
 
         $kategoridesain = Kategoridesain::all();
         $customer = Customer::all();
@@ -35,6 +35,10 @@ class DesainController extends Controller
 
     public function store(Request $request)
     {
+        $kategori = Kategoridesain::find($request->id_kategori_desain);
+        $harga = $kategori->harga ?? 0;
+        $total_harga = $harga * $request->qty;
+
         $cs = new Desain;
         $cs->no_antrian = $request->kodeantiran;
         $cs->kode_spk = $request->kodespk;
@@ -42,7 +46,8 @@ class DesainController extends Controller
         $cs->id_customer = $request->id_customer;
         $cs->id_kategori_desain = $request->id_kategori_desain;
         $cs->qty = $request->qty;
-        $cs->id_desain = 1;
+        $cs->total_harga = $total_harga;
+        $cs->id_desain = auth()->id();
         $cs->status = 0;
         $cs->save();
 
@@ -51,12 +56,16 @@ class DesainController extends Controller
 
     public function update(Request $request, $id)
     {
-        $cs = Desain::find($id);
+        $kategori = Kategoridesain::find($request->id_kategori_desain);
+        $harga = $kategori->harga ?? 0;
+        $total_harga = $harga * $request->qty;
 
+        $cs = Desain::find($id);
         $cs->id_customer = $request->id_customer;
         $cs->id_kategori_desain = $request->id_kategori_desain;
         $cs->qty = $request->qty;
-        $cs->id_desain = 1;
+        $cs->total_harga = $total_harga;
+        $cs->id_desain = auth()->id();
         $cs->update();
 
         return redirect()->back()->with('success', 'Data berhasil diubah');

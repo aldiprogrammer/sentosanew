@@ -69,6 +69,7 @@ export default function Distributor({ ds, kode }) {
   const hapus = (id) => {
     if (confirm("Yakin ingin menghapus")) {
       destroy("/distributor/" + id);
+      closeModalEdit();
     }
   };
 

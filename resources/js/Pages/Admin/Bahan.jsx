@@ -80,6 +80,7 @@ export default function Bahan({ bahan, kode }) {
   const hapus = (id) => {
     if (confirm("Yakin ingin menghapus")) {
       destroy("/bahan/" + id);
+      closeModalEdit();
     }
   };
 

@@ -5,6 +5,7 @@ use App\Http\Controllers\admin\CustomerController;
 use App\Http\Controllers\admin\DashboardController;
 use App\Http\Controllers\admin\DesainController;
 use App\Http\Controllers\admin\DistributorController;
+use App\Http\Controllers\admin\HomeController;
 use App\Http\Controllers\admin\JabatanController;
 use App\Http\Controllers\admin\KategoriDesainController;
 use App\Http\Controllers\admin\KurirController;
@@ -16,14 +17,16 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+// Route::get('/', function () {
+//     return Inertia::render('Welcome', [
+//         'canLogin' => Route::has('login'),
+//         'canRegister' => Route::has('register'),
+//         'laravelVersion' => Application::VERSION,
+//         'phpVersion' => PHP_VERSION,
+//     ]);
+// });
+
+Route::get('/', [HomeController::class, 'index'])->name('app');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
@@ -89,4 +92,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/suplayer/{id}', [SuplayerController::class, 'delete'])->name('delete.suplayer');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

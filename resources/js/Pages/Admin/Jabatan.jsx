@@ -49,6 +49,7 @@ export default function Jabatan({ jabatan, kode }) {
     const hapus = (id) => {
         if (confirm("Yakin ingin menghapus")) {
             destroy("/jabatan/" + id);
+            closeModalEdit();
         }
     }
 
@@ -253,9 +254,9 @@ export default function Jabatan({ jabatan, kode }) {
                                 <tbody>
                                     {jabatan.map((item, index) => (
                                         <tr
-                                          key={item.id}
-                                          onClick={() => openModalEdit(item.id, item.jabatan, item.kode)}
-                                          className="cursor-pointer hover:bg-base-200"
+                                            key={item.id}
+                                            onClick={() => openModalEdit(item.id, item.jabatan, item.kode)}
+                                            className="cursor-pointer hover:bg-base-200"
                                         >
                                             <td>{index + 1}</td>
                                             <td>{item.kode}</td>

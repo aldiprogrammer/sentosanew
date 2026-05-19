@@ -59,6 +59,7 @@ export default function Kurir({ kurir, kode }) {
   const hapus = (id) => {
     if (confirm("Yakin ingin menghapus")) {
       destroy("/kurir/" + id);
+      closeModalEdit();
     }
   };
 
@@ -71,6 +72,13 @@ export default function Kurir({ kurir, kode }) {
       },
     });
   };
+
+  function formatPhone(value) {
+    const digits = value.replace(/\D/g, '').slice(0, 13);
+    if (digits.length <= 4) return digits;
+    if (digits.length <= 8) return digits.slice(0, 4) + '-' + digits.slice(4);
+    return digits.slice(0, 4) + '-' + digits.slice(4, 8) + '-' + digits.slice(8);
+  }
 
   return (
     <AdminLayout>
@@ -130,8 +138,8 @@ export default function Kurir({ kurir, kode }) {
                           <span className="label-text">No Hp</span>
                         </div>
                         <input
-                          type="number"
-                          value={data.nohp}
+                          type="text"
+                          value={formatPhone(data.nohp)}
                           className="input input-bordered input-success w-full"
                           required
                           onChange={(e) => setData("nohp", e.target.value)}
