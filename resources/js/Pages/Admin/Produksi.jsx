@@ -23,6 +23,7 @@ export default function Produksi({ produksi, desain, bahan }) {
     id_customer: "",
     customer: "",
     id_bahan: "",
+    id_kategori_desain: '',
     bahan: "",
     keterangan: "",
     satuan: "",
@@ -61,6 +62,7 @@ export default function Produksi({ produksi, desain, bahan }) {
       no_antrian: pd.no_antrian,
       kode_spk: pd.kode_spk,
       id_customer: pd.id_customer,
+      id_kategori_desain: pd.id_kategori_desain,
       customer: pd.customer.nama,
       bahan: pd.bahan.bahan,
       alamat: pd.customer.alamat,
@@ -145,6 +147,7 @@ export default function Produksi({ produksi, desain, bahan }) {
       kode_spk: ds.kode_spk,
       alamat: ds.customer.alamat,
       customer: ds.customer.nama,
+      id_kategori_desain: ds.id_kategori_desain
     }));
   };
 

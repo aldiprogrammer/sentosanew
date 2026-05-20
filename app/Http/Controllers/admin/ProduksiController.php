@@ -24,6 +24,14 @@ class ProduksiController extends Controller
 
     public function store(Request $request)
     {
+
+        $bahan = Bahan::where('id', $request->id_bahan)->first();
+        if ($bahan->cara_perhitungan == 'QTY') {
+            $total_harga = $request->qty * $bahan->harga;
+        } elseif ($bahan->cara_perhitungan == 'Luas') {
+            $luas = $request->lebar * $request->tinngi;
+            $total_harga = $luas * $bahan->harga;
+        }
         $pr = new Produksi;
         $pr->tanggal = date('Y-m-d');
         $pr->id_customer = $request->id_customer;
@@ -31,12 +39,16 @@ class ProduksiController extends Controller
         $pr->no_antrian = $request->no_antrian;
         $pr->kode_spk = $request->kode_spk;
         $pr->id_bahan = $request->id_bahan;
+        $pr->id_kategori_desain = $request->id_kategori_desain;
         $pr->keterangan = $request->keterangan;
         $pr->satuan = $request->satuan;
         $pr->lebar = $request->lebar;
         $pr->tinggi = $request->tinggi;
         $pr->qty = $request->qty;
         $pr->sisi = $request->sisi ?? '1 SISI';
+        $pr->cara_perhitungan = $bahan->cara_perhitungan;
+        $pr->harga_bahan = $bahan->harga;
+        $pr->total_harga = $total_harga;
         $pr->catatan = '1';
         $pr->metode_pengantaran = $request->metode_pengambilan;
         $pr->tgl_kirim = $request->tgl_kirim;
@@ -76,6 +88,7 @@ class ProduksiController extends Controller
         $pr->no_antrian = $request->no_antrian;
         $pr->kode_spk = $request->kode_spk;
         $pr->id_bahan = $request->id_bahan;
+        $pr->id_kategori_desain = $request->id_kategori_desain;
         $pr->keterangan = $request->keterangan;
         $pr->satuan = $request->satuan;
         $pr->lebar = $request->lebar;
