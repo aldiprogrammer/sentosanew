@@ -12,6 +12,7 @@ use App\Http\Controllers\admin\KurirController;
 use App\Http\Controllers\admin\PenggunaController;
 use App\Http\Controllers\admin\ProduksiController;
 use App\Http\Controllers\admin\SuplayerController;
+use App\Http\Controllers\produksi\ProduksiController as ProduksiProduksiController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -90,6 +91,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/suplayer', [SuplayerController::class, 'store'])->name('store.suplayer');
     Route::put('/suplayer/{id}', [SuplayerController::class, 'update'])->name('update.suplayer');
     Route::delete('/suplayer/{id}', [SuplayerController::class, 'delete'])->name('delete.suplayer');
+
+    Route::get('/produksi/produksi', [ProduksiProduksiController::class, 'index'])->name('produksi.produksi');
+    Route::put('/produksi/produksi/{id}/proses', [ProduksiProduksiController::class, 'proses'])->name('produksi.produksi');
 });
 
 require __DIR__ . '/auth.php';
