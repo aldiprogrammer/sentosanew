@@ -12,7 +12,7 @@ class CustomerController extends Controller
     public function index()
     {
         $customer = Customer::all();
-        $kode = 'CS-'.rand(0, 100000);
+        $kode = $this->kodeCustomer();
 
         return Inertia::render('Admin/Customer', compact('customer', 'kode'));
     }
@@ -27,7 +27,7 @@ class CustomerController extends Controller
     public function store(Request $request)
     {
         $cs = new Customer;
-        $cs->kode = $request->kode;
+        $cs->kode = $request->kode ?: $this->kodeCustomer();
         $cs->nama = $request->nama;
         $cs->alamat = $request->alamat;
         $cs->nohp = str_replace('-', '', $request->nohp);
@@ -58,5 +58,10 @@ class CustomerController extends Controller
         $cs->delete();
 
         return redirect()->back()->with('success', 'Data berhasil diubah');
+    }
+
+    private function kodeCustomer()
+    {
+        return 'CS-' . rand(100, 999);
     }
 }

@@ -1,10 +1,13 @@
 import AdminLayout from "@/Layouts/AdminLayout";
-import { Link, useForm } from "@inertiajs/react";
+import NewCustomerModal from "@/Components/NewCustomerModal";
+import { useForm } from "@inertiajs/react";
 import React, { useRef } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
-export default function Produksi({ produksi, desain, bahan }) {
+export default function Produksi({ produksi, desain, bahan, customer, kode_antrian, kodespk }) {
+  const today = new Date().toISOString().split("T")[0];
+
   const {
     data,
     setData,
@@ -17,7 +20,7 @@ export default function Produksi({ produksi, desain, bahan }) {
     id: 0,
     id_desain: "",
     no_antrian: "",
-    kode_spk: "",
+    kode_spk: kodespk,
     alamat: "",
     tanggal: "",
     id_customer: "",
@@ -44,13 +47,22 @@ export default function Produksi({ produksi, desain, bahan }) {
   });
 
   const modalRef = useRef(null);
+  const customerModalRef = useRef(null);
   const openModal = () => {
     modalRef.current.showModal();
-    setData("kode", kode);
   };
 
   const closeModal = () => {
     modalRef.current.close();
+  };
+
+  const openCustomerModal = () => {
+    modalRef.current.close();
+    customerModalRef.current.showModal();
+  };
+
+  const reopenModal = () => {
+    modalRef.current.showModal();
   };
 
   const editmodalRef = useRef(null);
@@ -59,6 +71,7 @@ export default function Produksi({ produksi, desain, bahan }) {
     const pd = produksi.find((item) => item.id === Number(id));
     setData({
       id: id,
+      id_desain: pd.id_desain,
       no_antrian: pd.no_antrian,
       kode_spk: pd.kode_spk,
       id_customer: pd.id_customer,
@@ -135,19 +148,22 @@ export default function Produksi({ produksi, desain, bahan }) {
     setData(name, value);
   };
 
-  const handleCustomer = (e) => {
-    const ds = desain.find((item) => item.id === Number(e));
-    if (!ds) return;
+  const handleCustomer = (idCustomer) => {
+    const cs = customer.find((item) => item.id === Number(idCustomer));
+    const ds = desain.find(
+      (item) => Number(item.id_customer) === Number(idCustomer)
+    );
+
+    if (!cs) return;
 
     setData((prev) => ({
       ...prev,
-      id_desain: e,
-      id_customer: ds.id_customer,
-      no_antrian: ds.no_antrian,
-      kode_spk: ds.kode_spk,
-      alamat: ds.customer.alamat,
-      customer: ds.customer.nama,
-      id_kategori_desain: ds.id_kategori_desain
+      id_desain: ds?.id ?? "",
+      id_customer: cs.id,
+      no_antrian: ds?.no_antrian ?? kode_antrian,
+      alamat: cs.alamat,
+      customer: cs.nama,
+      id_kategori_desain: ds?.id_kategori_desain ?? "0",
     }));
   };
 
@@ -214,9 +230,9 @@ export default function Produksi({ produksi, desain, bahan }) {
                                   required
                                 >
                                   <option value="">Pilih Customer</option>
-                                  {desain.map((ds, index) => (
+                                  {customer.map((ds, index) => (
                                     <option value={ds.id}>
-                                      {ds.customer.nama}
+                                      {ds.nama}
                                     </option>
                                   ))}
                                 </select>
@@ -231,7 +247,7 @@ export default function Produksi({ produksi, desain, bahan }) {
                                 </div>
                                 <input
                                   type="text"
-                                  name="kode_antrian"
+                                  name="no_antrian"
                                   value={data.no_antrian}
                                   onChange={handleChange}
                                   className="input input-bordered input-success w-full"
@@ -247,7 +263,7 @@ export default function Produksi({ produksi, desain, bahan }) {
                                 </div>
                                 <input
                                   type="text"
-                                  name="no_spk"
+                                  name="kode_spk"
                                   value={data.kode_spk}
                                   onChange={handleChange}
                                   className="input input-bordered input-success w-full"
@@ -278,7 +294,7 @@ export default function Produksi({ produksi, desain, bahan }) {
                               </div>
                               <input
                                 type="date"
-                                value={new Date().toISOString().split("T")[0]}
+                                value={today}
                                 className="input input-bordered input-success w-full"
                                 disabled
                               />
@@ -549,6 +565,14 @@ export default function Produksi({ produksi, desain, bahan }) {
 
                           <button
                             type="button"
+                            onClick={openCustomerModal}
+                            className="btn btn-warning"
+                          >
+                            Tambah Customer
+                          </button>
+
+                          <button
+                            type="button"
                             onClick={closeModal}
                             className="btn btn-error"
                           >
@@ -558,6 +582,12 @@ export default function Produksi({ produksi, desain, bahan }) {
                       </form>
                     </div>
                   </dialog>
+
+                  <NewCustomerModal
+                    modalRef={customerModalRef}
+                    onCancel={reopenModal}
+                    onSuccess={reopenModal}
+                  />
 
                   {/* Dialog Edi */}
                   <dialog ref={editmodalRef} className="modal">
@@ -593,9 +623,9 @@ export default function Produksi({ produksi, desain, bahan }) {
                                   <option value={data.id_customer}>
                                     {data.customer}
                                   </option>
-                                  {desain.map((ds, index) => (
+                                  {customer.map((ds, index) => (
                                     <option value={ds.id}>
-                                      {ds.customer.nama}
+                                      {ds.nama}
                                     </option>
                                   ))}
                                 </select>
@@ -610,7 +640,7 @@ export default function Produksi({ produksi, desain, bahan }) {
                                 </div>
                                 <input
                                   type="text"
-                                  name="kode_antrian"
+                                  name="no_antrian"
                                   value={data.no_antrian}
                                   onChange={handleChange}
                                   className="input input-bordered input-success w-full"
@@ -626,7 +656,7 @@ export default function Produksi({ produksi, desain, bahan }) {
                                 </div>
                                 <input
                                   type="text"
-                                  name="no_spk"
+                                  name="kode_spk"
                                   value={data.kode_spk}
                                   onChange={handleChange}
                                   className="input input-bordered input-success w-full"
@@ -657,7 +687,7 @@ export default function Produksi({ produksi, desain, bahan }) {
                               </div>
                               <input
                                 type="date"
-                                value={new Date().toISOString().split("T")[0]}
+                                value={today}
                                 className="input input-bordered input-success w-full"
                                 disabled
                               />

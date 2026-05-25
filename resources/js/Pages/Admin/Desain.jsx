@@ -1,5 +1,6 @@
 import AdminLayout from "@/Layouts/AdminLayout";
-import { Link, useForm } from "@inertiajs/react";
+import NewCustomerModal from "@/Components/NewCustomerModal";
+import { useForm } from "@inertiajs/react";
 import axios from "axios";
 import React, { useRef } from "react";
 import { jsPDF } from "jspdf";
@@ -35,12 +36,22 @@ export default function Desain({
     tanggal: tanggal,
   });
   const modalRef = useRef(null);
+  const customerModalRef = useRef(null);
   const openModal = () => {
     modalRef.current.showModal();
   };
 
   const closeModal = () => {
     modalRef.current.close();
+  };
+
+  const openCustomerModal = () => {
+    modalRef.current.close();
+    customerModalRef.current.showModal();
+  };
+
+  const reopenModal = () => {
+    modalRef.current.showModal();
   };
 
   const editmodalRef = useRef(null);
@@ -190,25 +201,12 @@ export default function Desain({
                           </label>
                           <label className="form-control w-full mt-2">
                             <div className="label">
-                              <span className="label-text">Kode Antrian</span>
+                              <span className="label-text">No Antrian</span>
                             </div>
                             <input
                               type="text"
                               name="kode"
                               value={kode_antrian}
-                              className="input input-bordered input-success w-full"
-                              required
-                            />
-                          </label>
-
-                          <label className="form-control w-full mt-2">
-                            <div className="label">
-                              <span className="label-text">Kode SPK</span>
-                            </div>
-                            <input
-                              type="text"
-                              name="kode"
-                              value={kodespk}
                               className="input input-bordered input-success w-full"
                               required
                             />
@@ -234,7 +232,7 @@ export default function Desain({
 
                           <label className="form-control w-full mt-2">
                             <div className="label">
-                              <span className="label-text">Kategori</span>
+                              <span className="label-text">Kategori Customer</span>
                             </div>
                             <input
                               type="text"
@@ -318,9 +316,13 @@ export default function Desain({
                           >
                             <i className="fas fa-file"></i> Simpan
                           </button>
-                          <Link href="/customer" className="btn btn-warning">
+                          <button
+                            type="button"
+                            onClick={openCustomerModal}
+                            className="btn btn-warning"
+                          >
                             Tambah Customer
-                          </Link>
+                          </button>
 
                           <button
                             type="button"
@@ -333,6 +335,12 @@ export default function Desain({
                       </form>
                     </div>
                   </dialog>
+
+                  <NewCustomerModal
+                    modalRef={customerModalRef}
+                    onCancel={reopenModal}
+                    onSuccess={reopenModal}
+                  />
 
                   {/* Dialog Edi */}
                   <dialog ref={editmodalRef} className="modal">
@@ -374,7 +382,7 @@ export default function Desain({
                             />
                           </label>
 
-                          <label className="form-control w-full mt-2">
+                          {/* <label className="form-control w-full mt-2">
                             <div className="label">
                               <span className="label-text">Kode SPK</span>
                             </div>
@@ -385,7 +393,7 @@ export default function Desain({
                               className="input input-bordered input-success w-full"
                               required
                             />
-                          </label>
+                          </label> */}
 
                           <label className="form-control w-full mt-2">
                             <div className="label">
@@ -522,7 +530,7 @@ export default function Desain({
                       <th>No</th>
                       <th>Tgl</th>
                       <th>No Antrian</th>
-                      <th>Kode SPK</th>
+                      {/* <th>Kode SPK</th> */}
                       <th>Customer</th>
                       <th>Desain</th>
                       <th>Qty</th>
@@ -540,7 +548,7 @@ export default function Desain({
                         <td>{index + 1}</td>
                         <td>{item.tanggal}</td>
                         <td>{item.no_antrian}</td>
-                        <td>{item.kode_spk}</td>
+                        {/* <td>{item.kode_spk}</td> */}
                         <td>{item.customer.nama}</td>
                         <td>{item.kategoridesain.kategori}</td>
                         <td>{item.qty}</td>

@@ -3,10 +3,12 @@ import React from 'react'
 
 export default function AdminLayout({ children }) {
     const { auth } = usePage().props
-    const role = String(auth?.user?.role || '').toLowerCase()
+    const role = String(auth?.user?.role || '').toLowerCase().trim()
+    const compactRole = role.replace(/\s+/g, '')
     const isAdmin = role === 'admin'
     const isDesain = role === 'desain' || role === 'desainer'
     const isProduksi = role === 'produksi'
+    const isCustomerService = role === 'customer service' || compactRole === 'customerservice' || role === 'cs'
     const showAdminMenus = isAdmin
     const showDesainMenus = isAdmin || isDesain
     const showProduksiMenus = isAdmin || isProduksi
@@ -109,7 +111,7 @@ export default function AdminLayout({ children }) {
                             <li>
                                 <Link href={route('customer')} className="rounded-xl">
                                     <i className="fas fa-user-tie"></i>
-                                    Customer
+                                    Data Customer
                                 </Link>
                             </li>
                         )}
@@ -163,20 +165,42 @@ export default function AdminLayout({ children }) {
                                 <li>
                                     <Link href={route('desain')} className="rounded-xl">
                                         <i className="fas fa-palette"></i>
-                                        Desain
+                                        Menu Desain
                                     </Link>
                                 </li>
                                 <li>
                                     <Link href={route('produksi')} className="rounded-xl">
                                         <i className="fas fa-industry"></i>
-                                        Produksi
+                                        Menu Produksi
                                     </Link>
                                 </li>
 
                                 <li>
                                     <Link href={route('customer')} className="rounded-xl">
                                         <i className="fas fa-user"></i>
-                                        Customer
+                                        Data Customer
+                                    </Link>
+                                </li>
+                            </>
+                        )}
+                        {isCustomerService && (
+                            <>
+                                <li>
+                                    <Link href={route('customer')} className="rounded-xl">
+                                        <i className="fas fa-user"></i>
+                                        Data Customer
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href={route('desain')} className="rounded-xl">
+                                        <i className="fas fa-palette"></i>
+                                        Menu Desain
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href={route('produksi')} className="rounded-xl">
+                                        <i className="fas fa-industry"></i>
+                                        Menu Produksi
                                     </Link>
                                 </li>
                             </>
