@@ -52,6 +52,8 @@ class ProduksiController extends Controller
         $pr->catatan = '1';
         $pr->metode_pengantaran = $request->metode_pengambilan;
         $pr->tgl_kirim = $request->tgl_kirim;
+        $pr->status_produksi = 0;
+        $pr->status_finishing = 0;
         $pr->save();
 
         if ($request->pinising && $pr->kode_spk) {

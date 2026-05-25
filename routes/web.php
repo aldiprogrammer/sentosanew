@@ -12,6 +12,7 @@ use App\Http\Controllers\admin\KurirController;
 use App\Http\Controllers\admin\PenggunaController;
 use App\Http\Controllers\admin\ProduksiController;
 use App\Http\Controllers\admin\SuplayerController;
+use App\Http\Controllers\produksi\FinishingController;
 use App\Http\Controllers\produksi\ProduksiController as ProduksiProduksiController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -94,6 +95,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/produksi/produksi', [ProduksiProduksiController::class, 'index'])->name('produksi.produksi');
     Route::put('/produksi/produksi/{id}/proses', [ProduksiProduksiController::class, 'proses'])->name('produksi.produksi');
+
+    Route::get('/produksi/finishing', [FinishingController::class, 'index'])->name('finishing.finishing');
+    Route::put('/finishing/finishing/{id}/proses', [FinishingController::class, 'proses'])->name('finishing.finishing');
 });
 
 require __DIR__ . '/auth.php';

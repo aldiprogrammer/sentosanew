@@ -3,7 +3,13 @@ import React from 'react'
 
 export default function AdminLayout({ children }) {
     const { auth } = usePage().props
-    const role = auth?.user?.role
+    const role = String(auth?.user?.role || '').toLowerCase()
+    const isAdmin = role === 'admin'
+    const isDesain = role === 'desain' || role === 'desainer'
+    const isProduksi = role === 'produksi'
+    const showAdminMenus = isAdmin
+    const showDesainMenus = isAdmin || isDesain
+    const showProduksiMenus = isAdmin || isProduksi
 
     const getInitial = (name) => {
         return name?.charAt(0).toUpperCase() || 'U'
@@ -83,13 +89,15 @@ export default function AdminLayout({ children }) {
                     </div>
 
                     <ul className="menu p-4 text-base-content w-full gap-1">
-                        <li>
-                            <Link href={route('home')} className="rounded-xl">
-                                <i className="fas fa-home"></i>
-                                Dashboard
-                            </Link>
-                        </li>
-                        {role !== 'desainer' && (
+                        {showAdminMenus && (
+                            <li>
+                                <Link href={route('home')} className="rounded-xl">
+                                    <i className="fas fa-home"></i>
+                                    Dashboard
+                                </Link>
+                            </li>
+                        )}
+                        {showAdminMenus && (
                             <li>
                                 <Link href={route('pengguna')} className="rounded-xl">
                                     <i className="fas fa-users"></i>
@@ -97,13 +105,15 @@ export default function AdminLayout({ children }) {
                                 </Link>
                             </li>
                         )}
-                        <li>
-                            <Link href={route('customer')} className="rounded-xl">
-                                <i className="fas fa-user-tie"></i>
-                                Customer
-                            </Link>
-                        </li>
-                        {role !== 'desainer' && (
+                        {showAdminMenus && (
+                            <li>
+                                <Link href={route('customer')} className="rounded-xl">
+                                    <i className="fas fa-user-tie"></i>
+                                    Customer
+                                </Link>
+                            </li>
+                        )}
+                        {showAdminMenus && (
                             <li>
                                 <Link href={route('distributor')} className="rounded-xl">
                                     <i className="fas fa-truck"></i>
@@ -111,7 +121,7 @@ export default function AdminLayout({ children }) {
                                 </Link>
                             </li>
                         )}
-                        {role !== 'desainer' && (
+                        {showAdminMenus && (
                             <li>
                                 <Link href={route('kurir')} className="rounded-xl">
                                     <i className="fas fa-shipping-fast"></i>
@@ -119,7 +129,7 @@ export default function AdminLayout({ children }) {
                                 </Link>
                             </li>
                         )}
-                        {role !== 'desainer' && (
+                        {showAdminMenus && (
                             <li>
                                 <Link href={route('suplayer')} className="rounded-xl">
                                     <i className="fas fa-boxes"></i>
@@ -127,7 +137,7 @@ export default function AdminLayout({ children }) {
                                 </Link>
                             </li>
                         )}
-                        {role !== 'desainer' && (
+                        {showAdminMenus && (
                             <li>
                                 <details>
                                     <summary className="rounded-xl">
@@ -148,18 +158,47 @@ export default function AdminLayout({ children }) {
                                 </details>
                             </li>
                         )}
-                        <li>
-                            <Link href={route('desain')} className="rounded-xl">
-                                <i className="fas fa-palette"></i>
-                                Desain
-                            </Link>
-                        </li>
-                        <li>
-                            <Link href={route('produksi')} className="rounded-xl">
-                                <i className="fas fa-industry"></i>
-                                Produksi
-                            </Link>
-                        </li>
+                        {showDesainMenus && (
+                            <>
+                                <li>
+                                    <Link href={route('desain')} className="rounded-xl">
+                                        <i className="fas fa-palette"></i>
+                                        Desain
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href={route('produksi')} className="rounded-xl">
+                                        <i className="fas fa-industry"></i>
+                                        Produksi
+                                    </Link>
+                                </li>
+
+                                <li>
+                                    <Link href={route('customer')} className="rounded-xl">
+                                        <i className="fas fa-user"></i>
+                                        Customer
+                                    </Link>
+                                </li>
+                            </>
+                        )}
+                        {showProduksiMenus && (
+                            <li>
+                                <details open={isProduksi}>
+                                    <summary className="rounded-xl">
+                                        <i className="fas fa-print"></i>
+                                        Proses Produksi
+                                    </summary>
+                                    <ul>
+                                        <li>
+                                            <Link href="/produksi/produksi">Produksi</Link>
+                                        </li>
+                                        <li>
+                                            <Link href="/produksi/finishing">Finishing</Link>
+                                        </li>
+                                    </ul>
+                                </details>
+                            </li>
+                        )}
                     </ul>
                 </aside>
             </div>

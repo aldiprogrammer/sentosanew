@@ -2,11 +2,300 @@ import AdminLayout from '@/Layouts/AdminLayout'
 import { router } from '@inertiajs/react'
 import React, { useRef, useState } from 'react'
 
-export default function Produksi({ produksi }) {
+export default function Finishing({ produksi }) {
     const [selected, setSelected] = useState(null)
     const [filterKategori, setFilterKategori] = useState('')
     const [filterJenisBahan, setFilterJenisBahan] = useState('')
     const modalRef = useRef(null)
+
+    const emptyText = '-'
+
+    const displayText = (value) =>
+        value === null || value === undefined || value === '' ? emptyText : value
+
+    const escapeHtml = (value) =>
+        String(displayText(value))
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;')
+
+    const formatReceiptDate = (date = new Date()) =>
+        new Intl.DateTimeFormat('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        }).format(date)
+
+    const formatReceiptTime = (date = new Date()) =>
+        new Intl.DateTimeFormat('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+        }).format(date)
+
+    const normalizeFinishing = (value) =>
+        String(value || '')
+            .toLowerCase()
+            .replace(/\s/g, '')
+
+    const isSameFinishing = (value, target) =>
+        normalizeFinishing(value) === normalizeFinishing(target)
+
+    const getFinishingTableRows = (item) => {
+        const pinising = item.pinising || {}
+        const mataAyam = item.mata_ayam || item.mataAyam || {}
+        const sides = [
+            ['atas', 'A'],
+            ['bawah', 'B'],
+            ['kanan', 'Ka'],
+            ['kiri', 'Ki'],
+        ]
+        const rows = [
+            ['Kentering', 'Kentering'],
+            ['Lipat Pas Gbr', 'Lipat Pas Gambar'],
+            ['Potong Pas Gbr', 'Potong Pas Gambar'],
+            ['Lipat Sisa Putih', 'Lipat Sisa Putih'],
+        ].map(([label, target]) => [
+            label,
+            ...sides.map(([key]) => (isSameFinishing(pinising[key], target) ? 'v' : '')),
+        ])
+
+        rows.push([
+            'Mata Ayam',
+            ...sides.map(([key]) => (mataAyam[key] ? 'v' : '')),
+        ])
+
+        return rows
+    }
+
+    const buildReceiptHtml = (item) => {
+        const printedAt = new Date()
+        const finishingRows = getFinishingTableRows(item)
+            .map(
+                ([label, atas, bawah, kanan, kiri]) => `
+                    <tr>
+                        <td class="finish-label">${escapeHtml(label)}</td>
+                        <td>${escapeHtml(atas)}</td>
+                        <td>${escapeHtml(bawah)}</td>
+                        <td>${escapeHtml(kanan)}</td>
+                        <td>${escapeHtml(kiri)}</td>
+                    </tr>
+                `
+            )
+            .join('')
+
+        return `
+            <!doctype html>
+            <html>
+                <head>
+                    <title>Struk Finishing ${escapeHtml(item.kode_spk)}</title>
+                    <style>
+                        @page {
+                            size: 76mm auto;
+                            margin: 2mm;
+                        }
+
+                        * {
+                            box-sizing: border-box;
+                        }
+
+                        body {
+                            width: 72mm;
+                            margin: 0;
+                            color: #000;
+                            font-family: "Courier New", monospace;
+                            font-size: 10.5px;
+                            line-height: 1.2;
+                        }
+
+                        .receipt {
+                            width: 72mm;
+                            padding: 0 1mm;
+                        }
+
+                        .brand {
+                            text-align: center;
+                            font-size: 18px;
+                            font-weight: 700;
+                            letter-spacing: 1px;
+                            line-height: 1;
+                        }
+
+                        .tagline,
+                        .phone {
+                            text-align: center;
+                            font-size: 10px;
+                            font-weight: 700;
+                        }
+
+                        .spk-row {
+                            display: flex;
+                            justify-content: space-between;
+                            gap: 4mm;
+                            margin-top: 8px;
+                            font-size: 15px;
+                            font-weight: 700;
+                        }
+
+                        .section-title {
+                            margin-top: 6px;
+                            font-size: 12px;
+                            font-weight: 700;
+                        }
+
+                        .line {
+                            border-top: 1px solid #000;
+                            margin: 5px 0 4px;
+                        }
+
+                        .row {
+                            display: grid;
+                            grid-template-columns: 9mm 3mm 18mm 9mm 3mm 1fr;
+                            gap: 0;
+                            margin-bottom: 3px;
+                        }
+
+                        .customer,
+                        .description,
+                        .note {
+                            overflow-wrap: anywhere;
+                            font-size: 12px;
+                            font-weight: 700;
+                        }
+
+                        .material {
+                            overflow-wrap: anywhere;
+                            font-weight: 700;
+                        }
+
+                        .design {
+                            margin: 4px 0;
+                            padding-left: 4mm;
+                            overflow-wrap: anywhere;
+                        }
+
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 3px;
+                            table-layout: fixed;
+                        }
+
+                        th,
+                        td {
+                            border: 1px solid #000;
+                            padding: 3px 2px;
+                            text-align: center;
+                            vertical-align: top;
+                            overflow-wrap: anywhere;
+                        }
+
+                        th {
+                            font-weight: 700;
+                        }
+
+                        .finish-label {
+                            width: 32mm;
+                            text-align: left;
+                        }
+
+                        .footer {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-top: 20px;
+                            font-size: 10px;
+                        }
+
+                        .bottom-spk {
+                            margin-top: 12px;
+                            font-size: 15px;
+                            font-weight: 700;
+                        }
+
+                        .label-row {
+                            margin-top: 6px;
+                            font-size: 12px;
+                            font-weight: 700;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="receipt">
+                        <div class="brand">SENTOSA</div>
+                        <div class="tagline">DIGITAL PRINTING</div>
+                        <div class="phone">081 - 7368007</div>
+
+                        <div class="spk-row">
+                            <span>${escapeHtml(item.kode_spk)}</span>
+                            <span>${escapeHtml(formatReceiptDate(printedAt))}</span>
+                        </div>
+
+                        <div class="section-title">Pelanggan :</div>
+                        <div class="customer">${escapeHtml(item.customer?.nama)}</div>
+
+                        <div class="section-title">Keterangan</div>
+                        <div class="line"></div>
+                        <div class="material">${escapeHtml(item.bahan?.kode)} ${escapeHtml(item.bahan?.bahan)}</div>
+                        <div class="design">Desain : ${escapeHtml(item.keterangan)}</div>
+                        <div class="row">
+                            <span>W</span><span>:</span><strong>${escapeHtml(item.lebar)}</strong>
+                            <span>H</span><span>:</span><strong>${escapeHtml(item.tinggi)} ${escapeHtml(item.satuan)}</strong>
+                        </div>
+                        <div class="row">
+                            <span>Qty</span><span>:</span><strong>${escapeHtml(item.qty)}</strong>
+                            <span></span><span></span><strong></strong>
+                        </div>
+
+                        <div class="section-title">Finishingan :</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="finish-label"></th>
+                                    <th>A</th>
+                                    <th>B</th>
+                                    <th>Ka</th>
+                                    <th>Ki</th>
+                                </tr>
+                            </thead>
+                            <tbody>${finishingRows}</tbody>
+                        </table>
+                        <div class="section-title">Catatan :</div>
+                        <div class="note">${escapeHtml(item.catatan || '')}</div>
+                        <div class="footer">
+                            <span>${escapeHtml(formatReceiptDate(printedAt))}</span>
+                            <span>${escapeHtml(formatReceiptTime(printedAt))}</span>
+                        </div>
+                        <div class="line"></div>
+                        <div class="bottom-spk">${escapeHtml(item.kode_spk)}</div>
+                        <div class="label-row">No Label :</div>
+                        <div class="line" style="margin-top: 28px;"></div>
+                    </div>
+                    <script>
+                        window.addEventListener('load', function () {
+                            window.focus();
+                            setTimeout(function () {
+                                window.print();
+                            }, 300);
+                        });
+
+                        window.addEventListener('afterprint', function () {
+                            window.close();
+                        });
+                    </script>
+                </body>
+            </html>
+        `
+    }
+
+    const printReceipt = (item, receiptWindow) => {
+        if (!receiptWindow) return
+
+        receiptWindow.document.open()
+        receiptWindow.document.write(buildReceiptHtml(item))
+        receiptWindow.document.close()
+    }
 
     const filterItems = (kategori) =>
         produksi.filter(
@@ -30,8 +319,20 @@ export default function Produksi({ produksi }) {
 
     const handleProses = () => {
         if (!selected) return
-        router.put(`/produksi/produksi/${selected.id}/proses`, {}, {
-            onSuccess: () => closeModal(),
+        const shouldPrint = selected.selesai != 1
+        const receiptWindow = shouldPrint
+            ? window.open('', '_blank', 'width=420,height=640')
+            : null
+
+        router.put(`/finishing/finishing/${selected.id}/proses`, {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                closeModal()
+                if (shouldPrint) {
+                    printReceipt(selected, receiptWindow)
+                }
+            },
+            onError: () => receiptWindow?.close(),
         })
     }
 
@@ -42,7 +343,7 @@ export default function Produksi({ produksi }) {
                     <div className="xl:col-span-2 card bg-base-100 shadow-md border border-base-300">
                         <div className="card-body">
                             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-                                <h2 className="card-title">Halaman Produksi</h2>
+                                <h2 className="card-title">Halaman Finishing</h2>
                                 <div className="flex gap-2">
                                     <select
                                         value={filterKategori}
@@ -98,7 +399,7 @@ export default function Produksi({ produksi }) {
                                                         </thead>
                                                         <tbody>
                                                             {filterItems('STANDART').map((item) => (
-                                                                <tr key={item.id} onClick={() => openModal(item)} className={`hover:bg-base-200/70 transition-colors cursor-pointer ${item.status_finishing == '1' ? 'bg-green-400' : ''} `}>
+                                                                <tr key={item.id} onClick={() => openModal(item)} className={`hover:bg-base-200/70 transition-colors cursor-pointer ${item.selesai == '1' ? 'bg-green-400' : ''} `}>
                                                                     <td className="font-mono font-medium text-[10px]">{item.kode_spk}</td>
                                                                     <td className='text-[10px]'>
                                                                         {item.bahan.kode}
@@ -146,7 +447,7 @@ export default function Produksi({ produksi }) {
                                                         </thead>
                                                         <tbody>
                                                             {filterItems('STIKER').map((item) => (
-                                                                <tr key={item.id} onClick={() => openModal(item)} className={`hover:bg-base-200/70 transition-colors cursor-pointer ${item.status_finishing == '1' ? 'bg-green-400' : ''} `}>
+                                                                <tr key={item.id} onClick={() => openModal(item)} className={`hover:bg-base-200/70 transition-colors cursor-pointer ${item.selesai == '1' ? 'bg-green-400' : ''} `}>
                                                                     <td className="font-mono font-medium text-[10px]">{item.kode_spk}</td>
                                                                     <td className='text-[10px]'>
                                                                         {item.bahan.kode}
@@ -194,7 +495,7 @@ export default function Produksi({ produksi }) {
                                                         </thead>
                                                         <tbody>
                                                             {filterItems('INDOOR').map((item) => (
-                                                                <tr key={item.id} onClick={() => openModal(item)} className={`hover:bg-base-200/70 transition-colors cursor-pointer ${item.status_finishing == '1' ? 'bg-green-400' : ''} `}>
+                                                                <tr key={item.id} onClick={() => openModal(item)} className={`hover:bg-base-200/70 transition-colors cursor-pointer ${item.selesai == '1' ? 'bg-green-400' : ''} `}>
                                                                     <td className="font-mono font-medium text-[10px]">{item.kode_spk}</td>
                                                                     <td className='text-[10px]'>
                                                                         {item.bahan.kode}
@@ -242,7 +543,7 @@ export default function Produksi({ produksi }) {
                                                         </thead>
                                                         <tbody>
                                                             {filterItems('DLL').map((item) => (
-                                                                <tr key={item.id} onClick={() => openModal(item)} className={`hover:bg-base-200/70 transition-colors cursor-pointer ${item.status_finishing == '1' ? 'bg-green-400' : ''} `}>
+                                                                <tr key={item.id} onClick={() => openModal(item)} className={`hover:bg-base-200/70 transition-colors cursor-pointer ${item.status_selesai == '1' ? 'bg-green-400' : ''} `}>
                                                                     <td className="font-mono font-medium text-[10px]">{item.kode_spk}</td>
                                                                     <td className='text-[10px]'>
                                                                         {item.bahan.kode}
@@ -276,7 +577,7 @@ export default function Produksi({ produksi }) {
             <dialog ref={modalRef} className="modal">
                 <div className="modal-box">
                     <button type="button" onClick={closeModal} className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-                    <h3 className="text-lg font-bold mb-4">Konfirmasi Finishing</h3>
+                    <h3 className="text-lg font-bold mb-4">Konfirmasi Finishing Selesai</h3>
                     {selected && (
                         <div className="space-y-3">
                             <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
@@ -295,13 +596,13 @@ export default function Produksi({ produksi }) {
                     )}
                     <div className="modal-action">
                         <button className="btn btn-ghost" onClick={closeModal}>Batal</button>
-                        {selected && selected.status_finishing == 1 ?
+                        {selected && selected.selesai == 1 ?
                             < button className="btn btn-primary w-full" onClick={handleProses}>
-                                Batal Proses Finishing
+                                Batal Proses Selesai
                             </button>
                             :
                             <button className="btn btn-primary w-full" onClick={handleProses}>
-                                Proses Finishing
+                                Proses Selesai
                             </button>
                         }
                     </div>

@@ -25,7 +25,9 @@ return new class extends Migration
             $table->string('lebar', 11);
             $table->string('qty', 11);
             $table->string('sisi', 11);
-
+            $table->string('id_kategori_desain', 30);
+            $table->string('harga_bahan', 30);
+            $table->string('total_harga', 30);
             $table->string('catatan');
             $table->string('metode_pengantaran', 50);
             $table->string('tgl_kirim', 15);
