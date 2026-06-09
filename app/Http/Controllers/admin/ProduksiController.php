@@ -35,17 +35,32 @@ class ProduksiController extends Controller
     {
 
         $bahan = Bahan::where('id', $request->id_bahan)->first();
+
+        if ($request->pilihan_harga === 'Custom') {
+            $harga_pakai = $request->harga_manual ?: 0;
+        } else {
+            $kategoriMap = [
+                'Umum' => 'harga_umum',
+                'Khusus' => 'harga_khusus',
+                'Member' => 'harga_member',
+                'Custom' => 'harga_custom',
+            ];
+            $kolom = $kategoriMap[$request->pilihan_harga] ?? 'harga_umum';
+            $harga_pakai = $bahan->$kolom ?? $bahan->harga ?? 0;
+        }
+
         if ($bahan->cara_perhitungan == 'QTY') {
-            $total_harga = $request->qty * $bahan->harga;
+            $total_harga = $request->qty * $harga_pakai;
         } elseif ($bahan->cara_perhitungan == 'LUAS') {
             $luas = $request->lebar * $request->tinggi;
-            $total_harga = $luas * $bahan->harga;
+            $total_harga = $luas * $harga_pakai;
         }
         $desain = Desain::where('id_customer', $request->id_customer)
             ->where('tanggal', date('Y-m-d'))
             ->where('status', 0)
             ->first();
         $no_antrian = $desain->no_antrian ?? $this->kodeAntrianProduksiBerikutnya();
+
 
         $pr = new Produksi;
         $pr->tanggal = date('Y-m-d');
@@ -63,7 +78,7 @@ class ProduksiController extends Controller
         $pr->qty = $request->qty;
         $pr->sisi = $request->sisi ?? '1 SISI';
         $pr->cara_perhitungan = $bahan->cara_perhitungan;
-        $pr->harga_bahan = $bahan->harga;
+        $pr->harga_bahan = $harga_pakai;
         $pr->total_harga = $total_harga;
         $pr->catatan = '1';
         $pr->metode_pengantaran = $request->metode_pengambilan;
@@ -102,6 +117,30 @@ class ProduksiController extends Controller
     public function update(Request $request, $id)
     {
         $pr = Produksi::find($id);
+        $bahan = Bahan::where('id', $request->id_bahan)->first();
+
+        if ($request->pilihan_harga === 'Custom') {
+            $harga_pakai = $request->harga_manual ?: 0;
+        } else {
+            $kategoriMap = [
+                'Umum' => 'harga_umum',
+                'Khusus' => 'harga_khusus',
+                'Member' => 'harga_member',
+                'Custom' => 'harga_custom',
+            ];
+            $kolom = $kategoriMap[$request->pilihan_harga] ?? 'harga_umum';
+            $harga_pakai = $bahan ? ($bahan->$kolom ?? $bahan->harga ?? 0) : 0;
+        }
+
+        if ($bahan && $bahan->cara_perhitungan == 'QTY') {
+            $total_harga = $request->qty * $harga_pakai;
+        } elseif ($bahan && $bahan->cara_perhitungan == 'LUAS') {
+            $luas = $request->lebar * $request->tinggi;
+            $total_harga = $luas * $harga_pakai;
+        } else {
+            $total_harga = 0;
+        }
+
         $pr->id_customer = $request->id_customer;
         $pr->id_desain = $request->id_desain;
         $pr->no_antrian = $request->no_antrian;
@@ -114,6 +153,9 @@ class ProduksiController extends Controller
         $pr->tinggi = $request->tinggi;
         $pr->qty = $request->qty;
         $pr->sisi = $request->sisi ?? '1 SISI';
+        $pr->cara_perhitungan = $bahan->cara_perhitungan ?? '';
+        $pr->harga_bahan = $harga_pakai;
+        $pr->total_harga = $total_harga;
         $pr->catatan = '1';
         $pr->metode_pengantaran = $request->metode_pengambilan;
         $pr->tgl_kirim = $request->tgl_kirim;

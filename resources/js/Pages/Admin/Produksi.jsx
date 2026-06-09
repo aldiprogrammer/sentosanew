@@ -25,9 +25,13 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
     tanggal: "",
     id_customer: "",
     customer: "",
+    kategori_customer: "",
+    pilihan_harga: "",
+    harga_manual: "",
     id_bahan: "",
     id_kategori_desain: '',
     bahan: "",
+    harga_tampil: "",
     keterangan: "",
     satuan: "",
     tinggi: "",
@@ -69,6 +73,14 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
   const openModalEdit = (id) => {
     editmodalRef.current.showModal();
     const pd = produksi.find((item) => item.id === Number(id));
+    const kategoriMap = {
+      'Umum': 'harga_umum',
+      'Khusus': 'harga_khusus',
+      'Member': 'harga_member',
+      'Custom': 'harga_custom',
+    };
+    const kolomHarga = kategoriMap[pd.customer?.kategori] || 'harga_umum';
+    const harga = pd.bahan?.[kolomHarga] || pd.bahan?.harga || 0;
     setData({
       id: id,
       id_desain: pd.id_desain,
@@ -77,9 +89,13 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       id_customer: pd.id_customer,
       id_kategori_desain: pd.id_kategori_desain,
       customer: pd.customer.nama,
+      kategori_customer: pd.customer?.kategori || "",
+      pilihan_harga: pd.customer?.kategori || "",
+      harga_manual: "",
       bahan: pd.bahan.bahan,
       alamat: pd.customer.alamat,
       id_bahan: pd.id_bahan,
+      harga_tampil: harga,
       keterangan: pd.keterangan,
       satuan: pd.satuan,
       tinggi: pd.tinggi,
@@ -163,7 +179,49 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       no_antrian: ds?.no_antrian ?? kode_antrian,
       alamat: cs.alamat,
       customer: cs.nama,
+      kategori_customer: cs.kategori,
+      pilihan_harga: cs.kategori,
       id_kategori_desain: ds?.id_kategori_desain ?? "0",
+    }));
+  };
+
+  const hitungHarga = (bahanId, pilihan) => {
+    const bh = bahan.find((item) => item.id === Number(bahanId));
+    if (!bh) return 0;
+
+    if (pilihan === 'Custom') return 0;
+
+    const kategoriMap = {
+      'Umum': 'harga_umum',
+      'Khusus': 'harga_khusus',
+      'Member': 'harga_member',
+      'Custom': 'harga_custom',
+    };
+
+    const kolomHarga = kategoriMap[pilihan] || 'harga_umum';
+    return bh[kolomHarga] || bh.harga || 0;
+  };
+
+  const handleBahan = (idBahan) => {
+    const bh = bahan.find((item) => item.id === Number(idBahan));
+    if (!bh) return;
+
+    const harga = hitungHarga(idBahan, data.pilihan_harga);
+
+    setData((prev) => ({
+      ...prev,
+      id_bahan: idBahan,
+      bahan: bh.bahan,
+      harga_tampil: harga,
+    }));
+  };
+
+  const handlePilihanHarga = (pilihan) => {
+    setData((prev) => ({
+      ...prev,
+      pilihan_harga: pilihan,
+      harga_manual: "",
+      harga_tampil: pilihan === 'Custom' ? 0 : hitungHarga(prev.id_bahan, pilihan),
     }));
   };
 
@@ -355,9 +413,10 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   <span className="label-text">Bahan</span>
                                 </div>
                                 <select
-                                  name="satuan"
+                                  name="id_bahan"
+                                  value={data.id_bahan}
                                   onChange={(e) =>
-                                    setData("id_bahan", e.target.value)
+                                    handleBahan(e.target.value)
                                   }
                                   className="select select-bordered select-success w-full"
                                   required
@@ -369,6 +428,60 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                     </option>
                                   ))}
                                 </select>
+                              </label>
+
+                              {/* Harga */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Harga</span>
+                                </div>
+                                <input
+                                  type="text"
+                                  className="input input-bordered input-success w-full"
+                                  value={data.harga_tampil ? 'Rp ' + Number(data.harga_tampil).toLocaleString('id-ID') : ''}
+                                  placeholder={data.id_bahan ? 'Pilih harga' : 'Pilih Bahan'}
+                                  readOnly
+                                />
+                                {data.kategori_customer ? (
+                                  <div className="mt-2">
+                                    <div className="flex gap-3">
+                                      <label className="flex items-center gap-1 cursor-pointer">
+                                        <input
+                                          type="radio"
+                                          name="pilihan_harga_tambah"
+                                          className="radio radio-success radio-xs"
+                                          checked={data.pilihan_harga === data.kategori_customer}
+                                          onChange={() => handlePilihanHarga(data.kategori_customer)}
+                                        />
+                                        <span className="text-sm">{data.kategori_customer}</span>
+                                      </label>
+                                      <label className="flex items-center gap-1 cursor-pointer">
+                                        <input
+                                          type="radio"
+                                          name="pilihan_harga_tambah"
+                                          className="radio radio-warning radio-xs"
+                                          checked={data.pilihan_harga === 'Custom'}
+                                          onChange={() => handlePilihanHarga('Custom')}
+                                        />
+                                        <span className="text-sm">Custom</span>
+                                      </label>
+                                    </div>
+                                    {data.pilihan_harga === 'Custom' && (
+                                      <div className="mt-1">
+                                        <input
+                                          type="text"
+                                          className="input input-bordered input-success w-full input-sm"
+                                          placeholder="Rp 0"
+                                          value={data.harga_manual ? Number(data.harga_manual).toLocaleString('id-ID') : ''}
+                                          onChange={(e) => {
+                                            const numeric = e.target.value.replace(/\D/g, '');
+                                            setData((prev) => ({ ...prev, harga_manual: numeric, harga_tampil: numeric }));
+                                          }}
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : null}
                               </label>
 
                               <label className="form-control w-full">
@@ -746,10 +859,10 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   <span className="label-text">Bahan</span>
                                 </div>
                                 <select
-                                  name="satuan"
+                                  name="id_bahan"
                                   value={data.id_bahan}
                                   onChange={(e) =>
-                                    setData("id_bahan", e.target.value)
+                                    handleBahan(e.target.value)
                                   }
                                   className="select select-bordered select-success w-full"
                                   required
@@ -763,6 +876,60 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                     </option>
                                   ))}
                                 </select>
+                              </label>
+
+                              {/* Harga */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Harga</span>
+                                </div>
+                                <input
+                                  type="text"
+                                  className="input input-bordered input-success w-full"
+                                  value={data.harga_tampil ? 'Rp ' + Number(data.harga_tampil).toLocaleString('id-ID') : ''}
+                                  placeholder={data.id_bahan ? 'Pilih harga' : 'Pilih Bahan'}
+                                  readOnly
+                                />
+                                {data.kategori_customer ? (
+                                  <div className="mt-2">
+                                    <div className="flex gap-3">
+                                      <label className="flex items-center gap-1 cursor-pointer">
+                                        <input
+                                          type="radio"
+                                          name="pilihan_harga_edit"
+                                          className="radio radio-success radio-xs"
+                                          checked={data.pilihan_harga === data.kategori_customer}
+                                          onChange={() => handlePilihanHarga(data.kategori_customer)}
+                                        />
+                                        <span className="text-sm">{data.kategori_customer}</span>
+                                      </label>
+                                      <label className="flex items-center gap-1 cursor-pointer">
+                                        <input
+                                          type="radio"
+                                          name="pilihan_harga_edit"
+                                          className="radio radio-warning radio-xs"
+                                          checked={data.pilihan_harga === 'Custom'}
+                                          onChange={() => handlePilihanHarga('Custom')}
+                                        />
+                                        <span className="text-sm">Custom</span>
+                                      </label>
+                                    </div>
+                                    {data.pilihan_harga === 'Custom' && (
+                                      <div className="mt-1">
+                                        <input
+                                          type="text"
+                                          className="input input-bordered input-success w-full input-sm"
+                                          placeholder="Rp 0"
+                                          value={data.harga_manual ? Number(data.harga_manual).toLocaleString('id-ID') : ''}
+                                          onChange={(e) => {
+                                            const numeric = e.target.value.replace(/\D/g, '');
+                                            setData((prev) => ({ ...prev, harga_manual: numeric, harga_tampil: numeric }));
+                                          }}
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : null}
                               </label>
 
                               <label className="form-control w-full">
