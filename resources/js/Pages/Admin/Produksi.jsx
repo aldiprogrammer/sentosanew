@@ -1,12 +1,25 @@
 import AdminLayout from "@/Layouts/AdminLayout";
 import NewCustomerModal from "@/Components/NewCustomerModal";
-import { useForm } from "@inertiajs/react";
-import React, { useRef } from "react";
+import { Link, router, useForm } from "@inertiajs/react";
+import React, { useEffect, useRef, useState } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export default function Produksi({ produksi, desain, bahan, customer, kode_antrian, kodespk }) {
   const today = new Date().toISOString().split("T")[0];
+  const [search, setSearch] = useState('');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    router.get('/produksi', { search }, { preserveState: true, replace: true });
+  };
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      router.get('/produksi', { search }, { preserveState: true, replace: true });
+    }, 500);
+    return () => clearTimeout(t);
+  }, [search]);
 
   const {
     data,
@@ -70,9 +83,8 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
   };
 
   const editmodalRef = useRef(null);
-  const openModalEdit = (id) => {
+  const openModalEdit = (pd) => {
     editmodalRef.current.showModal();
-    const pd = produksi.find((item) => item.id === Number(id));
     const kategoriMap = {
       'Umum': 'harga_umum',
       'Khusus': 'harga_khusus',
@@ -82,7 +94,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
     const kolomHarga = kategoriMap[pd.customer?.kategori] || 'harga_umum';
     const harga = pd.bahan?.[kolomHarga] || pd.bahan?.harga || 0;
     setData({
-      id: id,
+      id: pd.id,
       id_desain: pd.id_desain,
       no_antrian: pd.no_antrian,
       kode_spk: pd.kode_spk,
@@ -232,7 +244,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       doc.text("Data Produksi", 14, 20);
       doc.setFontSize(10);
       doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
-      const rows = produksi.map((item, index) => [index + 1, item.kode_spk, item.customer.nama, item.bahan.bahan, item.keterangan, item.satuan, item.tinggi, item.lebar, item.qty, item.sisi, item.metode_pengantaran, item.tgl_kirim]);
+      const rows = produksi.data.map((item, index) => [produksi.from + index, item.kode_spk, item.customer.nama, item.bahan.bahan, item.keterangan, item.satuan, item.tinggi, item.lebar, item.qty, item.sisi, item.metode_pengantaran, item.tgl_kirim]);
       autoTable(doc, { startY: 32, head: [["No", "Kode SPK", "Customer", "Bahan", "Keterangan", "Satuan", "Tinggi", "Lebar", "Qty", "Sisi", "Metode P", "Tgl Kirim"]], body: rows, styles: { fontSize: 7 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
       doc.save("data_produksi.pdf");
     } catch (error) {
@@ -424,7 +436,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   <option value="">Pilih Bahan</option>
                                   {bahan.map((bh, index) => (
                                     <option value={bh.id}>
-                                      {bh.bahan} - {bh.kategori}
+                                      {bh.kode}-{bh.bahan} - {bh.kategori} {bh.qty == '1' ? '' : <small className="font-bold"> - @{bh.qty}</small>}
                                     </option>
                                   ))}
                                 </select>
@@ -1145,8 +1157,20 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                 </div>
               </div>
 
+              <div className="mb-3">
+                <form onSubmit={handleSearch}>
+                  <input
+                    type="text"
+                    placeholder="Cari produksi..."
+                    className="input input-bordered input-success w-full max-w-xs"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </form>
+              </div>
+
               <div>
-                <table className="table table-zebra" id="myTable">
+                <table className="table table-zebra " id="myTable">
                   <thead>
                     <tr>
                       <th>No</th>
@@ -1154,38 +1178,55 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                       <th>Customer</th>
                       <th>Bahan</th>
                       <th>Keterangan</th>
-                      <th>Satuan</th>
                       <th>Tinggi</th>
                       <th>Lebar</th>
                       <th>Qty</th>
                       <th>Sisi</th>
+                      <th>Harga</th>
+                      <th>Total Harga</th>
                       <th>Metode P</th>
                       <th>Tgl Kirim /Ambil</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {produksi.map((item, index) => (
+                  <tbody className="text-xs">
+                    {produksi.data.map((item, index) => (
                       <tr
                         key={item.id}
-                        onClick={() => openModalEdit(item.id)}
+                        onClick={() => openModalEdit(item)}
                         className="cursor-pointer hover:bg-base-200"
                       >
-                        <td>{index + 1}</td>
+                        <td>{produksi.from + index}</td>
                         <td>{item.kode_spk}</td>
                         <td>{item.customer.nama}</td>
                         <td>{item.bahan.bahan}</td>
                         <td>{item.keterangan}</td>
-                        <td>{item.satuan}</td>
-                        <td>{item.tinggi}</td>
+                        <td>{item.tinggi} {item.satuan}</td>
                         <td>{item.lebar}</td>
                         <td>{item.qty}</td>
                         <td>{item.sisi}</td>
+                        <td>{Number(item.harga_bahan).toLocaleString('id-ID')}</td>
+                        <td>{Number(item.total_harga).toLocaleString('id-ID')}</td>
                         <td>{item.metode_pengantaran}</td>
                         <td>{item.tgl_kirim}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+
+                {produksi.links && (
+                  <div className="flex justify-center mt-4 join">
+                    {produksi.links.map((link, i) => (
+                      <Link
+                        key={i}
+                        href={link.url || '#'}
+                        className={`btn btn-sm join-item ${link.active ? 'btn-success' : ''} ${!link.url ? 'btn-disabled' : ''}`}
+                        preserveState
+                        replace
+                        dangerouslySetInnerHTML={{ __html: link.label }}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

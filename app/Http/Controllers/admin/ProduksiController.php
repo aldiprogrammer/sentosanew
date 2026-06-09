@@ -14,9 +14,23 @@ use Inertia\Inertia;
 
 class ProduksiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $produksi = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')->get();
+        $search = $request->query('search');
+        $produksi = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')
+            ->when($search, function ($q, $search) {
+                $q->where('kode_spk', 'like', "%{$search}%")
+                  ->orWhere('keterangan', 'like', "%{$search}%")
+                  ->orWhereHas('customer', function ($qq) use ($search) {
+                      $qq->where('nama', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('bahan', function ($qq) use ($search) {
+                      $qq->where('bahan', 'like', "%{$search}%");
+                  });
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+        $produksi->appends(['search' => $search]);
         $tanggal = date('Y-m-d');
         $desain = Desain::where('status', 0)
             ->where('tanggal', $tanggal)
@@ -50,6 +64,8 @@ class ProduksiController extends Controller
         }
 
         if ($bahan->cara_perhitungan == 'QTY') {
+            $total_harga = $request->qty * $harga_pakai;
+        } elseif ($bahan->cara_perhitungan == 'QTY KHUSUS') {
             $total_harga = $request->qty * $harga_pakai;
         } elseif ($bahan->cara_perhitungan == 'LUAS') {
             $luas = $request->lebar * $request->tinggi;
@@ -133,6 +149,8 @@ class ProduksiController extends Controller
         }
 
         if ($bahan && $bahan->cara_perhitungan == 'QTY') {
+            $total_harga = $request->qty * $harga_pakai;
+        } elseif ($bahan && $bahan->cara_perhitungan == 'QTY KHUSUS') {
             $total_harga = $request->qty * $harga_pakai;
         } elseif ($bahan && $bahan->cara_perhitungan == 'LUAS') {
             $luas = $request->lebar * $request->tinggi;

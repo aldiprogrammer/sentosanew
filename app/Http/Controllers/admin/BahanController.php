@@ -35,11 +35,11 @@ class BahanController extends Controller
         $bh->klik = $request->klik;
         $bh->qty = $request->qty;
         $bh->harga = 0;
-        $bh->harga_beli = $request->harga_beli;
-        $bh->harga_umum = $request->harga_umum;
-        $bh->harga_khusus = $request->harga_khusus;
-        $bh->harga_member = $request->harga_member;
-        $bh->harga_custom = $request->harga_custom;
+        $bh->harga_beli = $request->harga_beli ? preg_replace('/\D/', '', $request->harga_beli) : null;
+        $bh->harga_umum = $request->harga_umum ? preg_replace('/\D/', '', $request->harga_umum) : null;
+        $bh->harga_khusus = $request->harga_khusus ? preg_replace('/\D/', '', $request->harga_khusus) : null;
+        $bh->harga_member = $request->harga_member ? preg_replace('/\D/', '', $request->harga_member) : null;
+        $bh->harga_custom = $request->harga_custom ? preg_replace('/\D/', '', $request->harga_custom) : null;
         $bh->cara_perhitungan = $request->cara_perhitungan;
         $bh->save();
 
@@ -59,11 +59,11 @@ class BahanController extends Controller
         $bh->klik = $request->klik;
         $bh->qty = $request->qty;
         $bh->harga = 0;
-        $bh->harga_beli = $request->harga_beli;
-        $bh->harga_umum = $request->harga_umum;
-        $bh->harga_khusus = $request->harga_khusus;
-        $bh->harga_member = $request->harga_member;
-        $bh->harga_custom = $request->harga_custom;
+        $bh->harga_beli = $request->harga_beli ? preg_replace('/\D/', '', $request->harga_beli) : null;
+        $bh->harga_umum = $request->harga_umum ? preg_replace('/\D/', '', $request->harga_umum) : null;
+        $bh->harga_khusus = $request->harga_khusus ? preg_replace('/\D/', '', $request->harga_khusus) : null;
+        $bh->harga_member = $request->harga_member ? preg_replace('/\D/', '', $request->harga_member) : null;
+        $bh->harga_custom = $request->harga_custom ? preg_replace('/\D/', '', $request->harga_custom) : null;
         $bh->cara_perhitungan = $request->cara_perhitungan;
         $bh->update();
 

@@ -58,12 +58,6 @@ export default function Bahan({ bahan, kode }) {
   };
 
   const editmodalRef = useRef(null);
-  function formatRupiah(value) {
-    const digits = String(value).replace(/\D/g, "");
-    if (!digits) return "";
-    return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  }
-
   function handleHargaInput(e) {
     const raw = e.target.value.replace(/\D/g, "");
     setData("harga", raw);
@@ -185,12 +179,12 @@ export default function Bahan({ bahan, kode }) {
         item.jenis_bahan,
         item.klik,
         item.qty,
-        item.harga ? "Rp " + formatRupiah(item.harga) : "-",
-        item.harga_beli ? "Rp " + formatRupiah(item.harga_beli) : "-",
-        item.harga_umum ? "Rp " + formatRupiah(item.harga_umum) : "-",
-        item.harga_khusus ? "Rp " + formatRupiah(item.harga_khusus) : "-",
-        item.harga_member ? "Rp " + formatRupiah(item.harga_member) : "-",
-        item.harga_custom ? "Rp " + formatRupiah(item.harga_custom) : "-",
+        item.harga ? "Rp " + item.harga : "-",
+        item.harga_beli ? "Rp " + item.harga_beli : "-",
+        item.harga_umum ? "Rp " + item.harga_umum : "-",
+        item.harga_khusus ? "Rp " + item.harga_khusus : "-",
+        item.harga_member ? "Rp " + item.harga_member : "-",
+        item.harga_custom ? "Rp " + item.harga_custom : "-",
         item.cara_perhitungan,
       ]);
 
@@ -411,7 +405,7 @@ export default function Bahan({ bahan, kode }) {
                           </div>
                           <input
                             type="text"
-                            value={data.harga_beli ? formatRupiah(data.harga_beli) : ""}
+                            value={data.harga_beli || ""}
                             className="input input-bordered input-success w-full"
                             placeholder="Rp 0 (opsional)"
                             onChange={(e) => setData("harga_beli", e.target.value.replace(/\D/g, ""))}
@@ -424,7 +418,7 @@ export default function Bahan({ bahan, kode }) {
                           </div>
                           <input
                             type="text"
-                            value={data.harga_umum ? formatRupiah(data.harga_umum) : ""}
+                            value={data.harga_umum || ""}
                             className="input input-bordered input-success w-full"
                             placeholder="Rp 0"
                             onChange={(e) => setData("harga_umum", e.target.value.replace(/\D/g, ""))}
@@ -437,7 +431,7 @@ export default function Bahan({ bahan, kode }) {
                           </div>
                           <input
                             type="text"
-                            value={data.harga_khusus ? formatRupiah(data.harga_khusus) : ""}
+                            value={data.harga_khusus || ""}
                             className="input input-bordered input-success w-full"
                             placeholder="Rp 0"
                             onChange={(e) => setData("harga_khusus", e.target.value.replace(/\D/g, ""))}
@@ -450,7 +444,7 @@ export default function Bahan({ bahan, kode }) {
                           </div>
                           <input
                             type="text"
-                            value={data.harga_member ? formatRupiah(data.harga_member) : ""}
+                            value={data.harga_member || ""}
                             className="input input-bordered input-success w-full"
                             placeholder="Rp 0"
                             onChange={(e) => setData("harga_member", e.target.value.replace(/\D/g, ""))}
@@ -463,7 +457,7 @@ export default function Bahan({ bahan, kode }) {
                           </div>
                           <input
                             type="text"
-                            value={data.harga_custom ? formatRupiah(data.harga_custom) : ""}
+                            value={data.harga_custom || ""}
                             className="input input-bordered input-success w-full"
                             placeholder="Rp 0"
                             onChange={(e) => setData("harga_custom", e.target.value.replace(/\D/g, ""))}
@@ -679,7 +673,7 @@ export default function Bahan({ bahan, kode }) {
                           </div>
                           <input
                             type="text"
-                            value={data.harga_beli ? formatRupiah(data.harga_beli) : ""}
+                            value={data.harga_beli || ""}
                             className="input input-bordered input-success w-full"
                             placeholder="Rp 0 (opsional)"
                             onChange={(e) => setData("harga_beli", e.target.value.replace(/\D/g, ""))}
@@ -692,7 +686,7 @@ export default function Bahan({ bahan, kode }) {
                           </div>
                           <input
                             type="text"
-                            value={data.harga_umum ? formatRupiah(data.harga_umum) : ""}
+                            value={data.harga_umum || ""}
                             className="input input-bordered input-success w-full"
                             placeholder="Rp 0"
                             onChange={(e) => setData("harga_umum", e.target.value.replace(/\D/g, ""))}
@@ -706,7 +700,7 @@ export default function Bahan({ bahan, kode }) {
                           </div>
                           <input
                             type="text"
-                            value={data.harga_khusus ? formatRupiah(data.harga_khusus) : ""}
+                            value={data.harga_khusus || ""}
                             className="input input-bordered input-success w-full"
                             placeholder="Rp 0"
                             onChange={(e) => setData("harga_khusus", e.target.value.replace(/\D/g, ""))}
@@ -719,7 +713,7 @@ export default function Bahan({ bahan, kode }) {
                           </div>
                           <input
                             type="text"
-                            value={data.harga_member ? formatRupiah(data.harga_member) : ""}
+                            value={data.harga_member || ""}
                             className="input input-bordered input-success w-full"
                             placeholder="Rp 0"
                             onChange={(e) => setData("harga_member", e.target.value.replace(/\D/g, ""))}
@@ -732,7 +726,7 @@ export default function Bahan({ bahan, kode }) {
                           </div>
                           <input
                             type="text"
-                            value={data.harga_custom ? formatRupiah(data.harga_custom) : ""}
+                            value={data.harga_custom || ""}
                             className="input input-bordered input-success w-full"
                             placeholder="Rp 0"
                             onChange={(e) => setData("harga_custom", e.target.value.replace(/\D/g, ""))}
@@ -827,12 +821,11 @@ export default function Bahan({ bahan, kode }) {
                       <td>{item.klik}</td>
                       <td>{item.qty}</td>
                       <td>{item.cara_perhitungan}</td>
-                      {/* <td>{item.harga ? 'Rp ' + formatRupiah(item.harga) : '-'}</td> */}
-                      <td>{item.harga_beli ? 'Rp ' + formatRupiah(item.harga_beli) : '-'}</td>
-                      <td>{item.harga_umum ? 'Rp ' + formatRupiah(item.harga_umum) : '-'}</td>
-                      <td>{item.harga_khusus ? 'Rp ' + formatRupiah(item.harga_khusus) : '-'}</td>
-                      <td>{item.harga_member ? 'Rp ' + formatRupiah(item.harga_member) : '-'}</td>
-                      <td>{item.harga_custom ? 'Rp ' + formatRupiah(item.harga_custom) : '-'}</td>
+                      <td>{item.harga_beli ? 'Rp ' + item.harga_beli : '-'}</td>
+                      <td>{item.harga_umum ? 'Rp ' + item.harga_umum : '-'}</td>
+                      <td>{item.harga_khusus ? 'Rp ' + item.harga_khusus : '-'}</td>
+                      <td>{item.harga_member ? 'Rp ' + item.harga_member : '-'}</td>
+                      <td>{item.harga_custom ? 'Rp ' + item.harga_custom : '-'}</td>
                     </tr>
                   ))}
                 </tbody>
