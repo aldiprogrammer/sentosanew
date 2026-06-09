@@ -9,10 +9,15 @@ use Inertia\Inertia;
 
 class BahanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $bahan = Bahan::all();
-        $kode = 'BH-'.rand(0, 100000);
+        $search = $request->query('search');
+        $bahan = Bahan::when($search, function ($q, $search) {
+            $q->where('bahan', 'like', "%{$search}%")
+              ->orWhere('kode', 'like', "%{$search}%");
+        })->orderBy('id', 'desc')->paginate(10);
+        $bahan->appends(['search' => $search]);
+        $kode = 'BH-' . rand(0, 100000);
 
         return Inertia::render('Admin/Bahan', compact('bahan', 'kode'));
     }
@@ -28,7 +33,12 @@ class BahanController extends Controller
         $bh->kategori_cetak = $request->kategori_cetak;
         $bh->jenis_bahan = $request->jenis_bahan;
         $bh->klik = $request->klik;
-        $bh->harga = $request->harga;
+        $bh->qty = $request->qty;
+        $bh->harga = 0;
+        $bh->harga_umum = $request->harga_umum;
+        $bh->harga_khusus = $request->harga_khusus;
+        $bh->harga_member = $request->harga_member;
+        $bh->harga_custom = $request->harga_custom;
         $bh->cara_perhitungan = $request->cara_perhitungan;
         $bh->save();
 
@@ -46,7 +56,12 @@ class BahanController extends Controller
         $bh->kategori_cetak = $request->kategori_cetak;
         $bh->jenis_bahan = $request->jenis_bahan;
         $bh->klik = $request->klik;
-        $bh->harga = $request->harga;
+        $bh->qty = $request->qty;
+        $bh->harga = 0;
+        $bh->harga_umum = $request->harga_umum;
+        $bh->harga_khusus = $request->harga_khusus;
+        $bh->harga_member = $request->harga_member;
+        $bh->harga_custom = $request->harga_custom;
         $bh->cara_perhitungan = $request->cara_perhitungan;
         $bh->update();
 

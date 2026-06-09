@@ -1,10 +1,24 @@
 import AdminLayout from "@/Layouts/AdminLayout";
-import { useForm } from "@inertiajs/react";
-import React, { useRef } from "react";
+import { Link, router, useForm } from "@inertiajs/react";
+import React, { useEffect, useRef, useState } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export default function Bahan({ bahan, kode }) {
+  const [search, setSearch] = useState('');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    router.get('/bahan', { search }, { preserveState: true, replace: true });
+  };
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      router.get('/bahan', { search }, { preserveState: true, replace: true });
+    }, 500);
+    return () => clearTimeout(t);
+  }, [search]);
+
   const {
     data,
     setData,
@@ -23,7 +37,12 @@ export default function Bahan({ bahan, kode }) {
     kategori_cetak: "",
     jenis_bahan: "",
     klik: "",
+    qty: "",
     harga: "",
+    harga_umum: "",
+    harga_khusus: "",
+    harga_member: "",
+    harga_custom: "",
     cara_perhitungan: "",
   });
 
@@ -59,7 +78,12 @@ export default function Bahan({ bahan, kode }) {
     kategori_cetak,
     jenis_bahan,
     klik,
+    qty,
     harga,
+    harga_umum,
+    harga_khusus,
+    harga_member,
+    harga_custom,
     cara_perhitungan
   ) => {
     editmodalRef.current.showModal();
@@ -73,7 +97,12 @@ export default function Bahan({ bahan, kode }) {
       kategori_cetak,
       jenis_bahan,
       klik,
+      qty,
       harga,
+      harga_umum,
+      harga_khusus,
+      harga_member,
+      harga_custom,
       cara_perhitungan,
     });
   };
@@ -81,6 +110,29 @@ export default function Bahan({ bahan, kode }) {
   const closeModalEdit = () => {
     editmodalRef.current.close();
     reset();
+  };
+
+  const duplicate = (item) => {
+    editmodalRef.current.close();
+    openModal();
+    setData({
+      id: 0,
+      kode: kode,
+      bahan: item.bahan,
+      kategori: item.kategori,
+      satuan: item.satuan,
+      jenis: item.jenis,
+      kategori_cetak: item.kategori_cetak,
+      jenis_bahan: item.jenis_bahan,
+      klik: item.klik,
+      qty: item.qty,
+      harga: item.harga,
+      harga_umum: item.harga_umum,
+      harga_khusus: item.harga_khusus,
+      harga_member: item.harga_member,
+      harga_custom: item.harga_custom,
+      cara_perhitungan: item.cara_perhitungan,
+    });
   };
 
   const save = (e) => {
@@ -118,7 +170,7 @@ export default function Bahan({ bahan, kode }) {
       doc.setFontSize(10);
       doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
 
-      const rows = bahan.map((item, index) => [
+      const rows = bahan.data.map((item, index) => [
         index + 1,
         item.kode,
         item.bahan,
@@ -128,13 +180,18 @@ export default function Bahan({ bahan, kode }) {
         item.kategori_cetak,
         item.jenis_bahan,
         item.klik,
+        item.qty,
         item.harga ? "Rp " + formatRupiah(item.harga) : "-",
+        item.harga_umum ? "Rp " + formatRupiah(item.harga_umum) : "-",
+        item.harga_khusus ? "Rp " + formatRupiah(item.harga_khusus) : "-",
+        item.harga_member ? "Rp " + formatRupiah(item.harga_member) : "-",
+        item.harga_custom ? "Rp " + formatRupiah(item.harga_custom) : "-",
         item.cara_perhitungan,
       ]);
 
       autoTable(doc, {
         startY: 32,
-        head: [["No", "Kode", "Bahan", "Satuan", "Kategori", "Jenis", "Kat. Cetak", "Jenis Bahan", "Klik", "Harga", "Perhitungan"]],
+        head: [["No", "Kode", "Bahan", "Satuan", "Kategori", "Jenis", "Kat. Cetak", "Jenis Bahan", "Klik", "Qty", "Harga", "Hrg Umum", "Hrg Khusus", "Hrg Member", "Hrg Custom", "Perhitungan"]],
         body: rows,
         styles: { fontSize: 7 },
         headStyles: { fillColor: [22, 163, 74] },
@@ -153,7 +210,7 @@ export default function Bahan({ bahan, kode }) {
       <div className="grid grid-cols-1 xl:grid-cols-1">
         <div className="xl:col-span-2 card bg-base-100 shadow-md border border-base-300">
           <div className="card-body">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-2">
               <h2 className="card-title">Data Bahan</h2>
               <div className="flex gap-2">
                 <button className="btn btn-primary" onClick={exportPDF}>
@@ -266,8 +323,14 @@ export default function Bahan({ bahan, kode }) {
                             onChange={(e) => setData("kategori_cetak", e.target.value)}
                           >
                             <option value="">-- Pilih Kategori Cetak --</option>
-                            <option value="STANDART">STANDART</option>
+                            {/* <option value="STANDART">STANDART</option>
                             <option value="STIKER">STIKER</option>
+                            <option value="DLL">DLL</option> */}
+                            <option value="INDOOR">INDOOR</option>
+                            <option value="INDOOR2">INDOOR2</option>
+                            <option value="OUTDOOR">OUTDOOR</option>
+                            <option value="OUTDOOR2">OUTDOOR2</option>
+                            <option value="DISPLAY">DISPLAY</option>
                             <option value="DLL">DLL</option>
                           </select>
                         </label>
@@ -289,6 +352,8 @@ export default function Bahan({ bahan, kode }) {
                             <option value="OFFSET">OFFSET</option>
                             <option value="SOLVENT">SOLVENT</option>
                             <option value="TONER">TONER</option>
+                            <option value="UV">UV</option>
+
                           </select>
                         </label>
 
@@ -324,14 +389,65 @@ export default function Bahan({ bahan, kode }) {
 
                         <label className="form-control">
                           <div className="label">
-                            <span className="label-text">Harga</span>
+                            <span className="label-text">Qty</span>
                           </div>
                           <input
                             type="text"
-                            value={data.harga ? formatRupiah(data.harga) : ""}
+                            value={data.qty}
+                            className="input input-bordered input-success w-full"
+                            onChange={(e) => setData("qty", e.target.value)}
+                          />
+                        </label>
+
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Harga Umum</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.harga_umum ? formatRupiah(data.harga_umum) : ""}
                             className="input input-bordered input-success w-full"
                             placeholder="Rp 0"
-                            onChange={handleHargaInput}
+                            onChange={(e) => setData("harga_umum", e.target.value.replace(/\D/g, ""))}
+                          />
+                        </label>
+
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Harga Khusus</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.harga_khusus ? formatRupiah(data.harga_khusus) : ""}
+                            className="input input-bordered input-success w-full"
+                            placeholder="Rp 0"
+                            onChange={(e) => setData("harga_khusus", e.target.value.replace(/\D/g, ""))}
+                          />
+                        </label>
+
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Harga Member</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.harga_member ? formatRupiah(data.harga_member) : ""}
+                            className="input input-bordered input-success w-full"
+                            placeholder="Rp 0"
+                            onChange={(e) => setData("harga_member", e.target.value.replace(/\D/g, ""))}
+                          />
+                        </label>
+
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Harga Custom</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.harga_custom ? formatRupiah(data.harga_custom) : ""}
+                            className="input input-bordered input-success w-full"
+                            placeholder="Rp 0"
+                            onChange={(e) => setData("harga_custom", e.target.value.replace(/\D/g, ""))}
                           />
                         </label>
                       </div>
@@ -459,9 +575,17 @@ export default function Bahan({ bahan, kode }) {
                             onChange={(e) => setData("kategori_cetak", e.target.value)}
                           >
                             <option value="">-- Pilih Kategori Cetak --</option>
-                            <option value="STANDART">STANDART</option>
+                            {/* <option value="STANDART">STANDART</option>
                             <option value="STIKER">STIKER</option>
+                            <option value="DLL">DLL</option> */}
+
+                            <option value="INDOOR">INDOOR</option>
+                            <option value="INDOOR2">INDOOR2</option>
+                            <option value="OUTDOOR">OUTDOOR</option>
+                            <option value="OUTDOOR2">OUTDOOR2</option>
+                            <option value="DISPLAY">DISPLAY</option>
                             <option value="DLL">DLL</option>
+
                           </select>
                         </label>
 
@@ -482,6 +606,8 @@ export default function Bahan({ bahan, kode }) {
                             <option value="OFFSET">OFFSET</option>
                             <option value="SOLVENT">SOLVENT</option>
                             <option value="TONER">TONER</option>
+                            <option value="UV">UV</option>
+
                           </select>
                         </label>
 
@@ -517,14 +643,66 @@ export default function Bahan({ bahan, kode }) {
 
                         <label className="form-control">
                           <div className="label">
-                            <span className="label-text">Harga</span>
+                            <span className="label-text">Qty</span>
                           </div>
                           <input
                             type="text"
-                            value={data.harga ? formatRupiah(data.harga) : ""}
+                            value={data.qty}
+                            className="input input-bordered input-success w-full"
+                            onChange={(e) => setData("qty", e.target.value)}
+                          />
+                        </label>
+
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Harga Umum</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.harga_umum ? formatRupiah(data.harga_umum) : ""}
                             className="input input-bordered input-success w-full"
                             placeholder="Rp 0"
-                            onChange={handleHargaInput}
+                            onChange={(e) => setData("harga_umum", e.target.value.replace(/\D/g, ""))}
+                          />
+                        </label>
+
+
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Harga Khusus</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.harga_khusus ? formatRupiah(data.harga_khusus) : ""}
+                            className="input input-bordered input-success w-full"
+                            placeholder="Rp 0"
+                            onChange={(e) => setData("harga_khusus", e.target.value.replace(/\D/g, ""))}
+                          />
+                        </label>
+
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Harga Member</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.harga_member ? formatRupiah(data.harga_member) : ""}
+                            className="input input-bordered input-success w-full"
+                            placeholder="Rp 0"
+                            onChange={(e) => setData("harga_member", e.target.value.replace(/\D/g, ""))}
+                          />
+                        </label>
+
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Harga Custom</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.harga_custom ? formatRupiah(data.harga_custom) : ""}
+                            className="input input-bordered input-success w-full"
+                            placeholder="Rp 0"
+                            onChange={(e) => setData("harga_custom", e.target.value.replace(/\D/g, ""))}
                           />
                         </label>
                       </div>
@@ -551,6 +729,13 @@ export default function Bahan({ bahan, kode }) {
                         >
                           <i className="fas fa-trash"></i> Hapus
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => duplicate(data)}
+                          className="btn btn-info"
+                        >
+                          <i className="fas fa-copy"></i> Duplikat
+                        </button>
                       </div>
                     </form>
                   </div>
@@ -558,7 +743,17 @@ export default function Bahan({ bahan, kode }) {
               </div>
             </div>
 
-            <div>
+            <div className="mb-3">
+              <input
+                type="text"
+                placeholder="Cari bahan..."
+                className="input input-bordered input-success w-full max-w-xs"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="overflow-x-auto">
               <table className="table table-zebra" id="myTable">
                 <thead>
                   <tr>
@@ -571,18 +766,23 @@ export default function Bahan({ bahan, kode }) {
                     <th>Kategori Cetak</th>
                     <th>Jenis Bahan</th>
                     <th>Klik</th>
+                    <th>Qty</th>
                     <th>Perhitungan</th>
-                    <th>Harga</th>
+                    {/* <th>Harga</th> */}
+                    <th>Harga Umum</th>
+                    <th>Harga Khusus</th>
+                    <th>Harga Member</th>
+                    <th>Harga Custom</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {bahan.map((item, index) => (
+                <tbody className="text-xs">
+                  {bahan.data.map((item, index) => (
                     <tr
                       key={item.id}
-                      onClick={() => openModalEdit(item.id, item.kode, item.bahan, item.kategori, item.satuan, item.jenis, item.kategori_cetak, item.jenis_bahan, item.klik, item.harga, item.cara_perhitungan)}
+                      onClick={() => openModalEdit(item.id, item.kode, item.bahan, item.kategori, item.satuan, item.jenis, item.kategori_cetak, item.jenis_bahan, item.klik, item.qty, item.harga, item.harga_umum, item.harga_khusus, item.harga_member, item.harga_custom, item.cara_perhitungan)}
                       className="cursor-pointer hover:bg-base-200"
                     >
-                      <td>{index + 1}</td>
+                      <td>{bahan.from + index}</td>
                       <td>{item.kode}</td>
                       <td>{item.bahan}</td>
                       <td>{item.satuan}</td>
@@ -591,13 +791,33 @@ export default function Bahan({ bahan, kode }) {
                       <td>{item.kategori_cetak}</td>
                       <td>{item.jenis_bahan}</td>
                       <td>{item.klik}</td>
+                      <td>{item.qty}</td>
                       <td>{item.cara_perhitungan}</td>
-                      <td>{item.harga ? 'Rp ' + formatRupiah(item.harga) : '-'}</td>
+                      {/* <td>{item.harga ? 'Rp ' + formatRupiah(item.harga) : '-'}</td> */}
+                      <td>{item.harga_umum ? 'Rp ' + formatRupiah(item.harga_umum) : '-'}</td>
+                      <td>{item.harga_khusus ? 'Rp ' + formatRupiah(item.harga_khusus) : '-'}</td>
+                      <td>{item.harga_member ? 'Rp ' + formatRupiah(item.harga_member) : '-'}</td>
+                      <td>{item.harga_custom ? 'Rp ' + formatRupiah(item.harga_custom) : '-'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+
+            {bahan.links && (
+              <div className="flex justify-center mt-4 join">
+                {bahan.links.map((link, i) => (
+                  <Link
+                    key={i}
+                    href={link.url || '#'}
+                    className={`btn btn-sm join-item ${link.active ? 'btn-success' : ''} ${!link.url ? 'btn-disabled' : ''}`}
+                    preserveState
+                    replace
+                    dangerouslySetInnerHTML={{ __html: link.label }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

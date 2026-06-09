@@ -40,7 +40,7 @@ export default function Login({ status }) {
             <form onSubmit={submit} className="space-y-5">
                 <div>
                     <InputLabel htmlFor="username" value="Username" className="text-gray-700 font-medium" />
-                    <TextInput
+                    <input
                         id="username"
                         type="text"
                         name="username"
@@ -51,12 +51,12 @@ export default function Login({ status }) {
                         onChange={(e) => setData('username', e.target.value)}
                         placeholder="Masukkan username"
                     />
-                    <InputError message={errors.username} className="mt-1.5" />
+                    <small className='text-error'>{errors.username} </small>
                 </div>
 
                 <div>
                     <InputLabel htmlFor="password" value="Password" className="text-gray-700 font-medium" />
-                    <TextInput
+                    <input
                         id="password"
                         type="password"
                         name="password"
@@ -66,7 +66,7 @@ export default function Login({ status }) {
                         onChange={(e) => setData('password', e.target.value)}
                         placeholder="Masukkan password"
                     />
-                    <InputError message={errors.password} className="mt-1.5" />
+                    <small className='text-error'>{errors.password} </small>
                 </div>
 
                 <button

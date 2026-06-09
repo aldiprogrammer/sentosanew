@@ -38,7 +38,7 @@ export default function AdminLayout({ children }) {
                     </div>
 
                     <div className="flex-1">
-                        <h1 className="text-2xl font-bold text-primaryGreen">Dashboard Admin</h1>
+                        <h1 className="text-2xl font-bold text-primaryGreen"></h1>
                     </div>
 
                     <div className="flex gap-3 items-center">

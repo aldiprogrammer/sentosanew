@@ -28,6 +28,7 @@ class CustomerController extends Controller
     {
         $cs = new Customer;
         $cs->kode = $request->kode ?: $this->kodeCustomer();
+        $cs->sapaan = $request->sapaan;
         $cs->nama = $request->nama;
         $cs->alamat = $request->alamat;
         $cs->nohp = str_replace('-', '', $request->nohp);
@@ -42,6 +43,7 @@ class CustomerController extends Controller
     {
         $cs = Customer::find($id);
         $cs->kode = $request->kode;
+        $cs->sapaan = $request->sapaan;
         $cs->nama = $request->nama;
         $cs->alamat = $request->alamat;
         $cs->nohp = str_replace('-', '', $request->nohp);

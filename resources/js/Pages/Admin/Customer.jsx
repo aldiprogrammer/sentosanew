@@ -21,12 +21,17 @@ export default function Customer({ customer, kode }) {
     const { data, setData, post, delete: destroy, put, processing, reset } = useForm({
         id: 0,
         kode: kode,
+        sapaan: '',
         nama: '',
         alamat: '',
         nohp: '',
         kategori: '',
         limit: '',
     });
+
+    const capitalizeFirst = (str) => {
+        return str.replace(/\b\w/g, (char) => char.toUpperCase());
+    };
     const modalRef = useRef(null);
     const openModal = () => {
         modalRef.current.showModal();
@@ -37,7 +42,7 @@ export default function Customer({ customer, kode }) {
     };
 
     const editmodalRef = useRef(null);
-    const openModalEdit = (id, nama, alamat, kode, nohp, kategori, limit) => {
+    const openModalEdit = (id, nama, alamat, kode, nohp, kategori, limit, sapaan) => {
         editmodalRef.current.showModal();
         setData({
             'id': id,
@@ -47,6 +52,7 @@ export default function Customer({ customer, kode }) {
             'nohp': nohp,
             'kategori': kategori,
             'limit': limit,
+            'sapaan': sapaan || '',
         })
     }
 
@@ -95,8 +101,8 @@ export default function Customer({ customer, kode }) {
             doc.text("Data Customer", 14, 20);
             doc.setFontSize(10);
             doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
-            const rows = customer.map((item, index) => [index + 1, item.kode, item.nama, item.nohp, item.kategori, item.alamat, item.limit ? "Rp " + formatRupiah(String(item.limit)) : "-"]);
-            autoTable(doc, { startY: 32, head: [["No", "Kode", "Nama", "No Hp", "Kategori", "Alamat", "Limit"]], body: rows, styles: { fontSize: 8 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
+            const rows = customer.map((item, index) => [index + 1, item.kode, item.sapaan, item.nama, item.nohp, item.kategori, item.alamat, item.limit ? "Rp " + formatRupiah(String(item.limit)) : "-"]);
+            autoTable(doc, { startY: 32, head: [["No", "Kode", "Sapaan", "Nama", "No Hp", "Kategori", "Alamat", "Limit"]], body: rows, styles: { fontSize: 8 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
             doc.save("data_customer.pdf");
         } catch (error) {
             console.error("Gagal export PDF:", error);
@@ -138,28 +144,60 @@ export default function Customer({ customer, kode }) {
                                         </h3>
 
                                         <form onSubmit={save} >
+
                                             <label className="form-control w-full mt-2">
                                                 <div className="label">
                                                     <span className="label-text">
-                                                        Kode
+                                                        Nama
                                                     </span>
                                                 </div>
                                                 <input
                                                     type="text"
-                                                    name="kode"
-                                                    value={kode}
+                                                    name="nama"
+                                                    value={data.nama}
                                                     className="input input-bordered input-success w-full"
                                                     required
                                                     onChange={(e) =>
                                                         setData(
-                                                            "kode",
-                                                            kode
+                                                            "nama",
+                                                            capitalizeFirst(e.target.value),
                                                         )
                                                     }
                                                 />
                                             </label>
 
-                                            <label className="form-control w-full mt-2">
+                                            <div className="form-control w-full mt-2">
+                                                <div className="label">
+                                                    <span className="label-text">Sapaan</span>
+                                                </div>
+                                                <div className="flex gap-4">
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="sapaan"
+                                                            className="radio radio-success"
+                                                            value="Bapak"
+                                                            checked={data.sapaan === 'Bapak'}
+                                                            onChange={(e) => setData('sapaan', e.target.value)}
+                                                        />
+                                                        Bapak
+                                                    </label>
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="sapaan"
+                                                            className="radio radio-success"
+                                                            value="Ibu"
+                                                            checked={data.sapaan === 'Ibu'}
+                                                            onChange={(e) => setData('sapaan', e.target.value)}
+                                                        />
+                                                        Ibu
+                                                    </label>
+                                                </div>
+                                            </div>
+
+
+                                            {/* <label className="form-control w-full mt-2">
                                                 <div className="label">
                                                     <span className="label-text">
                                                         Nama
@@ -178,7 +216,7 @@ export default function Customer({ customer, kode }) {
                                                         )
                                                     }
                                                 />
-                                            </label>
+                                            </label> */}
 
                                             <label className="form-control w-full mt-2">
                                                 <div className="label">
@@ -210,6 +248,8 @@ export default function Customer({ customer, kode }) {
                                                     <option value="">-- Pilih Kategori --</option>
                                                     <option value="Khusus">Khusus</option>
                                                     <option value="Umum">Umum</option>
+                                                    <option value="Member">Member</option>
+
                                                 </select>
                                             </label>
 
@@ -309,11 +349,41 @@ export default function Customer({ customer, kode }) {
                                                     onChange={(e) =>
                                                         setData(
                                                             "nama",
-                                                            e.target.value,
+                                                            capitalizeFirst(e.target.value),
                                                         )
                                                     }
                                                 />
                                             </label>
+
+                                            <div className="form-control w-full mt-2">
+                                                <div className="label">
+                                                    <span className="label-text">Sapaan</span>
+                                                </div>
+                                                <div className="flex gap-4">
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="sapaan"
+                                                            className="radio radio-success"
+                                                            value="Bapak"
+                                                            checked={data.sapaan === 'Bapak'}
+                                                            onChange={(e) => setData('sapaan', e.target.value)}
+                                                        />
+                                                        Bapak
+                                                    </label>
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="sapaan"
+                                                            className="radio radio-success"
+                                                            value="Ibu"
+                                                            checked={data.sapaan === 'Ibu'}
+                                                            onChange={(e) => setData('sapaan', e.target.value)}
+                                                        />
+                                                        Ibu
+                                                    </label>
+                                                </div>
+                                            </div>
 
                                             <label className="form-control w-full mt-2">
                                                 <div className="label">
@@ -413,6 +483,7 @@ export default function Customer({ customer, kode }) {
                                     <tr>
                                         <th>No</th>
                                         <th>Kode</th>
+                                        <th>Sapaan</th>
                                         <th>Nama</th>
                                         <th>No Hp</th>
                                         <th>Kategori</th>
@@ -424,12 +495,13 @@ export default function Customer({ customer, kode }) {
                                     {customer.map((item, index) => (
                                         <tr
                                             key={item.id}
-                                            onClick={() => openModalEdit(item.id, item.nama, item.alamat, item.kode, item.nohp, item.kategori, item.limit)}
+                                            onClick={() => openModalEdit(item.id, item.nama, item.alamat, item.kode, item.nohp, item.kategori, item.limit, item.sapaan)}
                                             className="cursor-pointer hover:bg-base-200"
                                         >
                                             <td>{index + 1}</td>
                                             <td>{item.kode}</td>
-                                            <td>{item.nama}</td>
+                                            <td>{item.sapaan}</td>
+                                            <td>{item.sapaan ? item.sapaan + '. ' : ''}{item.nama}</td>
                                             <td>{formatPhone(item.nohp)}</td>
                                             <td>{item.kategori}</td>
                                             <td>{item.alamat}</td>
