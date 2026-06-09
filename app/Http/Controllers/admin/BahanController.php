@@ -35,6 +35,7 @@ class BahanController extends Controller
         $bh->klik = $request->klik;
         $bh->qty = $request->qty;
         $bh->harga = 0;
+        $bh->harga_beli = $request->harga_beli;
         $bh->harga_umum = $request->harga_umum;
         $bh->harga_khusus = $request->harga_khusus;
         $bh->harga_member = $request->harga_member;
@@ -58,6 +59,7 @@ class BahanController extends Controller
         $bh->klik = $request->klik;
         $bh->qty = $request->qty;
         $bh->harga = 0;
+        $bh->harga_beli = $request->harga_beli;
         $bh->harga_umum = $request->harga_umum;
         $bh->harga_khusus = $request->harga_khusus;
         $bh->harga_member = $request->harga_member;

@@ -39,6 +39,7 @@ export default function Bahan({ bahan, kode }) {
     klik: "",
     qty: "",
     harga: "",
+    harga_beli: "",
     harga_umum: "",
     harga_khusus: "",
     harga_member: "",
@@ -80,6 +81,7 @@ export default function Bahan({ bahan, kode }) {
     klik,
     qty,
     harga,
+    harga_beli,
     harga_umum,
     harga_khusus,
     harga_member,
@@ -99,6 +101,7 @@ export default function Bahan({ bahan, kode }) {
       klik,
       qty,
       harga,
+      harga_beli,
       harga_umum,
       harga_khusus,
       harga_member,
@@ -127,6 +130,7 @@ export default function Bahan({ bahan, kode }) {
       klik: item.klik,
       qty: item.qty,
       harga: item.harga,
+      harga_beli: item.harga_beli,
       harga_umum: item.harga_umum,
       harga_khusus: item.harga_khusus,
       harga_member: item.harga_member,
@@ -182,6 +186,7 @@ export default function Bahan({ bahan, kode }) {
         item.klik,
         item.qty,
         item.harga ? "Rp " + formatRupiah(item.harga) : "-",
+        item.harga_beli ? "Rp " + formatRupiah(item.harga_beli) : "-",
         item.harga_umum ? "Rp " + formatRupiah(item.harga_umum) : "-",
         item.harga_khusus ? "Rp " + formatRupiah(item.harga_khusus) : "-",
         item.harga_member ? "Rp " + formatRupiah(item.harga_member) : "-",
@@ -191,7 +196,7 @@ export default function Bahan({ bahan, kode }) {
 
       autoTable(doc, {
         startY: 32,
-        head: [["No", "Kode", "Bahan", "Satuan", "Kategori", "Jenis", "Kat. Cetak", "Jenis Bahan", "Klik", "Qty", "Harga", "Hrg Umum", "Hrg Khusus", "Hrg Member", "Hrg Custom", "Perhitungan"]],
+        head: [["No", "Kode", "Bahan", "Satuan", "Kategori", "Jenis", "Kat. Cetak", "Jenis Bahan", "Klik", "Qty", "Harga", "Hrg Beli", "Hrg Umum", "Hrg Khusus", "Hrg Member", "Hrg Custom", "Perhitungan"]],
         body: rows,
         styles: { fontSize: 7 },
         headStyles: { fillColor: [22, 163, 74] },
@@ -272,7 +277,7 @@ export default function Bahan({ bahan, kode }) {
                           >
                             <option value="">-- Pilih Kategori --</option>
                             <option value="DIGITAL">DIGITAL</option>
-                            <option value="OFSIDE">OFSIDE</option>
+                            <option value="OFFSET">OFFSET</option>
                           </select>
                         </label>
 
@@ -331,6 +336,7 @@ export default function Bahan({ bahan, kode }) {
                             <option value="OUTDOOR">OUTDOOR</option>
                             <option value="OUTDOOR2">OUTDOOR2</option>
                             <option value="DISPLAY">DISPLAY</option>
+                            <option value="OFFSET">OFFSET</option>
                             <option value="DLL">DLL</option>
                           </select>
                         </label>
@@ -396,6 +402,19 @@ export default function Bahan({ bahan, kode }) {
                             value={data.qty}
                             className="input input-bordered input-success w-full"
                             onChange={(e) => setData("qty", e.target.value)}
+                          />
+                        </label>
+
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Harga Beli</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.harga_beli ? formatRupiah(data.harga_beli) : ""}
+                            className="input input-bordered input-success w-full"
+                            placeholder="Rp 0 (opsional)"
+                            onChange={(e) => setData("harga_beli", e.target.value.replace(/\D/g, ""))}
                           />
                         </label>
 
@@ -524,7 +543,7 @@ export default function Bahan({ bahan, kode }) {
                           >
                             <option value="">-- Pilih Kategori --</option>
                             <option value="DIGITAL">DIGITAL</option>
-                            <option value="OFSIDE">OFSIDE</option>
+                            <option value="OFFSET">OFFSET</option>
                           </select>
                         </label>
 
@@ -584,6 +603,7 @@ export default function Bahan({ bahan, kode }) {
                             <option value="OUTDOOR">OUTDOOR</option>
                             <option value="OUTDOOR2">OUTDOOR2</option>
                             <option value="DISPLAY">DISPLAY</option>
+                            <option value="OFFSET">OFFSET</option>
                             <option value="DLL">DLL</option>
 
                           </select>
@@ -650,6 +670,19 @@ export default function Bahan({ bahan, kode }) {
                             value={data.qty}
                             className="input input-bordered input-success w-full"
                             onChange={(e) => setData("qty", e.target.value)}
+                          />
+                        </label>
+
+                        <label className="form-control">
+                          <div className="label">
+                            <span className="label-text">Harga Beli</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.harga_beli ? formatRupiah(data.harga_beli) : ""}
+                            className="input input-bordered input-success w-full"
+                            placeholder="Rp 0 (opsional)"
+                            onChange={(e) => setData("harga_beli", e.target.value.replace(/\D/g, ""))}
                           />
                         </label>
 
@@ -769,6 +802,7 @@ export default function Bahan({ bahan, kode }) {
                     <th>Qty</th>
                     <th>Perhitungan</th>
                     {/* <th>Harga</th> */}
+                    <th>Harga Beli</th>
                     <th>Harga Umum</th>
                     <th>Harga Khusus</th>
                     <th>Harga Member</th>
@@ -779,7 +813,7 @@ export default function Bahan({ bahan, kode }) {
                   {bahan.data.map((item, index) => (
                     <tr
                       key={item.id}
-                      onClick={() => openModalEdit(item.id, item.kode, item.bahan, item.kategori, item.satuan, item.jenis, item.kategori_cetak, item.jenis_bahan, item.klik, item.qty, item.harga, item.harga_umum, item.harga_khusus, item.harga_member, item.harga_custom, item.cara_perhitungan)}
+                      onClick={() => openModalEdit(item.id, item.kode, item.bahan, item.kategori, item.satuan, item.jenis, item.kategori_cetak, item.jenis_bahan, item.klik, item.qty, item.harga, item.harga_beli, item.harga_umum, item.harga_khusus, item.harga_member, item.harga_custom, item.cara_perhitungan)}
                       className="cursor-pointer hover:bg-base-200"
                     >
                       <td>{bahan.from + index}</td>
@@ -794,6 +828,7 @@ export default function Bahan({ bahan, kode }) {
                       <td>{item.qty}</td>
                       <td>{item.cara_perhitungan}</td>
                       {/* <td>{item.harga ? 'Rp ' + formatRupiah(item.harga) : '-'}</td> */}
+                      <td>{item.harga_beli ? 'Rp ' + formatRupiah(item.harga_beli) : '-'}</td>
                       <td>{item.harga_umum ? 'Rp ' + formatRupiah(item.harga_umum) : '-'}</td>
                       <td>{item.harga_khusus ? 'Rp ' + formatRupiah(item.harga_khusus) : '-'}</td>
                       <td>{item.harga_member ? 'Rp ' + formatRupiah(item.harga_member) : '-'}</td>

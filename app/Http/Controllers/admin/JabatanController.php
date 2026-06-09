@@ -12,9 +12,25 @@ class JabatanController extends Controller
     public function index()
     {
         $jabatan = Jabatan::all();
-        $kode = 'JB-'.rand(0, 100000);
+        $kode = 'JB-' . rand(0, 100000);
 
-        return Inertia::render('Admin/Jabatan', compact('jabatan', 'kode'));
+        $daftarMenu = [
+            ['key' => 'dashboard', 'label' => 'Dashboard', 'group' => 'Umum'],
+            ['key' => 'customer', 'label' => 'Data Customer', 'group' => 'Umum'],
+            ['key' => 'desain', 'label' => 'Menu Desain', 'group' => 'Umum'],
+            ['key' => 'produksi-order', 'label' => 'Menu Produksi', 'group' => 'Umum'],
+            ['key' => 'proses-produksi', 'label' => 'Proses Produksi - Produksi', 'group' => 'Umum'],
+            ['key' => 'proses-finishing', 'label' => 'Proses Produksi - Finishing', 'group' => 'Umum'],
+            ['key' => 'pengguna', 'label' => 'Pengguna', 'group' => 'Master Data'],
+            ['key' => 'distributor', 'label' => 'Distributor', 'group' => 'Master Data'],
+            ['key' => 'kurir', 'label' => 'Kurir', 'group' => 'Master Data'],
+            ['key' => 'suplayer', 'label' => 'Suplayer', 'group' => 'Master Data'],
+            ['key' => 'master-bahan', 'label' => 'Bahan', 'group' => 'Master Data'],
+            ['key' => 'master-kategoridesain', 'label' => 'Kategori Desain', 'group' => 'Master Data'],
+            ['key' => 'master-jabatan', 'label' => 'Jabatan', 'group' => 'Master Data'],
+        ];
+
+        return Inertia::render('Admin/Jabatan', compact('jabatan', 'kode', 'daftarMenu'));
     }
 
     public function store(Request $request)
@@ -22,6 +38,7 @@ class JabatanController extends Controller
         $cs = new Jabatan;
         $cs->kode = $request->kode;
         $cs->jabatan = $request->jabatan;
+        $cs->menu_akses = $request->menu_akses ?? [];
         $cs->save();
 
         return redirect()->back()->with('success', 'Data berhasil ditambah');
@@ -32,6 +49,7 @@ class JabatanController extends Controller
         $cs = Jabatan::find($id);
         $cs->kode = $request->kode;
         $cs->jabatan = $request->jabatan;
+        $cs->menu_akses = $request->menu_akses ?? [];
         $cs->update();
 
         return redirect()->back()->with('success', 'Data berhasil diubah');
@@ -42,6 +60,6 @@ class JabatanController extends Controller
         $cs = Jabatan::find($id);
         $cs->delete();
 
-        return redirect()->back()->with('success', 'Data berhasil diubah');
+        return redirect()->back()->with('success', 'Data berhasil dihapus');
     }
 }

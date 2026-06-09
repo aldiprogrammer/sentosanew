@@ -17,6 +17,7 @@ class Bahan extends Model
         'klik',
         'qty',
         'harga',
+        'harga_beli',
         'harga_umum',
         'harga_khusus',
         'harga_member',

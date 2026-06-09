@@ -30,6 +30,8 @@ class KategoriDesainController extends Controller
         $cs->kode = $request->kode;
         $cs->kategori = $request->kategori;
         $cs->harga = str_replace('.', '', $request->harga ?: 0);
+        $cs->qty = $request->qty;
+        $cs->fee = $request->fee;
         $cs->status_point = $request->status_point ? 1 : 0;
         $cs->save();
 
@@ -42,6 +44,8 @@ class KategoriDesainController extends Controller
         $cs->kode = $request->kode;
         $cs->kategori = $request->kategori;
         $cs->harga = str_replace('.', '', $request->harga ?: 0);
+        $cs->qty = $request->qty;
+        $cs->fee = $request->fee;
         $cs->status_point = $request->status_point ? 1 : 0;
         $cs->update();
 

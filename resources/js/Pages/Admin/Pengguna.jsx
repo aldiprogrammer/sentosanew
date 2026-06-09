@@ -222,6 +222,8 @@ export default function Pengguna({ pengguna, jabatan }) {
                           className="input input-bordered iput-success"
                           id=""
                           required
+                          value={data.role}
+                          onChange={(e) => setData("role", e.target.value)}
                         >
                           <option value={data.role}>{data.role}</option>
                           {jabatan.map((rr, index) => (

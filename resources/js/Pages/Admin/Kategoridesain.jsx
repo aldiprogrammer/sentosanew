@@ -10,6 +10,8 @@ export default function Kategoridesain({ kategori, kode }) {
         kode: '',
         kategori: '',
         harga: '',
+        qty: '',
+        fee: '',
         status_point: 0,
 
     });
@@ -24,14 +26,16 @@ export default function Kategoridesain({ kategori, kode }) {
     };
 
     const editmodalRef = useRef(null);
-    const openModalEdit = (id, kode, kategori, harga, status_point) => {
+    const openModalEdit = (item) => {
         editmodalRef.current.showModal();
         setData({
-            'id': id,
-            'kode': kode,
-            'kategori': kategori,
-            'harga': harga,
-            'status_point': status_point,
+            'id': item.id,
+            'kode': item.kode,
+            'kategori': item.kategori,
+            'harga': item.harga,
+            'qty': item.qty,
+            'fee': item.fee,
+            'status_point': item.status_point,
         })
     }
 
@@ -83,8 +87,8 @@ export default function Kategoridesain({ kategori, kode }) {
             doc.text("Data Kategori Desain", 14, 20);
             doc.setFontSize(10);
             doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
-            const rows = kategori.map((item, index) => [index + 1, item.kode, item.kategori, item.harga ? "Rp " + formatRupiah(String(item.harga)) : "-", item.status_point == 1 ? "Aktif" : "Tidak Aktif"]);
-            autoTable(doc, { startY: 32, head: [["No", "Kode", "Kategori", "Harga", "Status Point"]], body: rows, styles: { fontSize: 9 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
+            const rows = kategori.map((item, index) => [index + 1, item.kode, item.kategori, item.harga ? "Rp " + formatRupiah(String(item.harga)) : "-", item.qty || '-', item.fee ? "Rp " + formatRupiah(String(item.fee)) : "-", item.status_point == 1 ? "Aktif" : "Tidak Aktif"]);
+            autoTable(doc, { startY: 32, head: [["No", "Kode", "Kategori", "Harga", "Qty", "Fee", "Status Point"]], body: rows, styles: { fontSize: 8 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
             doc.save("data_kategori_desain.pdf");
         } catch (error) {
             console.error("Gagal export PDF:", error);
@@ -186,6 +190,32 @@ export default function Kategoridesain({ kategori, kode }) {
                                                             e.target.value.replace(/\D/g, ''),
                                                         )
                                                     }
+                                                />
+                                            </label>
+
+                                            <label className="form-control w-full mt-2">
+                                                <div className="label">
+                                                    <span className="label-text">Qty</span>
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={data.qty}
+                                                    className="input input-bordered input-success w-full"
+                                                    placeholder="0"
+                                                    onChange={(e) => setData("qty", e.target.value)}
+                                                />
+                                            </label>
+
+                                            <label className="form-control w-full mt-2">
+                                                <div className="label">
+                                                    <span className="label-text">Fee</span>
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={data.fee ? formatRupiah(String(data.fee)) : ''}
+                                                    className="input input-bordered input-success w-full"
+                                                    placeholder="Rp 0"
+                                                    onChange={(e) => setData("fee", e.target.value.replace(/\D/g, ''))}
                                                 />
                                             </label>
 
@@ -316,6 +346,32 @@ export default function Kategoridesain({ kategori, kode }) {
 
                                             <label className="form-control w-full mt-2">
                                                 <div className="label">
+                                                    <span className="label-text">Qty</span>
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={data.qty}
+                                                    className="input input-bordered input-success w-full"
+                                                    placeholder="0"
+                                                    onChange={(e) => setData("qty", e.target.value)}
+                                                />
+                                            </label>
+
+                                            <label className="form-control w-full mt-2">
+                                                <div className="label">
+                                                    <span className="label-text">Fee</span>
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={data.fee ? formatRupiah(String(data.fee)) : ''}
+                                                    className="input input-bordered input-success w-full"
+                                                    placeholder="Rp 0"
+                                                    onChange={(e) => setData("fee", e.target.value.replace(/\D/g, ''))}
+                                                />
+                                            </label>
+
+                                            <label className="form-control w-full mt-2">
+                                                <div className="label">
                                                     <span className="label-text">Status Point</span>
                                                 </div>
                                                 <div className="flex gap-4">
@@ -382,6 +438,8 @@ export default function Kategoridesain({ kategori, kode }) {
                                         <th>Kode</th>
                                         <th>Kategori</th>
                                         <th>Harga</th>
+                                        <th>Qty</th>
+                                        <th>Fee</th>
                                         <th>Status Point</th>
                                     </tr>
                                 </thead>
@@ -389,13 +447,15 @@ export default function Kategoridesain({ kategori, kode }) {
                                     {kategori.map((item, index) => (
                                         <tr
                                             key={item.id}
-                                            onClick={() => openModalEdit(item.id, item.kode, item.kategori, item.harga, item.status_point)}
+                                            onClick={() => openModalEdit(item)}
                                             className="cursor-pointer hover:bg-base-200"
                                         >
                                             <td>{index + 1}</td>
                                             <td>{item.kode}</td>
                                             <td>{item.kategori}</td>
                                             <td>{Number(item.harga).toLocaleString('id-ID')}</td>
+                                            <td>{item.qty || '-'}</td>
+                                            <td>{item.fee ? 'Rp ' + Number(item.fee).toLocaleString('id-ID') : '-'}</td>
                                             <td>
                                                 {item.status_point == 1 ? (
                                                     <span className="badge badge-success">Aktif</span>

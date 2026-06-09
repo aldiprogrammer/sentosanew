@@ -3,15 +3,9 @@ import React from 'react'
 
 export default function AdminLayout({ children }) {
     const { auth } = usePage().props
-    const role = String(auth?.user?.role || '').toLowerCase().trim()
-    const compactRole = role.replace(/\s+/g, '')
-    const isAdmin = role === 'admin'
-    const isDesain = role === 'desain' || role === 'desainer'
-    const isProduksi = role === 'produksi'
-    const isCustomerService = role === 'customer service' || compactRole === 'customerservice' || role === 'cs'
-    const showAdminMenus = isAdmin
-    const showDesainMenus = isAdmin || isDesain
-    const showProduksiMenus = isAdmin || isProduksi
+    const menuAkses = auth?.menu_akses || []
+
+    const hasMenu = (key) => menuAkses.includes(key)
 
     const getInitial = (name) => {
         return name?.charAt(0).toUpperCase() || 'U'
@@ -60,14 +54,11 @@ export default function AdminLayout({ children }) {
                                         <span>{getInitial(auth?.user?.username)}</span>
                                     </div>
                                 </div>
-                                <span className="hidden md:block font-medium">{auth.user.use}</span>
+                                <span className="hidden md:block font-medium">{auth.user.username}</span>
                             </div>
 
                             <ul tabindex="0"
                                 className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-                                {/* <li>
-                                    <Link href={route('profile.edit')}>Profile</Link>
-                                </li> */}
                                 <li>
                                     <button onClick={handleLogout} className="text-error w-full text-left">
                                         Logout
@@ -91,7 +82,7 @@ export default function AdminLayout({ children }) {
                     </div>
 
                     <ul className="menu p-4 text-base-content w-full gap-1">
-                        {showAdminMenus && (
+                        {hasMenu('dashboard') && (
                             <li>
                                 <Link href={route('home')} className="rounded-xl">
                                     <i className="fas fa-home"></i>
@@ -99,15 +90,7 @@ export default function AdminLayout({ children }) {
                                 </Link>
                             </li>
                         )}
-                        {showAdminMenus && (
-                            <li>
-                                <Link href={route('pengguna')} className="rounded-xl">
-                                    <i className="fas fa-users"></i>
-                                    Pengguna
-                                </Link>
-                            </li>
-                        )}
-                        {showAdminMenus && (
+                        {hasMenu('customer') && (
                             <li>
                                 <Link href={route('customer')} className="rounded-xl">
                                     <i className="fas fa-user-tie"></i>
@@ -115,32 +98,7 @@ export default function AdminLayout({ children }) {
                                 </Link>
                             </li>
                         )}
-                        {showAdminMenus && (
-                            <li>
-                                <Link href={route('distributor')} className="rounded-xl">
-                                    <i className="fas fa-truck"></i>
-                                    Distributor
-                                </Link>
-                            </li>
-                        )}
-                        {showAdminMenus && (
-                            <li>
-                                <Link href={route('kurir')} className="rounded-xl">
-                                    <i className="fas fa-shipping-fast"></i>
-                                    Kurir
-                                </Link>
-                            </li>
-                        )}
-                        {showAdminMenus && (
-                            <li>
-                                <Link href={route('suplayer')} className="rounded-xl">
-                                    <i className="fas fa-boxes"></i>
-                                    Suplayer
-                                </Link>
-                            </li>
-
-                        )}
-                        {showAdminMenus && (
+                        {(hasMenu('pengguna') || hasMenu('distributor') || hasMenu('kurir') || hasMenu('suplayer') || hasMenu('master-bahan') || hasMenu('master-kategoridesain') || hasMenu('master-jabatan')) && (
                             <li>
                                 <details>
                                     <summary className="rounded-xl">
@@ -148,78 +106,79 @@ export default function AdminLayout({ children }) {
                                         Master Data
                                     </summary>
                                     <ul>
-                                        <li>
-                                            <Link href={route('bahan')}>Bahan</Link>
-                                        </li>
-                                        <li>
-                                            <Link href={route('kategoridesain')}>Kategori Desain</Link>
-                                        </li>
-                                        <li>
-                                            <Link href={route('jabatan')}>Jabatan</Link>
-                                        </li>
+                                        {hasMenu('master-bahan') && (
+                                            <li>
+                                                <Link href={route('bahan')}>Bahan</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('master-kategoridesain') && (
+                                            <li>
+                                                <Link href={route('kategoridesain')}>Kategori Desain</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('master-jabatan') && (
+                                            <li>
+                                                <Link href={route('jabatan')}>Jabatan</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('pengguna') && (
+                                            <li>
+                                                <Link href={route('pengguna')}>Pengguna</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('distributor') && (
+                                            <li>
+                                                <Link href={route('distributor')}>Distributor</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('kurir') && (
+                                            <li>
+                                                <Link href={route('kurir')}>Kurir</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('suplayer') && (
+                                            <li>
+                                                <Link href={route('suplayer')}>Suplayer</Link>
+                                            </li>
+                                        )}
                                     </ul>
                                 </details>
                             </li>
                         )}
-                        {showDesainMenus && (
-                            <>
-                                <li>
-                                    <Link href={route('desain')} className="rounded-xl">
-                                        <i className="fas fa-palette"></i>
-                                        Menu Desain
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link href={route('produksi')} className="rounded-xl">
-                                        <i className="fas fa-industry"></i>
-                                        Menu Produksi
-                                    </Link>
-                                </li>
-
-                                <li>
-                                    <Link href={route('customer')} className="rounded-xl">
-                                        <i className="fas fa-user"></i>
-                                        Data Customer
-                                    </Link>
-                                </li>
-                            </>
-                        )}
-                        {isCustomerService && (
-                            <>
-                                <li>
-                                    <Link href={route('customer')} className="rounded-xl">
-                                        <i className="fas fa-user"></i>
-                                        Data Customer
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link href={route('desain')} className="rounded-xl">
-                                        <i className="fas fa-palette"></i>
-                                        Menu Desain
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link href={route('produksi')} className="rounded-xl">
-                                        <i className="fas fa-industry"></i>
-                                        Menu Produksi
-                                    </Link>
-                                </li>
-                            </>
-                        )}
-                        {showProduksiMenus && (
+                        {hasMenu('desain') && (
                             <li>
-                                <details open={isProduksi}>
+                                <Link href={route('desain')} className="rounded-xl">
+                                    <i className="fas fa-palette"></i>
+                                    Menu Desain
+                                </Link>
+                            </li>
+                        )}
+                        {hasMenu('produksi-order') && (
+                            <li>
+                                <Link href={route('produksi')} className="rounded-xl">
+                                    <i className="fas fa-industry"></i>
+                                    Menu Produksi
+                                </Link>
+                            </li>
+                        )}
+                        {(hasMenu('proses-produksi') || hasMenu('proses-finishing')) && (
+                            <li>
+                                <details>
                                     <summary className="rounded-xl">
                                         <i className="fas fa-print"></i>
                                         Proses Produksi
                                     </summary>
                                     <ul>
-                                        <li>
-                                            <Link href="/produksi/produksi">Produksi</Link>
-                                        </li>
-                                        <li>
-                                            <Link href="/produksi/finishing">Finishing</Link>
-                                        </li>
+                                        {hasMenu('proses-produksi') && (
+                                            <li>
+                                                <Link href="/produksi/produksi">Produksi</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('proses-finishing') && (
+                                            <li>
+                                                <Link href="/produksi/finishing">Finishing</Link>
+                                            </li>
+                                        )}
                                     </ul>
                                 </details>
                             </li>
