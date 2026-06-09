@@ -8,15 +8,9 @@ export default function Produksi({ produksi }) {
     const [filterJenisBahan, setFilterJenisBahan] = useState('')
     const modalRef = useRef(null)
 
-    const kategoriList = useMemo(() => {
-        const set = new Set(produksi.map((item) => item.bahan?.kategori_cetak).filter(Boolean))
-        return [...set].sort()
-    }, [produksi])
+    const kategoriList = ['INDOOR', 'INDOOR2', 'OUTDOOR', 'OUTDOOR2', 'DISPLAY', 'OFFSET', 'DLL']
 
-    const jenisBahanList = useMemo(() => {
-        const set = new Set(produksi.map((item) => item.bahan?.jenis_bahan).filter(Boolean))
-        return [...set].sort()
-    }, [produksi])
+    const jenisBahanList = ['DLL', 'DYE', 'UV', 'OFFSET', 'TONER', 'ECOSOLVENT', 'SOLVENT']
 
     const shouldShowSection = (kategori) =>
         !filterKategori || filterKategori === kategori
@@ -36,7 +30,7 @@ export default function Produksi({ produksi }) {
                 if (!grouped[jb]) grouped[jb] = []
                 grouped[jb].push(item)
             }
-            if (Object.keys(grouped).length) map[kategori] = grouped
+            map[kategori] = grouped
         }
         return map
     }, [produksi, kategoriList, filterKategori, filterJenisBahan])
@@ -99,45 +93,51 @@ export default function Produksi({ produksi }) {
                                                     <h3 className='font-bold text-white text-sm tracking-wide'>{kategori}</h3>
                                                 </div>
 
-                                                {Object.entries(jenisGroups).map(([jenis, items]) => (
-                                                    <div key={jenis}>
-                                                        <div className='bg-base-200/70 px-4 py-1.5 border-b border-base-300'>
-                                                            <span className='font-semibold text-xs tracking-wider text-base-content/80'>{jenis}</span>
-                                                        </div>
-                                                        <div className="overflow-x-auto">
-                                                            <table className="table table-xs table-zebra w-full">
-                                                                <thead>
-                                                                    <tr className="bg-base-200 text-base-content/70 text-[10px] tracking-wider">
-                                                                        <th className="py-3">No SPK</th>
-                                                                        <th className="py-3">Kd Bahan</th>
-                                                                        <th className="py-3">Customer</th>
-                                                                        <th className="py-3 text-center">H</th>
-                                                                        <th className="py-3 text-center">W</th>
-                                                                        <th className="py-3 text-center">QTY</th>
-                                                                        <th className="py-3 text-center">Sisi</th>
-                                                                        <th className="py-3 text-center">Pengataran</th>
-                                                                        <th className="py-3 text-center">Tgl Kirim</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {items.map((item) => (
-                                                                        <tr key={item.id} onClick={() => openModal(item)} className={`hover:bg-base-200/70 transition-colors cursor-pointer ${item.status_finishing == '1' ? 'bg-green-400' : ''} `}>
-                                                                            <td className="font-mono font-medium text-[10px]">{item.kode_spk}</td>
-                                                                            <td className='text-[10px]'>{item.bahan?.kode}</td>
-                                                                            <td className="font-medium text-[10px]">{item.customer?.nama}</td>
-                                                                            <td className="text-[10px] text-center tabular-nums">{item.tinggi} <span className="text-[10px] text-base-content/50">{item.satuan}</span></td>
-                                                                            <td className="text-[10px] text-center tabular-nums">{item.lebar} <span className="text-[10px] text-base-content/50">{item.satuan}</span></td>
-                                                                            <td className="text-[10px] text-center font-semibold tabular-nums">{item.qty}</td>
-                                                                            <td className="text-[10px] text-center">{item.sisi}</td>
-                                                                            <td className="text-[10px] text-center font-semibold tabular-nums">{item.metode_pengantaran}</td>
-                                                                            <td className="text-[10px] text-center font-semibold tabular-nums">{item.tgl_kirim}</td>
-                                                                        </tr>
-                                                                    ))}
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
+                                                {Object.entries(jenisGroups).length === 0 ? (
+                                                    <div className="px-4 py-8 text-center text-base-content/50 text-xs">
+                                                        Tidak ada data produksi untuk kategori ini
                                                     </div>
-                                                ))}
+                                                ) : (
+                                                    Object.entries(jenisGroups).map(([jenis, items]) => (
+                                                        <div key={jenis}>
+                                                            <div className='bg-base-200/70 px-4 py-1.5 border-b border-base-300'>
+                                                                <span className='font-semibold text-xs tracking-wider text-base-content/80'>{jenis}</span>
+                                                            </div>
+                                                            <div className="overflow-x-auto">
+                                                                <table className="table table-xs table-zebra w-full">
+                                                                    <thead>
+                                                                        <tr className="bg-base-200 text-base-content/70 text-[10px] tracking-wider">
+                                                                            <th className="py-3">No SPK</th>
+                                                                            <th className="py-3">Kd Bahan</th>
+                                                                            <th className="py-3">Customer</th>
+                                                                            <th className="py-3 text-center">H</th>
+                                                                            <th className="py-3 text-center">W</th>
+                                                                            <th className="py-3 text-center">QTY</th>
+                                                                            <th className="py-3 text-center">Sisi</th>
+                                                                            <th className="py-3 text-center">Pengataran</th>
+                                                                            <th className="py-3 text-center">Tgl Kirim</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {items.map((item) => (
+                                                                            <tr key={item.id} onClick={() => openModal(item)} className={`hover:bg-base-200/70 transition-colors cursor-pointer ${item.status_finishing == '1' ? 'bg-green-400' : ''} `}>
+                                                                                <td className="font-mono font-medium text-[10px]">{item.kode_spk}</td>
+                                                                                <td className='text-[10px]'>{item.bahan?.kode}</td>
+                                                                                <td className="font-medium text-[10px]">{item.customer?.nama}</td>
+                                                                                <td className="text-[10px] text-center tabular-nums">{item.tinggi} <span className="text-[10px] text-base-content/50">{item.satuan}</span></td>
+                                                                                <td className="text-[10px] text-center tabular-nums">{item.lebar} <span className="text-[10px] text-base-content/50">{item.satuan}</span></td>
+                                                                                <td className="text-[10px] text-center font-semibold tabular-nums">{item.qty}</td>
+                                                                                <td className="text-[10px] text-center">{item.sisi}</td>
+                                                                                <td className="text-[10px] text-center font-semibold tabular-nums">{item.metode_pengantaran}</td>
+                                                                                <td className="text-[10px] text-center font-semibold tabular-nums">{item.tgl_kirim}</td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                )}
                                             </div>
                                         </div>
                                     ))}
