@@ -13,6 +13,7 @@ class ProduksiController extends Controller
     {
         $produksi = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')
             ->where('status_finishing', 0)
+            ->where('status_produksi', 1)
             ->orderBy('id', 'desc')
             ->get();
         return Inertia::render('Produksi/Produksi', compact('produksi'));
@@ -48,6 +49,13 @@ class ProduksiController extends Controller
         $produksi->appends(['search' => $search, 'tgl_awal' => $tglAwal, 'tgl_akhir' => $tglAkhir]);
 
         return Inertia::render('Admin/Dataproduksi', compact('produksi', 'tglAwal', 'tglAkhir'));
+    }
+
+    function prosesProduksi(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        Produksi::whereIn('id', $ids)->update(['status_produksi' => 1]);
+        return back()->with('success', 'Status produksi berhasil diupdate');
     }
 
     function proses($id)

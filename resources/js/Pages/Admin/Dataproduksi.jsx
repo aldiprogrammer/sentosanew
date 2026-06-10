@@ -157,27 +157,39 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
 
     const printReceipt = () => {
         if (selectedItems.length === 0) return
-        if (selectedItems.length === 1) {
-            const w = window.open('', '_blank', 'width=420,height=640')
-            w.document.open(); w.document.write(buildReceiptHtml(selectedItems)); w.document.close()
-        } else {
-            let idx = 0
-            const openNext = () => {
-                if (idx >= selectedItems.length) return
-                const w = window.open('', '_blank', 'width=420,height=640')
-                w.document.open(); w.document.write(buildReceiptHtml([selectedItems[idx]])); w.document.close()
-                const t = setInterval(() => { if (w.closed) { clearInterval(t); idx++; openNext() } }, 500)
+        router.put(route('proses.produksi'), { ids: selected }, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                if (selectedItems.length === 1) {
+                    const w = window.open('', '_blank', 'width=420,height=640')
+                    w.document.open(); w.document.write(buildReceiptHtml(selectedItems)); w.document.close()
+                } else {
+                    let idx = 0
+                    const openNext = () => {
+                        if (idx >= selectedItems.length) return
+                        const w = window.open('', '_blank', 'width=420,height=640')
+                        w.document.open(); w.document.write(buildReceiptHtml([selectedItems[idx]])); w.document.close()
+                        const t = setInterval(() => { if (w.closed) { clearInterval(t); idx++; openNext() } }, 500)
+                    }
+                    openNext()
+                }
+                setSelected([])
             }
-            openNext()
-        }
-        setSelected([])
+        })
     }
 
     const printReceiptCombined = () => {
         if (selectedItems.length === 0) return
-        const w = window.open('', '_blank', 'width=500,height=700')
-        w.document.open(); w.document.write(buildReceiptHtml(selectedItems)); w.document.close()
-        setSelected([])
+        router.put(route('proses.produksi'), { ids: selected }, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                const w = window.open('', '_blank', 'width=500,height=700')
+                w.document.open(); w.document.write(buildReceiptHtml(selectedItems)); w.document.close()
+                setSelected([])
+            }
+        })
     }
 
     const setPreview = (show) => {
@@ -306,7 +318,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                             </tr>
                                         ) : (
                                             produksi.data.map((item, index) => (
-                                                <tr key={item.id} className="hover:bg-base-200">
+                                                <tr key={item.id} className={`hover:bg-base-200 ${item.status_selesai == 1 ? 'bg-success/20' : ''}`}>
                                                     <td>
                                                         <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={selected.includes(item.id)} onChange={() => toggleSelect(item.id)} />
                                                     </td>

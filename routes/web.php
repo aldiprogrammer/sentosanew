@@ -13,6 +13,7 @@ use App\Http\Controllers\admin\PenggunaController;
 use App\Http\Controllers\admin\ProduksiController;
 use App\Http\Controllers\admin\SuplayerController;
 use App\Http\Controllers\produksi\FinishingController;
+use App\Http\Controllers\produksi\LogistikController;
 use App\Http\Controllers\produksi\ProduksiController as ProduksiProduksiController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -94,12 +95,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/suplayer/{id}', [SuplayerController::class, 'delete'])->name('delete.suplayer');
 
     Route::get('/dataproduksi', [ProduksiProduksiController::class, 'dataproduksi'])->name('dataproduksi');
+    Route::put('/dataproduksi/proses-produksi', [ProduksiProduksiController::class, 'prosesProduksi'])->name('proses.produksi');
     Route::get('/data-desain', [DesainController::class, 'dataDesain'])->name('data-desain');
     Route::get('/produksi/produksi', [ProduksiProduksiController::class, 'index'])->name('produksi.produksi');
     Route::put('/produksi/produksi/{id}/proses', [ProduksiProduksiController::class, 'proses'])->name('produksi.produksi');
 
     Route::get('/produksi/finishing', [FinishingController::class, 'index'])->name('finishing.finishing');
     Route::put('/finishing/finishing/{id}/proses', [FinishingController::class, 'proses'])->name('finishing.finishing');
+
+    Route::get('/produksi/logistik', [LogistikController::class, 'index'])->name('logistik.logistik');
+    Route::put('/logistik/logistik/{id}/proses', [LogistikController::class, 'proses'])->name('logistik.logistik');
 });
 
 require __DIR__ . '/auth.php';

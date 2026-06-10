@@ -145,23 +145,51 @@ export default function AdminLayout({ children }) {
                                 </details>
                             </li>
                         )}
-                        {hasMenu('desain') && (
+                        {(hasMenu('desain') || hasMenu('data-desain')) && (
                             <li>
-                                <Link href={route('desain')} className="rounded-xl">
-                                    <i className="fas fa-palette"></i>
-                                    Menu Desain
-                                </Link>
+                                <details>
+                                    <summary className="rounded-xl">
+                                        <i className="fas fa-palette"></i>
+                                        Menu Desain
+                                    </summary>
+                                    <ul>
+                                        {(hasMenu('data-desain') || hasMenu('desain')) && (
+                                            <li>
+                                                <Link href={route('data-desain')}>Data Desain</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('desain') && (
+                                            <li>
+                                                <Link href={route('desain')}>Tambah Desain</Link>
+                                            </li>
+                                        )}
+                                    </ul>
+                                </details>
                             </li>
                         )}
-                        {hasMenu('produksi-order') && (
+                        {(hasMenu('produksi-order') || hasMenu('data-produksi')) && (
                             <li>
-                                <Link href={route('produksi')} className="rounded-xl">
-                                    <i className="fas fa-industry"></i>
-                                    Menu Produksi
-                                </Link>
+                                <details>
+                                    <summary className="rounded-xl">
+                                        <i className="fas fa-industry"></i>
+                                        Menu Produksi
+                                    </summary>
+                                    <ul>
+                                        {(hasMenu('data-produksi') || hasMenu('produksi-order')) && (
+                                            <li>
+                                                <Link href={route('dataproduksi')}>Data Produksi</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('produksi-order') && (
+                                            <li>
+                                                <Link href={route('produksi')}>Tambah Produksi</Link>
+                                            </li>
+                                        )}
+                                    </ul>
+                                </details>
                             </li>
                         )}
-                        {(hasMenu('proses-produksi') || hasMenu('proses-finishing')) && (
+                        {(hasMenu('proses-produksi') || hasMenu('proses-finishing') || hasMenu('proses-logistik') || hasMenu('logistik')) && (
                             <li>
                                 <details>
                                     <summary className="rounded-xl">
@@ -177,6 +205,11 @@ export default function AdminLayout({ children }) {
                                         {hasMenu('proses-finishing') && (
                                             <li>
                                                 <Link href="/produksi/finishing">Finishing</Link>
+                                            </li>
+                                        )}
+                                        {(hasMenu('proses-logistik') || hasMenu('logistik')) && (
+                                            <li>
+                                                <Link href="/produksi/logistik">Logistik</Link>
                                             </li>
                                         )}
                                     </ul>
