@@ -34,6 +34,7 @@ class CustomerController extends Controller
         $cs->nohp = str_replace('-', '', $request->nohp);
         $cs->kategori = $request->kategori;
         $cs->limit = str_replace('.', '', $request->limit ?: 0);
+        $cs->limit_akhir = 0;
         $cs->save();
 
         return redirect()->back()->with('success', 'Data berhasil ditambah');
@@ -49,6 +50,7 @@ class CustomerController extends Controller
         $cs->nohp = str_replace('-', '', $request->nohp);
         $cs->kategori = $request->kategori;
         $cs->limit = str_replace('.', '', $request->limit ?: 0);
+        // $cs->limit_akhir = str_replace('.', '', $request->limit_akhir ?: 0);
         $cs->update();
 
         return redirect()->back()->with('success', 'Data berhasil diubah');
