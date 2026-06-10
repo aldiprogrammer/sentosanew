@@ -33,6 +33,43 @@ class DesainController extends Controller
         return Inertia::render('Admin/Desain', compact('customer', 'kategoridesain', 'kodespk', 'kode_antrian', 'tanggal', 'desain'));
     }
 
+    public function dataDesain(Request $request)
+    {
+        $search = $request->query('search');
+        $tglAwal = $request->query('tgl_awal');
+        $tglAkhir = $request->query('tgl_akhir');
+
+        $desain = Desain::with('customer', 'kategoridesain', 'desainer')
+            ->when(auth()->user()->role === 'desain', function ($q) {
+                $q->where('id_desain', auth()->id());
+            })
+            ->when($search, function ($q, $search) {
+                $q->where(function ($qq) use ($search) {
+                    $qq->where('kode_order', 'like', "%{$search}%")
+                      ->orWhereHas('customer', function ($qqq) use ($search) {
+                          $qqq->where('nama', 'like', "%{$search}%");
+                      })
+                      ->orWhereHas('kategoridesain', function ($qqq) use ($search) {
+                          $qqq->where('kategori', 'like', "%{$search}%");
+                      })
+                      ->orWhereHas('desainer', function ($qqq) use ($search) {
+                          $qqq->where('username', 'like', "%{$search}%");
+                      });
+                });
+            })
+            ->when($tglAwal, function ($q, $tglAwal) {
+                $q->where('tanggal', '>=', $tglAwal);
+            })
+            ->when($tglAkhir, function ($q, $tglAkhir) {
+                $q->where('tanggal', '<=', $tglAkhir);
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+        $desain->appends(['search' => $search, 'tgl_awal' => $tglAwal, 'tgl_akhir' => $tglAkhir]);
+
+        return Inertia::render('Admin/DataDesain', compact('desain', 'tglAwal', 'tglAkhir'));
+    }
+
     public function store(Request $request)
     {
         $kategori = Kategoridesain::find($request->id_kategori_desain);
@@ -41,7 +78,7 @@ class DesainController extends Controller
 
         $cs = new Desain;
         $cs->no_antrian = $request->kodeantiran;
-        // $cs->kode_spk = $request->kodespk;
+        $cs->kode_order = "DSN-" . date('ymd') . rand(0, 10000);
         $cs->tanggal = $request->tanggal;
         $cs->id_customer = $request->id_customer;
         $cs->id_kategori_desain = $request->id_kategori_desain;

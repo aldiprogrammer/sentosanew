@@ -93,6 +93,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/suplayer/{id}', [SuplayerController::class, 'update'])->name('update.suplayer');
     Route::delete('/suplayer/{id}', [SuplayerController::class, 'delete'])->name('delete.suplayer');
 
+    Route::get('/dataproduksi', [ProduksiProduksiController::class, 'dataproduksi'])->name('dataproduksi');
+    Route::get('/data-desain', [DesainController::class, 'dataDesain'])->name('data-desain');
     Route::get('/produksi/produksi', [ProduksiProduksiController::class, 'index'])->name('produksi.produksi');
     Route::put('/produksi/produksi/{id}/proses', [ProduksiProduksiController::class, 'proses'])->name('produksi.produksi');
 
