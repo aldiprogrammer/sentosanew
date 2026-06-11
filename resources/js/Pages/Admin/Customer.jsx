@@ -1,5 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout'
-import { router, useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import React, { useRef } from 'react'
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -18,6 +18,9 @@ function formatRupiah(value) {
 }
 
 export default function Customer({ customer, kode }) {
+    const { auth } = usePage().props;
+    const restrictedRoles = ['customer service', 'desain', 'gudang', 'finishing', 'logistik'];
+    const isEditable = !restrictedRoles.includes(auth.user?.role);
     const { data, setData, post, delete: destroy, put, processing, reset } = useForm({
         id: 0,
         kode: kode,
@@ -28,6 +31,7 @@ export default function Customer({ customer, kode }) {
         kategori: '',
         limit: '',
         limit_akhir: '',
+        jatuh_tempo: '',
     });
 
     const capitalizeFirst = (str) => {
@@ -43,7 +47,7 @@ export default function Customer({ customer, kode }) {
     };
 
     const editmodalRef = useRef(null);
-    const openModalEdit = (id, nama, alamat, kode, nohp, kategori, limit, sapaan, limit_akhir) => {
+    const openModalEdit = (id, nama, alamat, kode, nohp, kategori, limit, sapaan, limit_akhir, jatuh_tempo) => {
         editmodalRef.current.showModal();
         setData({
             'id': id,
@@ -55,6 +59,7 @@ export default function Customer({ customer, kode }) {
             'limit': limit,
             'sapaan': sapaan || '',
             'limit_akhir': limit_akhir || '',
+            'jatuh_tempo': jatuh_tempo || '',
         })
     }
 
@@ -103,8 +108,8 @@ export default function Customer({ customer, kode }) {
             doc.text("Data Customer", 14, 20);
             doc.setFontSize(10);
             doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
-            const rows = customer.map((item, index) => [index + 1, item.kode, item.sapaan, item.nama, item.nohp, item.kategori, item.alamat, item.limit ? "Rp " + formatRupiah(String(item.limit)) : "-", item.limit_akhir ? "Rp " + formatRupiah(String(item.limit_akhir)) : "-"]);
-            autoTable(doc, { startY: 32, head: [["No", "Kode", "Sapaan", "Nama", "No Hp", "Kategori", "Alamat", "Limit", "Limit Akhir"]], body: rows, styles: { fontSize: 8 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
+            const rows = customer.map((item, index) => [index + 1, item.kode, item.sapaan, item.nama, item.nohp, item.kategori, item.alamat, item.limit ? "Rp " + formatRupiah(String(item.limit)) : "-", item.limit_akhir ? "Rp " + formatRupiah(String(item.limit_akhir)) : "-", item.jatuh_tempo || "-"]);
+            autoTable(doc, { startY: 32, head: [["No", "Kode", "Sapaan", "Nama", "No Hp", "Kategori", "Alamat", "Limit", "Limit Akhir", "Jatuh Tempo"]], body: rows, styles: { fontSize: 8 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
             doc.save("data_customer.pdf");
         } catch (error) {
             console.error("Gagal export PDF:", error);
@@ -275,6 +280,7 @@ export default function Customer({ customer, kode }) {
                                                     type="text"
                                                     value={data.limit ? formatRupiah(String(data.limit)) : ''}
                                                     className="input input-bordered input-success w-full"
+                                                    readOnly={!isEditable}
                                                     onChange={(e) =>
                                                         setData(
                                                             "limit",
@@ -299,6 +305,24 @@ export default function Customer({ customer, kode }) {
                                                             "limit_akhir",
                                                             e.target.value.replace(/\D/g, ''),
                                                         )
+                                                    }
+                                                />
+                                            </label>
+
+                                            <label className="form-control w-full mt-2">
+                                                <div className="label">
+                                                    <span className="label-text">
+                                                        Jatuh Tempo
+                                                    </span>
+                                                </div>
+                                                <input
+                                                    type="number"
+                                                    value={data.jatuh_tempo}
+                                                    className="input input-bordered input-success w-full"
+                                                    placeholder="Jumlah hari"
+                                                    readOnly={!isEditable}
+                                                    onChange={(e) =>
+                                                        setData("jatuh_tempo", e.target.value)
                                                     }
                                                 />
                                             </label>
@@ -459,6 +483,7 @@ export default function Customer({ customer, kode }) {
                                                     type="text"
                                                     value={data.limit ? formatRupiah(String(data.limit)) : ''}
                                                     className="input input-bordered input-success w-full"
+                                                    readOnly={!isEditable}
                                                     onChange={(e) =>
                                                         setData(
                                                             "limit",
@@ -468,24 +493,23 @@ export default function Customer({ customer, kode }) {
                                                 />
                                             </label>
 
-                                            {/* <label className="form-control w-full mt-2">
+                                            <label className="form-control w-full mt-2">
                                                 <div className="label">
                                                     <span className="label-text">
-                                                        Limit Akhir
+                                                        Jatuh Tempo
                                                     </span>
                                                 </div>
                                                 <input
-                                                    type="text"
-                                                    value={data.limit_akhir ? formatRupiah(String(data.limit_akhir)) : ''}
+                                                    type="number"
+                                                    value={data.jatuh_tempo}
                                                     className="input input-bordered input-success w-full"
+                                                    placeholder="Jumlah hari"
+                                                    readOnly={!isEditable}
                                                     onChange={(e) =>
-                                                        setData(
-                                                            "limit_akhir",
-                                                            e.target.value.replace(/\D/g, ''),
-                                                        )
+                                                        setData("jatuh_tempo", e.target.value)
                                                     }
                                                 />
-                                            </label> */}
+                                            </label>
 
                                             <div className="mt-4 flex gap-2">
                                                 <button
@@ -530,13 +554,14 @@ export default function Customer({ customer, kode }) {
                                         <th>Alamat</th>
                                         <th>Limit</th>
                                         <th>Limit Akhir</th>
+                                        <th>Jatuh Tempo</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {customer.map((item, index) => (
                                         <tr
                                             key={item.id}
-                                            onClick={() => openModalEdit(item.id, item.nama, item.alamat, item.kode, item.nohp, item.kategori, item.limit, item.sapaan, item.limit_akhir)}
+                                            onClick={() => openModalEdit(item.id, item.nama, item.alamat, item.kode, item.nohp, item.kategori, item.limit, item.sapaan, item.limit_akhir, item.jatuh_tempo)}
                                             className={`cursor-pointer hover:bg-base-200 ${Number(item.limit_akhir) >= Number(item.limit) ? 'bg-error/20' : ''}`}
                                         >
                                             <td>{index + 1}</td>
@@ -548,6 +573,7 @@ export default function Customer({ customer, kode }) {
                                             <td>{item.alamat}</td>
                                             <td>{item.limit ? 'Rp ' + formatRupiah(String(item.limit)) : '-'}</td>
                                             <td>{item.limit_akhir ? 'Rp ' + formatRupiah(String(item.limit_akhir)) : '-'}</td>
+                                            <td>{item.jatuh_tempo || '-'}</td>
                                         </tr>
                                     ))}
                                 </tbody>

@@ -17,6 +17,7 @@ class JabatanController extends Controller
         $daftarMenu = [
             ['key' => 'dashboard', 'label' => 'Dashboard', 'group' => 'Umum'],
             ['key' => 'customer', 'label' => 'Data Customer', 'group' => 'Umum'],
+            ['key' => 'otorisasi', 'label' => 'Otorisasi', 'group' => 'Umum'],
             ['key' => 'desain', 'label' => 'Menu Desain', 'group' => 'Umum'],
             ['key' => 'produksi-order', 'label' => 'Menu Produksi', 'group' => 'Umum'],
             ['key' => 'proses-produksi', 'label' => 'Proses Produksi - Produksi', 'group' => 'Umum'],

@@ -12,6 +12,7 @@ use App\Http\Controllers\admin\KurirController;
 use App\Http\Controllers\admin\PenggunaController;
 use App\Http\Controllers\admin\ProduksiController;
 use App\Http\Controllers\admin\SuplayerController;
+use App\Http\Controllers\admin\OtorisasiController;
 use App\Http\Controllers\produksi\FinishingController;
 use App\Http\Controllers\produksi\LogistikController;
 use App\Http\Controllers\produksi\ProduksiController as ProduksiProduksiController;
@@ -88,6 +89,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/kurir', [KurirController::class, 'store'])->name('store.kurir');
     Route::put('/kurir/{id}', [KurirController::class, 'update'])->name('update.kurir');
     Route::delete('/kurir/{id}', [KurirController::class, 'delete'])->name('delete.kurir');
+
+    Route::get('/otorisasi', [OtorisasiController::class, 'index'])->name('otorisasi');
+    Route::get('/otorisasi/cari/{kode_spk}', [OtorisasiController::class, 'cariSpk']);
+    Route::post('/otorisasi', [OtorisasiController::class, 'store'])->name('store.otorisasi');
+    Route::put('/otorisasi/{id}', [OtorisasiController::class, 'update'])->name('update.otorisasi');
+    Route::put('/otorisasi/{id}/proses', [OtorisasiController::class, 'proses'])->name('proses.otorisasi');
+    Route::delete('/otorisasi/{id}', [OtorisasiController::class, 'delete'])->name('delete.otorisasi');
 
     Route::get('/suplayer', [SuplayerController::class, 'index'])->name('suplayer');
     Route::post('/suplayer', [SuplayerController::class, 'store'])->name('store.suplayer');

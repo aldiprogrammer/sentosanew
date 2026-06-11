@@ -98,6 +98,14 @@ export default function AdminLayout({ children }) {
                                 </Link>
                             </li>
                         )}
+                        {hasMenu('otorisasi') && (
+                            <li>
+                                <Link href={route('otorisasi')} className="rounded-xl">
+                                    <i className="fas fa-check-circle"></i>
+                                    Otorisasi
+                                </Link>
+                            </li>
+                        )}
                         {(hasMenu('pengguna') || hasMenu('distributor') || hasMenu('kurir') || hasMenu('suplayer') || hasMenu('master-bahan') || hasMenu('master-kategoridesain') || hasMenu('master-jabatan')) && (
                             <li>
                                 <details>
