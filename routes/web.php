@@ -97,6 +97,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dataproduksi', [ProduksiProduksiController::class, 'dataproduksi'])->name('dataproduksi');
     Route::put('/dataproduksi/proses-produksi', [ProduksiProduksiController::class, 'prosesProduksi'])->name('proses.produksi');
     Route::get('/data-desain', [DesainController::class, 'dataDesain'])->name('data-desain');
+    Route::put('/data-desain/proses-pembayaran', [DesainController::class, 'prosesPembayaran'])->name('proses.pembayaran.desain');
     Route::get('/produksi/produksi', [ProduksiProduksiController::class, 'index'])->name('produksi.produksi');
     Route::put('/produksi/produksi/{id}/proses', [ProduksiProduksiController::class, 'proses'])->name('produksi.produksi');
 

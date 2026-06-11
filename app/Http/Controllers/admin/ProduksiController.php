@@ -18,15 +18,18 @@ class ProduksiController extends Controller
     {
         $search = $request->query('search');
         $produksi = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')
+            ->when(auth()->user()->role === 'Desainer', function ($q) {
+                $q->where('id_desainer', auth()->id());
+            })
             ->when($search, function ($q, $search) {
                 $q->where('kode_spk', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%")
-                  ->orWhereHas('customer', function ($qq) use ($search) {
-                      $qq->where('nama', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('bahan', function ($qq) use ($search) {
-                      $qq->where('bahan', 'like', "%{$search}%");
-                  });
+                    ->orWhere('keterangan', 'like', "%{$search}%")
+                    ->orWhereHas('customer', function ($qq) use ($search) {
+                        $qq->where('nama', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('bahan', function ($qq) use ($search) {
+                        $qq->where('bahan', 'like', "%{$search}%");
+                    });
             })
             ->orderBy('id', 'desc')
             ->paginate(10);

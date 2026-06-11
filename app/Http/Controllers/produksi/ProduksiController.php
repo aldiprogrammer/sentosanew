@@ -26,6 +26,9 @@ class ProduksiController extends Controller
         $tglAkhir = $request->query('tgl_akhir');
 
         $produksi = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')
+            ->when(auth()->user()->role === 'Desainer', function ($q) {
+                $q->where('id_desainer', auth()->id());
+            })
             ->when($search, function ($q, $search) {
                 $q->where(function ($qq) use ($search) {
                     $qq->where('kode_spk', 'like', "%{$search}%")
@@ -54,7 +57,28 @@ class ProduksiController extends Controller
     function prosesProduksi(Request $request)
     {
         $ids = $request->input('ids', []);
-        Produksi::whereIn('id', $ids)->update(['status_produksi' => 1]);
+        $paymentType = $request->input('payment_type');
+
+        if ($paymentType === 'utang') {
+            $firstItem = Produksi::with('customer')->whereIn('id', $ids)->first();
+            if ($firstItem && $firstItem->customer) {
+                $customer = $firstItem->customer;
+                $total = Produksi::whereIn('id', $ids)->sum('total_harga');
+
+                if (($customer->limit_akhir + $total) > $customer->limit) {
+                    return back()->withErrors([
+                        'payment' => 'Limit customer tidak mencukupi. Sisa limit: Rp ' . number_format($customer->limit - $customer->limit_akhir),
+                    ]);
+                }
+
+                $customer->increment('limit_akhir', $total);
+            }
+        }
+
+        Produksi::whereIn('id', $ids)->update([
+            'status_produksi' => 1,
+            'pembayaran' => $paymentType,
+        ]);
         return back()->with('success', 'Status produksi berhasil diupdate');
     }
 

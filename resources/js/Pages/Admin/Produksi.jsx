@@ -1,11 +1,13 @@
 import AdminLayout from "@/Layouts/AdminLayout";
 import NewCustomerModal from "@/Components/NewCustomerModal";
-import { Link, router, useForm } from "@inertiajs/react";
+import { Link, router, useForm, usePage } from "@inertiajs/react";
 import React, { useEffect, useRef, useState } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export default function Produksi({ produksi, desain, bahan, customer, kode_antrian, kodespk }) {
+  const { auth } = usePage().props;
+  const isDesainer = auth.user?.role === 'Desainer';
   const today = new Date().toISOString().split("T")[0];
   const [search, setSearch] = useState('');
 
@@ -443,59 +445,60 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 </select>
                               </label>
 
-                              {/* Harga */}
-                              <label className="form-control w-full">
-                                <div className="label">
-                                  <span className="label-text">Harga</span>
-                                </div>
-                                <input
-                                  type="text"
-                                  className="input input-bordered input-success w-full"
-                                  value={data.harga_tampil ? 'Rp ' + Number(data.harga_tampil).toLocaleString('id-ID') : ''}
-                                  placeholder={data.id_bahan ? 'Pilih harga' : 'Pilih Bahan'}
-                                  readOnly
-                                />
-                                {data.kategori_customer ? (
-                                  <div className="mt-2">
-                                    <div className="flex gap-3">
-                                      <label className="flex items-center gap-1 cursor-pointer">
-                                        <input
-                                          type="radio"
-                                          name="pilihan_harga_tambah"
-                                          className="radio radio-success radio-xs"
-                                          checked={data.pilihan_harga === data.kategori_customer}
-                                          onChange={() => handlePilihanHarga(data.kategori_customer)}
-                                        />
-                                        <span className="text-sm">{data.kategori_customer}</span>
-                                      </label>
-                                      <label className="flex items-center gap-1 cursor-pointer">
-                                        <input
-                                          type="radio"
-                                          name="pilihan_harga_tambah"
-                                          className="radio radio-warning radio-xs"
-                                          checked={data.pilihan_harga === 'Custom'}
-                                          onChange={() => handlePilihanHarga('Custom')}
-                                        />
-                                        <span className="text-sm">Custom</span>
-                                      </label>
-                                    </div>
-                                    {data.pilihan_harga === 'Custom' && (
-                                      <div className="mt-1">
-                                        <input
-                                          type="text"
-                                          className="input input-bordered input-success w-full input-sm"
-                                          placeholder="Rp 0"
-                                          value={data.harga_manual ? Number(data.harga_manual).toLocaleString('id-ID') : ''}
-                                          onChange={(e) => {
-                                            const numeric = e.target.value.replace(/\D/g, '');
-                                            setData((prev) => ({ ...prev, harga_manual: numeric, harga_tampil: numeric }));
-                                          }}
-                                        />
-                                      </div>
-                                    )}
+                              {!isDesainer && (
+                                <label className="form-control w-full">
+                                  <div className="label">
+                                    <span className="label-text">Harga</span>
                                   </div>
-                                ) : null}
-                              </label>
+                                  <input
+                                    type="text"
+                                    className="input input-bordered input-success w-full"
+                                    value={data.harga_tampil ? 'Rp ' + Number(data.harga_tampil).toLocaleString('id-ID') : ''}
+                                    placeholder={data.id_bahan ? 'Pilih harga' : 'Pilih Bahan'}
+                                    readOnly
+                                  />
+                                  {data.kategori_customer ? (
+                                    <div className="mt-2">
+                                      <div className="flex gap-3">
+                                        <label className="flex items-center gap-1 cursor-pointer">
+                                          <input
+                                            type="radio"
+                                            name="pilihan_harga_tambah"
+                                            className="radio radio-success radio-xs"
+                                            checked={data.pilihan_harga === data.kategori_customer}
+                                            onChange={() => handlePilihanHarga(data.kategori_customer)}
+                                          />
+                                          <span className="text-sm">{data.kategori_customer}</span>
+                                        </label>
+                                        <label className="flex items-center gap-1 cursor-pointer">
+                                          <input
+                                            type="radio"
+                                            name="pilihan_harga_tambah"
+                                            className="radio radio-warning radio-xs"
+                                            checked={data.pilihan_harga === 'Custom'}
+                                            onChange={() => handlePilihanHarga('Custom')}
+                                          />
+                                          <span className="text-sm">Custom</span>
+                                        </label>
+                                      </div>
+                                      {data.pilihan_harga === 'Custom' && (
+                                        <div className="mt-1">
+                                          <input
+                                            type="text"
+                                            className="input input-bordered input-success w-full input-sm"
+                                            placeholder="Rp 0"
+                                            value={data.harga_manual ? Number(data.harga_manual).toLocaleString('id-ID') : ''}
+                                            onChange={(e) => {
+                                              const numeric = e.target.value.replace(/\D/g, '');
+                                              setData((prev) => ({ ...prev, harga_manual: numeric, harga_tampil: numeric }));
+                                            }}
+                                          />
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : null}
+                                </label>
+                              )}
 
                               <label className="form-control w-full">
                                 <div className="label">
@@ -891,59 +894,60 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 </select>
                               </label>
 
-                              {/* Harga */}
-                              <label className="form-control w-full">
-                                <div className="label">
-                                  <span className="label-text">Harga</span>
-                                </div>
-                                <input
-                                  type="text"
-                                  className="input input-bordered input-success w-full"
-                                  value={data.harga_tampil ? 'Rp ' + Number(data.harga_tampil).toLocaleString('id-ID') : ''}
-                                  placeholder={data.id_bahan ? 'Pilih harga' : 'Pilih Bahan'}
-                                  readOnly
-                                />
-                                {data.kategori_customer ? (
-                                  <div className="mt-2">
-                                    <div className="flex gap-3">
-                                      <label className="flex items-center gap-1 cursor-pointer">
-                                        <input
-                                          type="radio"
-                                          name="pilihan_harga_edit"
-                                          className="radio radio-success radio-xs"
-                                          checked={data.pilihan_harga === data.kategori_customer}
-                                          onChange={() => handlePilihanHarga(data.kategori_customer)}
-                                        />
-                                        <span className="text-sm">{data.kategori_customer}</span>
-                                      </label>
-                                      <label className="flex items-center gap-1 cursor-pointer">
-                                        <input
-                                          type="radio"
-                                          name="pilihan_harga_edit"
-                                          className="radio radio-warning radio-xs"
-                                          checked={data.pilihan_harga === 'Custom'}
-                                          onChange={() => handlePilihanHarga('Custom')}
-                                        />
-                                        <span className="text-sm">Custom</span>
-                                      </label>
-                                    </div>
-                                    {data.pilihan_harga === 'Custom' && (
-                                      <div className="mt-1">
-                                        <input
-                                          type="text"
-                                          className="input input-bordered input-success w-full input-sm"
-                                          placeholder="Rp 0"
-                                          value={data.harga_manual ? Number(data.harga_manual).toLocaleString('id-ID') : ''}
-                                          onChange={(e) => {
-                                            const numeric = e.target.value.replace(/\D/g, '');
-                                            setData((prev) => ({ ...prev, harga_manual: numeric, harga_tampil: numeric }));
-                                          }}
-                                        />
-                                      </div>
-                                    )}
+                              {!isDesainer && (
+                                <label className="form-control w-full">
+                                  <div className="label">
+                                    <span className="label-text">Harga</span>
                                   </div>
-                                ) : null}
-                              </label>
+                                  <input
+                                    type="text"
+                                    className="input input-bordered input-success w-full"
+                                    value={data.harga_tampil ? 'Rp ' + Number(data.harga_tampil).toLocaleString('id-ID') : ''}
+                                    placeholder={data.id_bahan ? 'Pilih harga' : 'Pilih Bahan'}
+                                    readOnly
+                                  />
+                                  {data.kategori_customer ? (
+                                    <div className="mt-2">
+                                      <div className="flex gap-3">
+                                        <label className="flex items-center gap-1 cursor-pointer">
+                                          <input
+                                            type="radio"
+                                            name="pilihan_harga_edit"
+                                            className="radio radio-success radio-xs"
+                                            checked={data.pilihan_harga === data.kategori_customer}
+                                            onChange={() => handlePilihanHarga(data.kategori_customer)}
+                                          />
+                                          <span className="text-sm">{data.kategori_customer}</span>
+                                        </label>
+                                        <label className="flex items-center gap-1 cursor-pointer">
+                                          <input
+                                            type="radio"
+                                            name="pilihan_harga_edit"
+                                            className="radio radio-warning radio-xs"
+                                            checked={data.pilihan_harga === 'Custom'}
+                                            onChange={() => handlePilihanHarga('Custom')}
+                                          />
+                                          <span className="text-sm">Custom</span>
+                                        </label>
+                                      </div>
+                                      {data.pilihan_harga === 'Custom' && (
+                                        <div className="mt-1">
+                                          <input
+                                            type="text"
+                                            className="input input-bordered input-success w-full input-sm"
+                                            placeholder="Rp 0"
+                                            value={data.harga_manual ? Number(data.harga_manual).toLocaleString('id-ID') : ''}
+                                            onChange={(e) => {
+                                              const numeric = e.target.value.replace(/\D/g, '');
+                                              setData((prev) => ({ ...prev, harga_manual: numeric, harga_tampil: numeric }));
+                                            }}
+                                          />
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : null}
+                                </label>
+                              )}
 
                               <label className="form-control w-full">
                                 <div className="label">
@@ -1171,49 +1175,49 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
               </div>
 
               <div>
-                  <div className="overflow-x-auto">
+                <div className="overflow-x-auto">
                   <table className="table table-zebra" id="myTable">
-                  <thead>
-                    <tr>
-                      <th>No</th>
-                      <th>Kode SPK</th>
-                      <th>Customer</th>
-                      <th>Bahan</th>
-                      <th>Keterangan</th>
-                      <th>Tinggi</th>
-                      <th>Lebar</th>
-                      <th>Qty</th>
-                      <th>Sisi</th>
-                      <th>Harga</th>
-                      <th>Total Harga</th>
-                      <th>Metode P</th>
-                      <th>Tgl Kirim /Ambil</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-xs">
-                    {produksi.data.map((item, index) => (
-                      <tr
-                        key={item.id}
-                        onClick={() => openModalEdit(item)}
-                        className="cursor-pointer hover:bg-base-200"
-                      >
-                        <td>{produksi.from + index}</td>
-                        <td>{item.kode_spk}</td>
-                        <td>{item.customer.nama}</td>
-                        <td>{item.bahan.bahan}</td>
-                        <td>{item.keterangan}</td>
-                        <td>{item.tinggi} {item.satuan}</td>
-                        <td>{item.lebar}</td>
-                        <td>{item.qty}</td>
-                        <td>{item.sisi}</td>
-                        <td>{Number(item.harga_bahan).toLocaleString('id-ID')}</td>
-                        <td>{Number(item.total_harga).toLocaleString('id-ID')}</td>
-                        <td>{item.metode_pengantaran}</td>
-                        <td>{item.tgl_kirim}</td>
+                    <thead>
+                      <tr>
+                        <th>No</th>
+                        <th>Kode SPK</th>
+                        <th>Customer</th>
+                        <th>Bahan</th>
+                        <th>Keterangan</th>
+                        <th>Tinggi</th>
+                        <th>Lebar</th>
+                        <th>Qty</th>
+                        <th>Sisi</th>
+                        {!isDesainer && <th>Harga</th>}
+                        {!isDesainer && <th>Total Harga</th>}
+                        <th>Metode P</th>
+                        <th>Tgl Kirim /Ambil</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="text-xs">
+                      {produksi.data.map((item, index) => (
+                        <tr
+                          key={item.id}
+                          onClick={() => openModalEdit(item)}
+                          className="cursor-pointer hover:bg-base-200"
+                        >
+                          <td>{produksi.from + index}</td>
+                          <td>{item.kode_spk}</td>
+                          <td>{item.customer.nama}</td>
+                          <td>{item.bahan.bahan}</td>
+                          <td>{item.keterangan}</td>
+                          <td>{item.tinggi} {item.satuan}</td>
+                          <td>{item.lebar}</td>
+                          <td>{item.qty}</td>
+                          <td>{item.sisi}</td>
+                          {!isDesainer && <td>{Number(item.harga_bahan).toLocaleString('id-ID')}</td>}
+                          {!isDesainer && <td>{Number(item.total_harga).toLocaleString('id-ID')}</td>}
+                          <td>{item.metode_pengantaran}</td>
+                          <td>{item.tgl_kirim}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
 
                 {produksi.links && (

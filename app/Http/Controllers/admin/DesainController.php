@@ -13,7 +13,13 @@ class DesainController extends Controller
 {
     public function index()
     {
-        $desain = Desain::with('customer', 'kategoridesain', 'desainer')->get();
+        if (auth()->user()->role === 'Desainer') {
+            $id = auth()->id();
+            $desain = Desain::with('customer', 'kategoridesain', 'desainer')->where('id_desain', $id)->get();
+        } else {
+            $desain = Desain::with('customer', 'kategoridesain', 'desainer')->get();
+        }
+
 
         $kategoridesain = Kategoridesain::all();
         $customer = Customer::all();
@@ -35,26 +41,28 @@ class DesainController extends Controller
 
     public function dataDesain(Request $request)
     {
+        // dd(auth()->user()->role);
+        // die();
         $search = $request->query('search');
         $tglAwal = $request->query('tgl_awal');
         $tglAkhir = $request->query('tgl_akhir');
 
         $desain = Desain::with('customer', 'kategoridesain', 'desainer')
-            ->when(auth()->user()->role === 'desain', function ($q) {
+            ->when(auth()->user()->role === 'Desainer', function ($q) {
                 $q->where('id_desain', auth()->id());
             })
             ->when($search, function ($q, $search) {
                 $q->where(function ($qq) use ($search) {
                     $qq->where('kode_order', 'like', "%{$search}%")
-                      ->orWhereHas('customer', function ($qqq) use ($search) {
-                          $qqq->where('nama', 'like', "%{$search}%");
-                      })
-                      ->orWhereHas('kategoridesain', function ($qqq) use ($search) {
-                          $qqq->where('kategori', 'like', "%{$search}%");
-                      })
-                      ->orWhereHas('desainer', function ($qqq) use ($search) {
-                          $qqq->where('username', 'like', "%{$search}%");
-                      });
+                        ->orWhereHas('customer', function ($qqq) use ($search) {
+                            $qqq->where('nama', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('kategoridesain', function ($qqq) use ($search) {
+                            $qqq->where('kategori', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('desainer', function ($qqq) use ($search) {
+                            $qqq->where('username', 'like', "%{$search}%");
+                        });
                 });
             })
             ->when($tglAwal, function ($q, $tglAwal) {
@@ -106,6 +114,31 @@ class DesainController extends Controller
         $cs->update();
 
         return redirect()->back()->with('success', 'Data berhasil diubah');
+    }
+
+    public function prosesPembayaran(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        $paymentType = $request->input('payment_type');
+
+        if ($paymentType === 'utang') {
+            $firstItem = Desain::with('customer')->whereIn('id', $ids)->first();
+            if ($firstItem && $firstItem->customer) {
+                $customer = $firstItem->customer;
+                $total = Desain::whereIn('id', $ids)->sum('total_harga');
+
+                if (($customer->limit_akhir + $total) > $customer->limit) {
+                    return back()->withErrors([
+                        'payment' => 'Limit customer tidak mencukupi. Sisa limit: Rp ' . number_format($customer->limit - $customer->limit_akhir),
+                    ]);
+                }
+
+                $customer->increment('limit_akhir', $total);
+            }
+        }
+
+        Desain::whereIn('id', $ids)->update(['pembayaran' => $paymentType]);
+        return back()->with('success', 'Pembayaran berhasil diproses');
     }
 
     public function delete($id)

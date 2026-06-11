@@ -93,14 +93,14 @@ export default function DataSaya({ produksi, tglAwal, tglAkhir }) {
                 <head>
                     <title>Struk Produksi - ${isMultiple ? items.length + ' item' : escapeHtml(items[0].kode_spk)}</title>
                     <style>
-                        @page { size: 80mm auto; margin: 3mm; }
+                        @page { size: 75mm auto; margin: 3mm; }
                         * { box-sizing: border-box; margin: 0; padding: 0; }
                         body {
-                            width: 74mm; margin: 0; color: #000;
+                            width: 69mm; margin: 0; color: #000;
                             font-family: 'Courier New', monospace;
                             font-size: 10px; line-height: 1.3;
                         }
-                        .receipt { width: 74mm; padding: 2mm 3mm; }
+                        .receipt { width: 69mm; padding: 2mm 2mm; }
                         .header { text-align: center; margin-bottom: 6px; }
                         .header .brand { font-size: 20px; font-weight: 900; letter-spacing: 2px; }
                         .header .sub { font-size: 11px; font-weight: 700; }
