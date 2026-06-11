@@ -213,7 +213,7 @@ export default function Otorisasi({ otorisasi }) {
                                                 <div className="mt-3 p-3 border border-success rounded-box bg-success/5">
                                                     <p className="text-sm font-semibold text-success">Data ditemukan:</p>
                                                     <p className="text-sm mt-1">Customer: {spkData.nama}</p>
-                                                    <p className="text-sm">No HP: {spkData.no_hp}</p>
+                                                    {/* <p className="text-sm">No HP: {spkData.nohp}</p> */}
                                                     <p className="text-sm">Total Harga: Rp {formatRupiah(spkData.total_harga)}</p>
                                                 </div>
                                             )}

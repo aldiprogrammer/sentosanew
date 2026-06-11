@@ -219,6 +219,7 @@ export default function Desain({
                             <select
                               name=""
                               id=""
+                              value={data.id_customer}
                               className="input input-bordered input-success"
                               required
                               onChange={(e) => handleCustomer(e.target.value)}
@@ -252,6 +253,7 @@ export default function Desain({
                             <select
                               name=""
                               id=""
+                              value={data.id_kategori_desain}
                               className="input input-bordered input-success"
                               required
                               onChange={(e) => handleKategori(e.target.value)}

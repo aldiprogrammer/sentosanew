@@ -251,7 +251,7 @@ export default function Customer({ customer, kode }) {
                                                         Kategori
                                                     </span>
                                                 </div>
-                                                <select name="" id="" className='input input-bordered input-success' required onChange={(e) => setData('kategori', e.target.value)}>
+                                                <select name="" id="" value={data.kategori} className='input input-bordered input-success' required onChange={(e) => setData('kategori', e.target.value)}>
                                                     <option value="">-- Pilih Kategori --</option>
                                                     <option value="Khusus">Khusus</option>
                                                     <option value="Umum">Umum</option>
