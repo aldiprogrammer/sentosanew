@@ -25,6 +25,7 @@ class JabatanController extends Controller
             ['key' => 'proses-produksi', 'label' => 'Proses Produksi - Produksi', 'group' => 'Umum'],
             ['key' => 'proses-finishing', 'label' => 'Proses Produksi - Finishing', 'group' => 'Umum'],
             ['key' => 'logistik', 'label' => 'Logistik', 'group' => 'Umum'],
+            ['key' => 'laporan-pembukuan', 'label' => 'Laporan Pembukuan', 'group' => 'Umum'],
             ['key' => 'pengguna', 'label' => 'Pengguna', 'group' => 'Master Data'],
             ['key' => 'distributor', 'label' => 'Distributor', 'group' => 'Master Data'],
             ['key' => 'kurir', 'label' => 'Kurir', 'group' => 'Master Data'],

@@ -9,6 +9,7 @@ use App\Http\Controllers\admin\HomeController;
 use App\Http\Controllers\admin\JabatanController;
 use App\Http\Controllers\admin\KategoriDesainController;
 use App\Http\Controllers\admin\KurirController;
+use App\Http\Controllers\admin\LaporanPembukuanController;
 use App\Http\Controllers\admin\PenggunaController;
 use App\Http\Controllers\admin\ProduksiController;
 use App\Http\Controllers\admin\SuplayerController;
@@ -114,6 +115,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/produksi/logistik', [LogistikController::class, 'index'])->name('logistik.logistik');
     Route::put('/logistik/logistik/{id}/proses', [LogistikController::class, 'proses'])->name('logistik.logistik');
+
+    Route::get('/laporan-pembukuan', [LaporanPembukuanController::class, 'index'])->name('laporan-pembukuan');
 });
 
 require __DIR__ . '/auth.php';
