@@ -153,7 +153,7 @@ export default function AdminLayout({ children }) {
                                 </details>
                             </li>
                         )}
-                        {(hasMenu('desain') || hasMenu('data-desain')) && (
+                        {(hasMenu('tambah-desain') || hasMenu('data-desain')) && (
                             <li>
                                 <details>
                                     <summary className="rounded-xl">
@@ -161,21 +161,21 @@ export default function AdminLayout({ children }) {
                                         Menu Desain
                                     </summary>
                                     <ul>
-                                        {(hasMenu('data-desain') || hasMenu('desain')) && (
-                                            <li>
-                                                <Link href={route('data-desain')}>Data Desain</Link>
-                                            </li>
-                                        )}
-                                        {hasMenu('desain') && (
+                                        {hasMenu('tambah-desain') && (
                                             <li>
                                                 <Link href={route('desain')}>Tambah Desain</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('data-desain') && (
+                                            <li>
+                                                <Link href={route('data-desain')}>Data Desain</Link>
                                             </li>
                                         )}
                                     </ul>
                                 </details>
                             </li>
                         )}
-                        {(hasMenu('produksi-order') || hasMenu('data-produksi')) && (
+                        {(hasMenu('tambah-produksi') || hasMenu('data-produksi')) && (
                             <li>
                                 <details>
                                     <summary className="rounded-xl">
@@ -183,14 +183,14 @@ export default function AdminLayout({ children }) {
                                         Menu Produksi
                                     </summary>
                                     <ul>
-                                        {(hasMenu('data-produksi') || hasMenu('produksi-order')) && (
-                                            <li>
-                                                <Link href={route('dataproduksi')}>Data Produksi</Link>
-                                            </li>
-                                        )}
-                                        {hasMenu('produksi-order') && (
+                                        {hasMenu('tambah-produksi') && (
                                             <li>
                                                 <Link href={route('produksi')}>Tambah Produksi</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('data-produksi') && (
+                                            <li>
+                                                <Link href={route('dataproduksi')}>Data Produksi</Link>
                                             </li>
                                         )}
                                     </ul>

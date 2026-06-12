@@ -372,7 +372,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                                     <td>{item.bahan?.bahan}</td>
                                                     <td>{item.keterangan}</td>
                                                     <td className="tabular-nums">{item.tinggi} {item.satuan}</td>
-                                                    <td className="tabular-nums">{item.lebar}</td>
+                                                    <td className="tabular-nums">{item.lebar} {item.satuan}</td>
                                                     <td className="tabular-nums text-center">{item.qty}</td>
                                                     <td className="text-center">{item.sisi}</td>
                                                     {!isDesainer && <td className="tabular-nums">{Number(item.harga_bahan).toLocaleString('id-ID')}</td>}

@@ -67,7 +67,7 @@ class OtorisasiController extends Controller
         $cs->update();
 
         Produksi::where('kode_spk', $cs->kode_spk)
-            ->update(['otorisasi' => 1]);
+            ->update(['otorisasi' => 1, 'status_produksi' => 1]);
 
         return redirect()->back()->with('success', 'Otorisasi disetujui');
     }

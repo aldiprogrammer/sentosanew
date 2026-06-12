@@ -5,11 +5,63 @@ import React, { useEffect, useRef, useState } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
+function SearchableSelect({ options, value, onChange, placeholder }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef(null);
+  const selected = options.find(o => String(o.value) === String(value));
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtered = options.filter(o =>
+    o.label.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="relative" ref={ref}>
+      <div
+        className="input input-bordered input-success w-full flex items-center cursor-pointer justify-between h-auto min-h-[2.5rem] py-1.5"
+        onClick={() => { setOpen(!open); setSearch(''); }}
+      >
+        <span className={`text-xs ${selected ? '' : 'text-gray-400'}`}>{selected ? selected.label : placeholder}</span>
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={open ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} /></svg>
+      </div>
+      {open && (
+        <div className="absolute z-50 w-full mt-1 bg-base-100 border border-base-300 rounded-box shadow-lg max-h-60 overflow-auto">
+          <input
+            className="input input-bordered input-sm w-full mb-1 sticky top-0 bg-base-100"
+            placeholder="Cari bahan..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            autoFocus
+          />
+          {filtered.length === 0 && <p className="p-2 text-sm text-gray-400">Tidak ditemukan</p>}
+          {filtered.map(o => (
+            <div
+              key={o.value}
+              className={`px-3 py-2 cursor-pointer text-sm hover:bg-base-300 ${String(o.value) === String(value) ? 'bg-base-300 font-semibold' : ''}`}
+              onClick={() => { onChange(o.value); setOpen(false); }}
+            >
+              {o.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Produksi({ produksi, desain, bahan, customer, kode_antrian, kodespk }) {
   const { auth } = usePage().props;
   const isDesainer = auth.user?.role === 'Desainer';
   const today = new Date().toISOString().split("T")[0];
   const [search, setSearch] = useState('');
+
+
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -427,22 +479,13 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 <div className="label">
                                   <span className="label-text">Bahan</span>
                                 </div>
-                                <select
-                                  name="id_bahan"
+                                <SearchableSelect
+                                  options={bahan.map(bh => ({ value: bh.id, label: `${bh.kode}-${bh.bahan} ${bh.kategori} - ${bh.qty == '1' ? '' : bh.qty}` }))}
                                   value={data.id_bahan}
-                                  onChange={(e) =>
-                                    handleBahan(e.target.value)
-                                  }
-                                  className="select select-bordered select-success w-full"
-                                  required
-                                >
-                                  <option value="">Pilih Bahan</option>
-                                  {bahan.map((bh, index) => (
-                                    <option value={bh.id}>
-                                      {bh.kode}-{bh.bahan} - {bh.kategori} {bh.qty == '1' ? '' : <small className="font-bold"> - @{bh.qty}</small>}
-                                    </option>
-                                  ))}
-                                </select>
+                                  onChange={(val) => handleBahan(val)}
+                                  className="text-xs"
+                                  placeholder="Pilih Bahan"
+                                />
                               </label>
 
                               {!isDesainer && (
@@ -874,24 +917,13 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 <div className="label">
                                   <span className="label-text">Bahan</span>
                                 </div>
-                                <select
-                                  name="id_bahan"
+                                <SearchableSelect
+                                  options={bahan.map(bh => ({ value: bh.id, label: `${bh.kode}-${bh.bahan} - ${bh.kategori}` }))}
                                   value={data.id_bahan}
-                                  onChange={(e) =>
-                                    handleBahan(e.target.value)
-                                  }
-                                  className="select select-bordered select-success w-full"
-                                  required
-                                >
-                                  <option value={data.id_bahan}>
-                                    {data.bahan}
-                                  </option>
-                                  {bahan.map((bh, index) => (
-                                    <option value={bh.id}>
-                                      {bh.bahan} - {bh.kategori}
-                                    </option>
-                                  ))}
-                                </select>
+                                  onChange={(val) => handleBahan(val)}
+                                  className='text-xs'
+                                  placeholder="Pilih Bahan"
+                                />
                               </label>
 
                               {!isDesainer && (
@@ -1207,7 +1239,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                           <td>{item.bahan.bahan}</td>
                           <td>{item.keterangan}</td>
                           <td>{item.tinggi} {item.satuan}</td>
-                          <td>{item.lebar}</td>
+                          <td>{item.lebar} {item.satuan}</td>
                           <td>{item.qty}</td>
                           <td>{item.sisi}</td>
                           {!isDesainer && <td>{Number(item.harga_bahan).toLocaleString('id-ID')}</td>}

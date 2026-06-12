@@ -3,7 +3,7 @@ import { Head, Link } from '@inertiajs/react'
 const menus = [
     { name: 'Customer Service', icon: 'fas fa-headset', route: 'customer', desc: 'Kelola data pelanggan' },
     { name: 'Desain', icon: 'fas fa-palette', route: 'desain', desc: 'Manajemen desain grafis' },
-    { name: 'Produksi', icon: 'fas fa-industry', route: 'produksi', desc: 'Proses produksi percetakan' },
+    { name: 'Produksi', icon: 'fas fa-industry', route: 'produksi', desc: 'Proses produksi, finishing & logistik percetakan' },
     { name: 'Admin', icon: 'fas fa-user-shield', route: 'home', desc: 'Panel administrasi' },
     { name: 'Super Admin', icon: 'fas fa-crown', route: 'pengguna', desc: 'Manajemen pengguna sistem' },
 ]
