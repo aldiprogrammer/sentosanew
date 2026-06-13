@@ -53,7 +53,7 @@ class DesainController extends Controller
             })
             ->when($search, function ($q, $search) {
                 $q->where(function ($qq) use ($search) {
-                    $qq->where('kode_order', 'like', "%{$search}%")
+                    $qq->where('no_invoice', 'like', "%{$search}%")
                         ->orWhereHas('customer', function ($qqq) use ($search) {
                             $qqq->where('nama', 'like', "%{$search}%");
                         })

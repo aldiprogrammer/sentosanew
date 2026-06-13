@@ -32,6 +32,7 @@ class ProduksiController extends Controller
             ->when($search, function ($q, $search) {
                 $q->where(function ($qq) use ($search) {
                     $qq->where('kode_spk', 'like', "%{$search}%")
+                        ->orWhere('no_invoice', 'like', "%{$search}%")
                         ->orWhere('keterangan', 'like', "%{$search}%")
                         ->orWhereHas('customer', function ($qqq) use ($search) {
                             $qqq->where('nama', 'like', "%{$search}%");
