@@ -137,7 +137,7 @@ export default function Produksi({ produksi }) {
                             <tbody>${finishingRows}</tbody>
                         </table>
                         <div class="section-title">Catatan :</div>
-                        <div class="note">${escapeHtml(item.catatan || '')}</div>
+                        <div class="note">${escapeHtml(item.pinising?.catatan || '')}</div>
                         <div class="footer">
                             <span>${escapeHtml(formatReceiptDate(printedAt))}</span>
                             <span>${escapeHtml(formatReceiptTime(printedAt))}</span>
@@ -276,6 +276,7 @@ export default function Produksi({ produksi }) {
                                                                             <th className="py-3 text-center">Sisi</th>
                                                                             <th className="py-3 text-center">Pengataran</th>
                                                                             <th className="py-3 text-center">Tgl Kirim</th>
+                                                                            <th className="py-3 text-center">Catatan</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
@@ -289,9 +290,9 @@ export default function Produksi({ produksi }) {
                                                                                 <td className="text-[10px] text-center font-semibold tabular-nums">{item.qty}</td>
                                                                                 <td className="text-[10px] text-center">{item.sisi}</td>
                                                                                 <td className="text-[10px] text-center font-semibold tabular-nums">{item.metode_pengantaran}</td>
-                                                                                <td className="text-[10px] text-center font-semibold tabular-nums">{item.tgl_kirim}</td>
-                                                                            </tr>
-                                                                        ))}
+                                                                            <td className="text-[10px] text-center font-semibold tabular-nums">{item.tgl_kirim}</td>
+                                                                            <td className="text-[10px] text-center max-w-[100px] truncate">{item.pinising?.catatan || ''}</td>
+                                                                        </tr>
                                                                     </tbody>
                                                                 </table>
                                                             </div>

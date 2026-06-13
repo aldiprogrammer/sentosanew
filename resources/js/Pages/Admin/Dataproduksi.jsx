@@ -338,6 +338,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                                 <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={allSelected} onChange={toggleSelectAll} />
                                             </th>
                                             <th>No</th>
+                                            <th>No Inv</th>
                                             <th>Kode SPK</th>
                                             <th>Customer</th>
                                             <th>Bahan</th>
@@ -367,6 +368,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                                         <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={selected.includes(item.id)} onChange={() => toggleSelect(item.id)} />
                                                     </td>
                                                     <td>{produksi.from + index}</td>
+                                                    <td>{item.no_invoice}</td>
                                                     <td className="font-mono font-medium">{item.kode_spk}</td>
                                                     <td>{item.customer?.nama}</td>
                                                     <td>{item.bahan?.bahan}</td>

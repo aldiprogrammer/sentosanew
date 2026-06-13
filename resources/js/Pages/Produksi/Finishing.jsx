@@ -120,6 +120,7 @@ export default function Finishing({ produksi }) {
                                                                             <th className="py-3 text-center">Sisi</th>
                                                                             <th className="py-3 text-center">Pengataran</th>
                                                                             <th className="py-3 text-center">Tgl Kirim</th>
+                                                                            <th className="py-3 text-center">Catatan</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
@@ -133,8 +134,9 @@ export default function Finishing({ produksi }) {
                                                                                 <td className="text-[10px] text-center font-semibold tabular-nums">{item.qty}</td>
                                                                                 <td className="text-[10px] text-center">{item.sisi}</td>
                                                                                 <td className="text-[10px] text-center font-semibold tabular-nums">{item.metode_pengantaran}</td>
-                                                                                <td className="text-[10px] text-center font-semibold tabular-nums">{item.tgl_kirim}</td>
-                                                                            </tr>
+                                                                            <td className="text-[10px] text-center font-semibold tabular-nums">{item.tgl_kirim}</td>
+                                                                            <td className="text-[10px] text-center max-w-[100px] truncate">{item.pinising?.catatan || ''}</td>
+                                                                        </tr>
                                                                         ))}
                                                                     </tbody>
                                                                 </table>
@@ -177,6 +179,10 @@ export default function Finishing({ produksi }) {
                             <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
                                 <span className="text-sm text-base-content/70">Kategori Cetak</span>
                                 <span>{selected.bahan?.kategori_cetak}</span>
+                            </div>
+                            <div className="flex justify-between items-start p-3 bg-base-200 rounded-lg">
+                                <span className="text-sm text-base-content/70">Catatan</span>
+                                <span className="text-sm text-right max-w-[200px]">{selected.pinising?.catatan || '-'}</span>
                             </div>
                         </div>
                     )}

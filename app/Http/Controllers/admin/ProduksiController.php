@@ -82,7 +82,8 @@ class ProduksiController extends Controller
                 $tinggi = $request->tinggi;
             }
             $luas = $lebar * $tinggi;
-            $total_harga = $luas * $harga_produk;
+            $total =  $luas * $harga_produk;
+            $total_harga = $request->qty * $total;
         }
         $desain = Desain::where('id_customer', $request->id_customer)
             ->where('tanggal', date('Y-m-d'))
@@ -93,6 +94,7 @@ class ProduksiController extends Controller
 
         $pr = new Produksi;
         $pr->tanggal = date('Y-m-d');
+        $pr->no_invoice = 'INVOICE-' . date('ymd') . rand(0, 10000);
         $pr->id_customer = $request->id_customer;
         $pr->id_desain = $desain->id ?? $request->id_desain;
         $pr->id_desainer = auth()->id();
@@ -124,6 +126,7 @@ class ProduksiController extends Controller
                     'bawah' => $request->pinising['bawah'] ?? '',
                     'kanan' => $request->pinising['kanan'] ?? '',
                     'kiri' => $request->pinising['kiri'] ?? '',
+                    'catatan' => $request->pinising['catatan'] ?? '',
                 ]
             );
         }
@@ -177,7 +180,8 @@ class ProduksiController extends Controller
                 $tinggi = $request->tinggi;
             }
             $luas = $lebar * $tinggi;
-            $total_harga = $luas * $harga_produk;
+            $total =  $luas * $harga_produk;
+            $total_harga = $request->qty * $total;
         } else {
             $total_harga = 0;
         }
@@ -210,6 +214,7 @@ class ProduksiController extends Controller
                     'bawah' => $request->pinising['bawah'] ?? '',
                     'kanan' => $request->pinising['kanan'] ?? '',
                     'kiri' => $request->pinising['kiri'] ?? '',
+                    'catatan' => $request->pinising['catatan'] ?? '',
                 ]
             );
         }

@@ -335,7 +335,7 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
                                             <th>No</th>
                                             <th>Tgl</th>
                                             <th>No Antrian</th>
-                                            <th>Kode Order</th>
+                                            <th>No Inv</th>
                                             <th>Customer</th>
                                             <th>Desain</th>
                                             <th>Qty</th>
@@ -360,7 +360,7 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
                                                     <td>{desain.from + index}</td>
                                                     <td>{item.tanggal}</td>
                                                     <td>{item.no_antrian}</td>
-                                                    <td className="font-mono font-medium">{item.kode_order}</td>
+                                                    <td className="font-mono font-medium">{item.no_invoice}</td>
                                                     <td>{item.customer?.nama}</td>
                                                     <td>{item.kategoridesain?.kategori}</td>
                                                     <td className="tabular-nums text-center">{item.qty}</td>

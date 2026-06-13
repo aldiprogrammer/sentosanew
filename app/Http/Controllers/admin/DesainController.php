@@ -86,7 +86,7 @@ class DesainController extends Controller
 
         $cs = new Desain;
         $cs->no_antrian = $request->kodeantiran;
-        $cs->kode_order = "DSN-" . date('ymd') . rand(0, 10000);
+        $cs->no_invoice = 'INVOICE-' . date('ymd') . rand(0, 10000);
         $cs->tanggal = $request->tanggal;
         $cs->id_customer = $request->id_customer;
         $cs->id_kategori_desain = $request->id_kategori_desain;

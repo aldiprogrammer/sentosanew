@@ -532,7 +532,7 @@ export default function Desain({
                       <th>No</th>
                       <th>Tgl</th>
                       <th>No Antrian</th>
-                      <th>Kode Order</th>
+
                       <th>Customer</th>
                       <th>Desain</th>
                       <th>Qty</th>
@@ -550,7 +550,7 @@ export default function Desain({
                         <td>{index + 1}</td>
                         <td>{item.tanggal}</td>
                         <td>{item.no_antrian}</td>
-                        <td>{item.kode_order}</td>
+
                         <td>{item.customer.nama}</td>
                         <td>{item.kategoridesain.kategori}</td>
                         <td>{item.qty}</td>

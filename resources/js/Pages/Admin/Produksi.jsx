@@ -113,6 +113,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       bawah: "",
       kanan: "",
       kiri: "",
+      catatan: "",
     },
     mata_ayam: [],
   });
@@ -177,8 +178,9 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
           bawah: pd.pinising.bawah || "",
           kanan: pd.pinising.kanan || "",
           kiri: pd.pinising.kiri || "",
+          catatan: pd.pinising.catatan || "",
         }
-        : { atas: "", bawah: "", kanan: "", kiri: "" },
+        : { atas: "", bawah: "", kanan: "", kiri: "", catatan: "" },
       mata_ayam: pd.mata_ayam
         ? [
           ...(pd.mata_ayam.atas ? ["Atas"] : []),
@@ -466,6 +468,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 )
                               )}
                             </div>
+
                           </div>
 
                         </div>
@@ -722,6 +725,20 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 )
                               )}
                             </div>
+
+                            <label className="form-control w-full mt-5">
+                              <div className="label">
+                                <span className="label-text">Catatan Pinishing</span>
+                              </div>
+                              <textarea
+                                value={data.pinising.catatan}
+                                onChange={(e) => {
+                                  const updated = { ...data.pinising, catatan: e.target.value };
+                                  setData("pinising", updated);
+                                }}
+                                className="textarea textarea-bordered textarea-success w-full h-20"
+                              ></textarea>
+                            </label>
                           </div>
 
                         </div>
@@ -906,6 +923,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 )
                               )}
                             </div>
+
                           </div>
                         </div>
 
@@ -1160,6 +1178,19 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 )
                               )}
                             </div>
+                            <label className="form-control w-full mt-5">
+                              <div className="label">
+                                <span className="label-text">Catatan Pinishing</span>
+                              </div>
+                              <textarea
+                                value={data.pinising.catatan}
+                                onChange={(e) => {
+                                  const updated = { ...data.pinising, catatan: e.target.value };
+                                  setData("pinising", updated);
+                                }}
+                                className="textarea textarea-bordered textarea-success w-full h-20"
+                              ></textarea>
+                            </label>
                           </div>
 
                         </div>
@@ -1224,6 +1255,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                         {!isDesainer && <th>Total Harga</th>}
                         <th>Metode P</th>
                         <th>Tgl Kirim /Ambil</th>
+                        <th>Catatan</th>
                       </tr>
                     </thead>
                     <tbody className="text-xs">
@@ -1246,6 +1278,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                           {!isDesainer && <td>{Number(item.total_harga).toLocaleString('id-ID')}</td>}
                           <td>{item.metode_pengantaran}</td>
                           <td>{item.tgl_kirim}</td>
+                          <td>{item.pinising?.catatan || ''}</td>
                         </tr>
                       ))}
                     </tbody>

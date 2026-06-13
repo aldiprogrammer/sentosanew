@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pinising extends Model
 {
-    protected $fillable = ['kode_spk', 'atas', 'bawah', 'kanan', 'kiri'];
+    protected $fillable = ['kode_spk', 'atas', 'bawah', 'kanan', 'kiri', 'catatan'];
 
     public function produksi()
     {
