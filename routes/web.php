@@ -3,6 +3,7 @@
 use App\Http\Controllers\admin\BahanController;
 use App\Http\Controllers\admin\CustomerController;
 use App\Http\Controllers\admin\DashboardController;
+use App\Http\Controllers\admin\DataOrderController;
 use App\Http\Controllers\admin\DesainController;
 use App\Http\Controllers\admin\DistributorController;
 use App\Http\Controllers\admin\HomeController;
@@ -105,6 +106,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dataproduksi', [ProduksiProduksiController::class, 'dataproduksi'])->name('dataproduksi');
     Route::put('/dataproduksi/proses-produksi', [ProduksiProduksiController::class, 'prosesProduksi'])->name('proses.produksi');
+    Route::get('/data-order', [DataOrderController::class, 'index'])->name('data-order');
     Route::get('/data-desain', [DesainController::class, 'dataDesain'])->name('data-desain');
     Route::put('/data-desain/proses-pembayaran', [DesainController::class, 'prosesPembayaran'])->name('proses.pembayaran.desain');
     Route::get('/produksi/produksi', [ProduksiProduksiController::class, 'index'])->name('produksi.produksi');

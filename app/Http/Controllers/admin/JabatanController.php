@@ -20,6 +20,7 @@ class JabatanController extends Controller
             ['key' => 'otorisasi', 'label' => 'Otorisasi', 'group' => 'Umum'],
             ['key' => 'tambah-desain', 'label' => 'Tambah Desain', 'group' => 'Umum'],
             ['key' => 'data-desain', 'label' => 'Data Desain', 'group' => 'Umum'],
+            ['key' => 'data-order', 'label' => 'Data Order', 'group' => 'Umum'],
             ['key' => 'tambah-produksi', 'label' => 'Tambah Produksi', 'group' => 'Umum'],
             ['key' => 'data-produksi', 'label' => 'Data Produksi', 'group' => 'Umum'],
             ['key' => 'proses-produksi', 'label' => 'Proses Produksi - Produksi', 'group' => 'Umum'],

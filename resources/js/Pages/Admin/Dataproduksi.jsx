@@ -1,6 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout'
 import { Link, router, usePage } from '@inertiajs/react'
 import React, { useRef } from 'react'
+import { buildProductionReceiptHtml } from './StrukProduksiTemplate.jsx'
 
 export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
     const { auth } = usePage().props;
@@ -45,127 +46,12 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
         router.get('/dataproduksi', { search, tgl_awal, tgl_akhir }, { preserveState: true, replace: true })
     }
 
-    const escapeHtml = (value) =>
-        String(value ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;')
-
-    const formatReceiptDate = (date = new Date()) =>
-        new Intl.DateTimeFormat('id-ID', {
-            day: '2-digit', month: 'short', year: 'numeric',
-        }).format(date)
-
-    const formatReceiptTime = (date = new Date()) =>
-        new Intl.DateTimeFormat('id-ID', {
-            hour: '2-digit', minute: '2-digit', hour12: false,
-        }).format(date)
-
-    const buildReceiptHtml = (items) => {
-        const printedAt = new Date()
-        const isMultiple = items.length > 1
-        const gtHarga = items.reduce((s, it) => s + Number(it.total_harga || 0), 0)
-        const gtQty = items.reduce((s, it) => s + Number(it.qty || 0), 0)
-
-        const itemRows = items.map((item, i) => `
-            <tr${i % 2 === 1 ? ' class="alt"' : ''}>
-                <td>${escapeHtml(item.kode_spk)}</td>
-                <td>${escapeHtml(item.customer?.nama)}</td>
-                <td>${escapeHtml(item.bahan?.bahan)}</td>
-                <td class="num">${escapeHtml(item.qty)}</td>
-                <td class="num">${escapeHtml(item.tinggi)}x${escapeHtml(item.lebar)} ${escapeHtml(item.satuan)}</td>
-                <td class="num">Rp ${Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
-            </tr>
-        `).join('')
-
-        return `
-            <!doctype html>
-            <html>
-                <head>
-                    <title>Struk Produksi - ${isMultiple ? items.length + ' item' : escapeHtml(items[0].kode_spk)}</title>
-                    <style>
-                        @page { size: 75mm auto; margin: 3mm; }
-                        * { box-sizing: border-box; margin: 0; padding: 0; }
-                        body { width: 69mm; margin: 0; color: #000; font-family: 'Courier New', monospace; font-size: 10px; line-height: 1.3; }
-                        .receipt { width: 69mm; padding: 2mm 2mm; }
-                        .header { text-align: center; margin-bottom: 6px; }
-                        .header .brand { font-size: 20px; font-weight: 900; letter-spacing: 2px; }
-                        .header .sub { font-size: 11px; font-weight: 700; }
-                        .header .contact { font-size: 10px; }
-                        .divider { border-top: 1px dashed #000; margin: 6px 0; }
-                        .divider-solid { border-top: 1px solid #000; margin: 6px 0; }
-                        .info-row { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 2px; }
-                        .info-row .label { font-weight: 700; }
-                        .section-title { font-weight: 700; font-size: 11px; margin: 4px 0 3px; }
-                        table { width: 100%; border-collapse: collapse; font-size: 9px; }
-                        th, td { padding: 2px 3px; text-align: left; vertical-align: top; }
-                        thead th { border-bottom: 1px solid #000; font-weight: 700; }
-                        tbody td { border-bottom: 1px dotted #ccc; }
-                        .num { text-align: right; font-variant-numeric: tabular-nums; }
-                        .total-row td { font-weight: 700; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 3px; }
-                        .total-row .num { font-size: 11px; }
-                        .footer { text-align: center; margin-top: 8px; font-size: 9px; }
-                        .signature { display: flex; justify-content: space-between; margin-top: 16px; font-size: 10px; }
-                        .signature div { text-align: center; }
-                        .signature .line { margin-top: 24px; width: 80px; border-top: 1px solid #000; }
-                        @media print { body { margin: 0; } }
-                    </style>
-                </head>
-                <body>
-                    <div class="receipt">
-                        <div class="header">
-                            <div class="brand">SENTOSA</div>
-                            <div class="sub">DIGITAL PRINTING</div>
-                            <div class="contact">081 - 7368007</div>
-                        </div>
-                        <div class="divider"></div>
-                        <div class="info-row">
-                            <span class="label">Tanggal</span>
-                            <span>${escapeHtml(formatReceiptDate(printedAt))} ${escapeHtml(formatReceiptTime(printedAt))}</span>
-                        </div>
-                        ${isMultiple ? `
-                            <div class="section-title">STRUK PRODUKSI (${items.length} item)</div>
-                        ` : `
-                            <div class="info-row"><span class="label">No. SPK</span><span>${escapeHtml(items[0].kode_spk)}</span></div>
-                            <div class="info-row"><span class="label">Customer</span><span>${escapeHtml(items[0].customer?.nama)}</span></div>
-                            <div class="info-row"><span class="label">Bahan</span><span>${escapeHtml(items[0].bahan?.bahan)}</span></div>
-                        `}
-                        <div class="divider"></div>
-                        <table>
-                            <thead><tr>
-                                <th>SPK</th><th>Customer</th><th>Bahan</th><th class="num">Qty</th><th class="num">Ukuran</th><th class="num">Total</th>
-                            </tr></thead>
-                            <tbody>${itemRows}</tbody>
-                            ${isMultiple ? `<tfoot><tr class="total-row">
-                                <td colspan="3">${items.length} item</td>
-                                <td class="num">${gtQty}</td><td></td>
-                                <td class="num">Rp ${gtHarga.toLocaleString('id-ID')}</td>
-                            </tr></tfoot>` : ''}
-                        </table>
-                        <div class="divider"></div>
-                        <div class="info-row"><span class="label">Total Item</span><span>${items.length}</span></div>
-                        <div class="info-row"><span class="label">Total Qty</span><span>${gtQty}</span></div>
-                        <div class="info-row" style="font-size:13px;font-weight:900;margin-top:2px;">
-                            <span>GRAND TOTAL</span>
-                            <span>Rp ${gtHarga.toLocaleString('id-ID')}</span>
-                        </div>
-                        <div class="divider-solid"></div>
-                        <div class="signature">
-                            <div><div>Hormat Kami</div><div class="line"></div></div>
-                            <div><div>Penerima</div><div class="line"></div></div>
-                        </div>
-                        <div class="footer">Terima Kasih Atas Kepercayaan Anda<br>Barang yang sudah dibeli tidak dapat dikembalikan</div>
-                    </div>
-                    <script>
-                        window.addEventListener('load',function(){window.focus();setTimeout(function(){window.print()},300)});
-                        window.addEventListener('afterprint',function(){window.close()});
-                    </script>
-                </body>
-            </html>
-        `
-    }
+    const buildReceiptHtml = (items) =>
+        buildProductionReceiptHtml({
+            items,
+            auth,
+            paymentType,
+        })
 
     const doPrintReceipt = (items) => {
         if (items.length === 0) return

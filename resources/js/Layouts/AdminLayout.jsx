@@ -224,6 +224,14 @@ export default function AdminLayout({ children }) {
                                 </details>
                             </li>
                         )}
+                        {hasMenu('data-order') && (
+                            <li>
+                                <Link href={route('data-order')} className="rounded-xl">
+                                    <i className="fas fa-clipboard-list"></i>
+                                    Data Order
+                                </Link>
+                            </li>
+                        )}
                         {hasMenu('laporan-pembukuan') && (
                             <li>
                                 <Link href={route('laporan-pembukuan')} className="rounded-xl">
