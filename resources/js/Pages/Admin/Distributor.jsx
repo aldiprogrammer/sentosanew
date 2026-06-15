@@ -195,6 +195,19 @@ export default function Distributor({ ds, kode }) {
                           />
                         </label>
 
+                        <label className="form-control md:col-span-2">
+                          <div className="label">
+                            <span className="label-text">Alamat</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={data.alamat}
+                            className="input input-bordered input-success w-full"
+                            required
+                            onChange={(e) => setData("alamat", e.target.value)}
+                          />
+                        </label>
+
                         <label className="form-control">
                           <div className="label">
                             <span className="label-text">Bank</span>
@@ -235,18 +248,7 @@ export default function Distributor({ ds, kode }) {
                           />
                         </label>
 
-                        <label className="form-control md:col-span-2">
-                          <div className="label">
-                            <span className="label-text">Alamat</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.alamat}
-                            className="input input-bordered input-success w-full"
-                            required
-                            onChange={(e) => setData("alamat", e.target.value)}
-                          />
-                        </label>
+
                       </div>
 
                       <div className="mt-6 flex gap-2">

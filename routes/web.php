@@ -12,6 +12,7 @@ use App\Http\Controllers\admin\KategoriDesainController;
 use App\Http\Controllers\admin\KurirController;
 use App\Http\Controllers\admin\LaporanPembukuanController;
 use App\Http\Controllers\admin\PenggunaController;
+use App\Http\Controllers\admin\PoEksternalController;
 use App\Http\Controllers\admin\ProduksiController;
 use App\Http\Controllers\admin\SuplayerController;
 use App\Http\Controllers\admin\OtorisasiController;
@@ -119,6 +120,12 @@ Route::middleware('auth')->group(function () {
     Route::put('/logistik/logistik/{id}/proses', [LogistikController::class, 'proses'])->name('logistik.logistik');
 
     Route::get('/laporan-pembukuan', [LaporanPembukuanController::class, 'index'])->name('laporan-pembukuan');
+
+    Route::get('/po-eksternal', [PoEksternalController::class, 'index'])->name('po-eksternal');
+    Route::post('/po-eksternal', [PoEksternalController::class, 'store'])->name('store.po-eksternal');
+    Route::put('/po-eksternal/{id}', [PoEksternalController::class, 'update'])->name('update.po-eksternal');
+    Route::delete('/po-eksternal/{id}', [PoEksternalController::class, 'delete'])->name('delete.po-eksternal');
+    Route::get('/po-eksternal/cari-invoice', [PoEksternalController::class, 'cariInvoice']);
 });
 
 require __DIR__ . '/auth.php';

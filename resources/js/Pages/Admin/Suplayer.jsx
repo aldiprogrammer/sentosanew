@@ -26,6 +26,7 @@ export default function Suplayer({ suplayer, kode }) {
         nohp: '',
         produk: '',
         harga: '',
+        jatuh_tempo: '',
         rekening: [
             { nama_bank: '', no_rekening: '', nama_rekening: '' },
             { nama_bank: '', no_rekening: '', nama_rekening: '' },
@@ -59,6 +60,7 @@ export default function Suplayer({ suplayer, kode }) {
             nohp: item.nohp,
             produk: item.produk,
             harga: item.harga,
+            jatuh_tempo: item.jatuh_tempo || '',
             rekening: [
                 { nama_bank: rek[0]?.nama_bank || '', no_rekening: rek[0]?.no_rekening || '', nama_rekening: rek[0]?.nama_rekening || '' },
                 { nama_bank: rek[1]?.nama_bank || '', no_rekening: rek[1]?.no_rekening || '', nama_rekening: rek[1]?.nama_rekening || '' },
@@ -131,6 +133,10 @@ export default function Suplayer({ suplayer, kode }) {
                     <div className="label"><span className="label-text">Harga</span></div>
                     <input type="text" value={formatRupiah(data.harga)} className="input input-bordered input-success w-full" required onChange={(e) => setData('harga', e.target.value.replace(/\D/g, ''))} placeholder="Rp 0" />
                 </label>
+                <label className="form-control w-full mt-2">
+                    <div className="label"><span className="label-text">Jatuh Tempo</span></div>
+                    <input type="text" value={data.jatuh_tempo} className="input input-bordered input-success w-full" onChange={(e) => setData('jatuh_tempo', e.target.value)} placeholder="cth: 30 Hari" />
+                </label>
             </div>
 
             <div className="divider mt-4">Data Rekening (Maksimal 2)</div>
@@ -164,8 +170,8 @@ export default function Suplayer({ suplayer, kode }) {
             doc.text("Data Suplayer", 14, 20);
             doc.setFontSize(10);
             doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
-            const rows = suplayer.map((item, index) => [index + 1, item.kode, item.nama_suplayer, item.alamat, formatPhone(item.nohp), item.produk, formatRupiah(item.harga), item.rekening ? item.rekening.map(r => r.nama_bank).join(", ") : "-"]);
-            autoTable(doc, { startY: 32, head: [["No", "Kode", "Nama Suplayer", "Alamat", "No HP", "Produk", "Harga", "Rekening"]], body: rows, styles: { fontSize: 7 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
+            const rows = suplayer.map((item, index) => [index + 1, item.kode, item.nama_suplayer, item.alamat, formatPhone(item.nohp), item.produk, formatRupiah(item.harga), item.jatuh_tempo || '-', item.rekening ? item.rekening.map(r => r.nama_bank).join(", ") : "-"]);
+            autoTable(doc, { startY: 32, head: [["No", "Kode", "Nama Suplayer", "Alamat", "No HP", "Produk", "Harga", "Jatuh Tempo", "Rekening"]], body: rows, styles: { fontSize: 7 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
             doc.save("data_suplayer.pdf");
         } catch (error) {
             console.error("Gagal export PDF:", error);
@@ -231,6 +237,7 @@ export default function Suplayer({ suplayer, kode }) {
                                         <th>No HP</th>
                                         <th>Produk</th>
                                         <th>Harga</th>
+                                        <th>Jatuh Tempo</th>
                                         <th>Rekening</th>
                                     </tr>
                                 </thead>
@@ -244,6 +251,7 @@ export default function Suplayer({ suplayer, kode }) {
                                             <td>{formatPhone(item.nohp)}</td>
                                             <td>{item.produk}</td>
                                             <td>{formatRupiah(item.harga)}</td>
+                                            <td>{item.jatuh_tempo || '-'}</td>
                                             <td>
                                                 {item.rekening && item.rekening.length > 0
                                                     ? item.rekening.map((r, i) => (

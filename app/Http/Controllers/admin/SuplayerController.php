@@ -40,6 +40,7 @@ class SuplayerController extends Controller
         $sp->nohp = str_replace('-', '', $request->nohp);
         $sp->produk = $request->produk;
         $sp->harga = str_replace('.', '', $request->harga);
+        $sp->jatuh_tempo = $request->jatuh_tempo;
         $sp->save();
 
         if ($request->rekening) {
@@ -67,6 +68,7 @@ class SuplayerController extends Controller
             'nohp' => 'required',
             'produk' => 'required',
             'harga' => 'required',
+            'jatuh_tempo' => 'nullable|string|max:50',
             'rekening' => 'nullable|array|max:2',
             'rekening.*.nama_bank' => 'required_with:rekening.*.no_rekening|max:30',
             'rekening.*.no_rekening' => 'required_with:rekening.*.nama_bank|max:30',
@@ -80,6 +82,7 @@ class SuplayerController extends Controller
         $sp->nohp = str_replace('-', '', $request->nohp);
         $sp->produk = $request->produk;
         $sp->harga = str_replace('.', '', $request->harga);
+        $sp->jatuh_tempo = $request->jatuh_tempo;
         $sp->update();
 
         // Hapus rekening lama, simpan ulang
