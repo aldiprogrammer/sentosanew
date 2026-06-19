@@ -133,8 +133,19 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       .sort((a, b) => Number(b.qty_min || 0) - Number(a.qty_min || 0))[0] || null;
   };
 
-  const hargaDasar = (bh) => {
-    return [...getHargaRows(bh)]
+  const hargaDasar = (bh, sisi) => {
+    const rows = getHargaRows(bh);
+    const sisiOptions = getSisiOptions(bh);
+    const pakaiSisi = sisiOptions.length > 0;
+
+    return [...rows]
+      .filter((harga) => {
+        const sisiHarga = String(harga.sisi || '').trim();
+
+        if (pakaiSisi) return sisiHarga.toLowerCase() === String(sisi || '').trim().toLowerCase();
+
+        return sisiHarga === '';
+      })
       .sort((a, b) => Number(a.qty_min || 0) - Number(b.qty_min || 0))[0] || null;
   };
 
@@ -335,7 +346,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
 
     const harga = bh.cara_perhitungan === 'QTY KHUSUS'
       ? hargaSesuaiQty(bh, qty, sisi)
-      : hargaDasar(bh);
+      : hargaDasar(bh, sisi);
     const kolomHarga = hargaFieldByKategori[pilihan] || 'harga_umum';
 
     return harga?.[kolomHarga] || 0;

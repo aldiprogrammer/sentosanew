@@ -40,6 +40,18 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
 
   const bahanById = (idBahan) => bahans.find((b) => Number(b.id) === Number(idBahan));
 
+  const bahanLabel = (bahan) => {
+    if (!bahan) return "-- Bahan otomatis dari invoice --";
+
+    return `${bahan.kode || "-"} - ${bahan.bahan || "-"}`;
+  };
+
+  const bahanLabelById = (idBahan) => {
+    const bahan = bahanById(idBahan);
+
+    return bahan ? bahanLabel(bahan) : "";
+  };
+
   const satuanBahan = (item) => item?.bahan?.satuan || item?.satuan || "";
 
   const satuanBahanById = (idBahan) => {
@@ -48,10 +60,10 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
     return bahan?.satuan || "";
   };
 
-  const satuanProduksiByInvoice = (invoice, fallback = "") => {
+  const satuanProduksiByInvoice = (invoice) => {
     const inv = invoices.find((item) => item.no_invoice === invoice);
 
-    return inv?.satuan || fallback || "";
+    return inv?.satuan || "";
   };
 
   const hitungTotalItem = ({
@@ -126,7 +138,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
       lebar: item.lebar?.toString() || "",
       luas: item.luas?.toString() || "",
       satuan: satuanBahan(item),
-      satuan_ukuran: satuanProduksiByInvoice(item.invoice, item.satuan),
+      satuan_ukuran: satuanProduksiByInvoice(item.invoice),
       qty: item.qty?.toString() || "",
       harga: item.harga?.toString() || "",
       total: item.total?.toString() || "",
@@ -578,18 +590,14 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                   </select>
                 </label>
                 <label className="form-control">
-                  <div className="label"><span className="label-text">Bahan</span></div>
-                  <select value={data.id_bahan} className="select select-bordered select-success w-full" onChange={(e) => {
-                    const val = e.target.value;
-                    setData("id_bahan", val);
-                    setData("harga", hitungHargaPo(val, data.qty));
-                    setData("satuan", satuanBahanById(val));
-                  }}>
-                    <option value="">-- Pilih Bahan --</option>
-                    {bahans.map((b) => (
-                      <option key={b.id} value={b.id}>{b.bahan} {b.satuan ? `(${b.satuan})` : ''}</option>
-                    ))}
-                  </select>
+                  <div className="label"><span className="label-text">Kode & Nama Bahan</span></div>
+                  <input
+                    type="text"
+                    value={bahanLabelById(data.id_bahan)}
+                    className="input input-bordered w-full bg-base-200"
+                    placeholder={bahanLabel(null)}
+                    readOnly
+                  />
                   {data.id_bahan && (
                     <span className="text-xs text-base-content/60 mt-1 ml-1">
                       Satuan bahan: {satuanBahanById(data.id_bahan) || '-'}
@@ -662,23 +670,19 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                   <input type="text" value={data.invoice} className="input input-bordered input-success w-full" onChange={(e) => setData("invoice", e.target.value)} />
                 </label>
                 <label className="form-control">
-                  <div className="label"><span className="label-text">Bahan</span></div>
-                  <select value={data.id_bahan} className="select select-bordered select-success w-full" onChange={(e) => {
-                    const val = e.target.value;
-                    setData("id_bahan", val);
-                    setData("harga", hitungHargaPo(val, data.qty));
-                    setData("satuan", satuanBahanById(val));
-                  }}>
-                    <option value="">-- Pilih Bahan --</option>
-                    {bahans.map((b) => (
-                      <option key={b.id} value={b.id}>{b.bahan} {b.satuan ? `(${b.satuan})` : ''}</option>
-                    ))}
-                  </select>
-                  {/* {data.id_bahan && (
+                  <div className="label"><span className="label-text">Kode & Nama Bahan</span></div>
+                  <input
+                    type="text"
+                    value={bahanLabelById(data.id_bahan)}
+                    className="input input-bordered w-full bg-base-200"
+                    placeholder={bahanLabel(null)}
+                    readOnly
+                  />
+                  {data.id_bahan && (
                     <span className="text-xs text-base-content/60 mt-1 ml-1">
                       Satuan bahan: {satuanBahanById(data.id_bahan) || '-'}
                     </span>
-                  )} */}
+                  )}
                 </label>
                 <label className="form-control">
                   <div className="label"><span className="label-text">SPK</span></div>

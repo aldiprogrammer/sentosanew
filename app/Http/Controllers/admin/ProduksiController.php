@@ -246,6 +246,15 @@ class ProduksiController extends Controller
                 ->first();
         } else {
             $harga = $hargaBahan
+                ->filter(function ($harga) use ($sisi, $pakaiSisi) {
+                    $sisiHarga = trim((string) $harga->sisi);
+
+                    if ($pakaiSisi) {
+                        return strcasecmp($sisiHarga, $sisi) === 0;
+                    }
+
+                    return $sisiHarga === '';
+                })
                 ->sortBy(fn($harga) => (float) ($harga->qty_min ?: 0))
                 ->first();
         }
