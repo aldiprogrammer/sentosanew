@@ -248,6 +248,14 @@ export default function AdminLayout({ children }) {
                                 </Link>
                             </li>
                         )}
+                        {hasMenu('po-pembelian-bahan') && (
+                            <li>
+                                <Link href={route('po-pembelian-bahan')} className="rounded-xl">
+                                    <i className="fas fa-truck-loading"></i>
+                                    PO Pembelian Bahan
+                                </Link>
+                            </li>
+                        )}
                     </ul>
                 </aside>
             </div>

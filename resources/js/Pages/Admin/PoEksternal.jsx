@@ -117,16 +117,16 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
       mata_uang: item.mata_uang || "",
       batas_bayar: item.batas_bayar || "",
       id_suplayer: item.id_suplayer?.toString() || "",
-      invoice: item.invoice || "",
-      id_bahan: item.id_bahan?.toString() || "",
-      spk: item.spk || "",
-      tinggi: item.tinggi?.toString() || "",
-      lebar: item.lebar?.toString() || "",
-      luas: item.luas?.toString() || "",
-      qty: item.qty?.toString() || "",
-      harga: item.harga?.toString() || "",
-      total: item.total?.toString() || "",
-      keterangan: item.keterangan || "",
+      // invoice: item.invoice || "",
+      // id_bahan: item.id_bahan?.toString() || "",
+      // spk: item.spk || "",
+      // tinggi: item.tinggi?.toString() || "",
+      // lebar: item.lebar?.toString() || "",
+      // luas: item.luas?.toString() || "",
+      // qty: item.qty?.toString() || "",
+      // harga: item.harga?.toString() || "",
+      // total: item.total?.toString() || "",
+      // keterangan: item.keterangan || "",
     });
   };
 
@@ -200,29 +200,15 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
                     <th>Tgl</th>
                     <th>No PO</th>
                     <th>Hal</th>
-
                     <th>Mata Uang</th>
                     <th>Batas Bayar</th>
                     <th>Suplayer</th>
-                    <th>Invoice</th>
-                    <th>Bahan</th>
-                    <th>SPK</th>
-                    <th>Tinggi</th>
-                    <th>Lebar</th>
-                    <th>Luas</th>
-                    <th>Qty</th>
-                    <th>Harga</th>
-                    <th>Total</th>
-                    <th>Keterangan</th>
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="text-xs">
                   {poEksternal.data.map((item, index) => (
-                    <tr
-                      key={item.id}
-                      onClick={() => openModalEdit(item)}
-                      className="cursor-pointer hover:bg-base-200"
-                    >
+                    <tr key={item.id} className="hover:bg-base-200">
                       <td>{poEksternal.from + index}</td>
                       <td>{item.tgl}</td>
                       <td className="font-semibold">{item.no_po}</td>
@@ -231,16 +217,20 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
                       <td>{item.mata_uang || "-"}</td>
                       <td>{item.batas_bayar || "-"}</td>
                       <td>{item.suplayer?.nama_suplayer || "-"}</td>
-                      <td>{item.invoice || "-"}</td>
-                      <td>{item.bahan?.bahan || "-"}</td>
-                      <td>{item.spk || "-"}</td>
-                      <td>{item.tinggi}</td>
-                      <td>{item.lebar}</td>
-                      <td>{item.luas}</td>
-                      <td>{item.qty}</td>
-                      <td>{formatRp(item.harga)}</td>
-                      <td>{formatRp(item.total)}</td>
-                      <td>{item.keterangan || "-"}</td>
+                      <td>
+                        <Link
+                          href={"/po-eksternal/" + item.id + "/detail"}
+                          className="btn btn-xs btn-info"
+                        >
+                          <i className="fas fa-list"></i> Detail
+                        </Link>
+                        <button
+                          onClick={() => openModalEdit(item)}
+                          className="btn btn-xs btn-warning ml-1"
+                        >
+                          <i className="fas fa-edit"></i>
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -278,7 +268,7 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
                 </label>
                 <label className="form-control">
                   <div className="label"><span className="label-text">No PO</span></div>
-                  <input type="text" value={data.no_po} className="input input-bordered w-full bg-base-200" readOnly />
+                  <input type="text" value={data.no_po} className="input input-bordered input-success w-full" onChange={(e) => setData("no_po", e.target.value)} />
                 </label>
               </div>
               <div className="bg-gray-100 px-2 rounded-lg py-2" >
@@ -324,9 +314,9 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
               </div>
             </div>
 
-            <div className="divider mt-6">Detail Item</div>
+            {/* <div className="divider mt-6">Detail Item</div> */}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+            {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
               <div className="bg-gray-100 p-2 rounded-lg">
                 <label className="form-control">
                   <div className="label"><span className="label-text">Invoice</span></div>
@@ -378,7 +368,7 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
                   <textarea value={data.keterangan} className="textarea textarea-bordered textarea-success w-full" rows="2" onChange={(e) => setData("keterangan", e.target.value)}></textarea>
                 </label>
               </div>
-            </div>
+            </div> */}
             <div className="mt-6 flex gap-2">
               <button type="submit" disabled={processing} className="btn btn-success"><i className="fas fa-save"></i> Simpan</button>
               <button type="button" onClick={closeModal} className="btn btn-error">Batal</button>
@@ -400,7 +390,7 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
                 </label>
                 <label className="form-control">
                   <div className="label"><span className="label-text">No PO</span></div>
-                  <input type="text" value={data.no_po} className="input input-bordered w-full bg-base-200" readOnly />
+                  <input type="text" value={data.no_po} className="input input-bordered input-success w-full" onChange={(e) => setData("no_po", e.target.value)} />
                 </label>
               </div>
               <div className="bg-gray-100 px-2 py-2 rounded-lg">
@@ -421,7 +411,7 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
                       ))}
                     </select>
                   </label>
-                  <label className="form-control">
+                  {/* <label className="form-control">
                     <div className="label"><span className="label-text">Distributor</span></div>
                     <select value={data.id_distributor} className="select select-bordered select-success w-full" onChange={(e) => setData("id_distributor", e.target.value)}>
                       <option value="">-- Pilih Distributor --</option>
@@ -429,7 +419,7 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
                         <option key={d.id} value={d.id}>{d.nama}</option>
                       ))}
                     </select>
-                  </label>
+                  </label> */}
                   <label className="form-control">
                     <div className="label"><span className="label-text">Mata Uang</span></div>
                     <select value={data.mata_uang} className="select select-bordered select-success w-full" onChange={(e) => setData("mata_uang", e.target.value)}>
@@ -446,9 +436,9 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
               </div>
             </div>
 
-            <div className="divider mt-6">Detail Item</div>
+            {/* <div className="divider mt-6">Detail Item</div> */}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+            {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
               <div className="bg-gray-100 p-2 rounded-lg">
                 <label className="form-control">
                   <div className="label"><span className="label-text">Invoice</span></div>
@@ -500,7 +490,7 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
                   <textarea value={data.keterangan} className="textarea textarea-bordered textarea-success w-full" rows="2" onChange={(e) => setData("keterangan", e.target.value)}></textarea>
                 </label>
               </div>
-            </div>
+            </div> */}
             <div className="mt-6 flex gap-2">
               <button type="submit" disabled={processing} className="btn btn-success"><i className="fas fa-save"></i> Update</button>
               <button type="button" onClick={closeModalEdit} className="btn btn-warning">Batal</button>

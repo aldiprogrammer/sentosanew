@@ -76,10 +76,44 @@ class ProduksiController extends Controller
             }
         }
 
-        Produksi::whereIn('id', $ids)->update([
-            'status_produksi' => 1,
-            'pembayaran' => $paymentType,
-        ]);
+        $displayIds = Produksi::with('bahan')->whereIn('id', $ids)
+            ->whereHas('bahan', fn($q) => $q->where('jenis_bahan', 'DISPLAY'))
+            ->pluck('id');
+
+        $nonDisplayIds = array_diff($ids, $displayIds->toArray());
+
+
+        $eksternal = Produksi::with('bahan')->whereIn('id', $ids)
+            ->whereHas('bahan', fn($q) => $q->where('jenis', 'EKSTERNAL'))
+            ->pluck('id');
+
+        $nonEksternal = array_diff($ids, $eksternal->toArray());
+
+        if (!empty($nonDisplayIds) || !empty($nonEksternal)) {
+            Produksi::whereIn('id', array_merge($nonDisplayIds, $nonEksternal))->update([
+                'status_produksi' => 1,
+                'pembayaran' => $paymentType,
+            ]);
+        }
+
+        if ($displayIds->isNotEmpty()) {
+            Produksi::whereIn('id', $displayIds)->update([
+                'status_produksi' => 1,
+                'status_finishing' => 1,
+                'status_logistik' => 1,
+                'pembayaran' => $paymentType,
+            ]);
+        }
+
+        if ($eksternal->isNotEmpty()) {
+            Produksi::whereIn('id', $eksternal)->update([
+                'status_produksi' => 1,
+                'status_finishing' => 1,
+                'status_logistik' => 1,
+                'pembayaran' => $paymentType,
+            ]);
+        }
+
         return back()->with('success', 'Status produksi berhasil diupdate');
     }
 

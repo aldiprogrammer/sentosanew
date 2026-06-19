@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\produksi;
 
 use App\Http\Controllers\Controller;
+use App\Models\Kurir;
 use App\Models\Produksi;
 use Inertia\Inertia;
 
@@ -15,7 +16,8 @@ class LogistikController extends Controller
             ->where('status_selesai', 0)
             ->orderBy('id', 'desc')
             ->get();
-        return Inertia::render('Produksi/Logistik', compact('produksi'));
+        $kurir = Kurir::all();
+        return Inertia::render('Produksi/Logistik', compact('produksi', 'kurir'));
     }
 
     function proses($id)

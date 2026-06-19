@@ -5,6 +5,7 @@ namespace App\Http\Controllers\admin;
 use App\Http\Controllers\Controller;
 use App\Models\Bahan;
 use App\Models\Distributor;
+use App\Models\ListPoEksternal;
 use App\Models\PoEksternal;
 use App\Models\Produksi;
 use App\Models\Suplayer;
@@ -19,8 +20,8 @@ class PoEksternalController extends Controller
         $poEksternal = PoEksternal::with('suplayer', 'bahan')
             ->when($search, function ($q, $search) {
                 $q->where('no_po', 'like', "%{$search}%")
-                  ->orWhere('invoice', 'like', "%{$search}%")
-                  ->orWhere('spk', 'like', "%{$search}%");
+                    ->orWhere('invoice', 'like', "%{$search}%")
+                    ->orWhere('spk', 'like', "%{$search}%");
             })
             ->orderBy('id', 'desc')
             ->paginate(10);
@@ -29,7 +30,7 @@ class PoEksternalController extends Controller
         $prefix = 'PO-' . date('ym') . '-';
         $last = PoEksternal::where('no_po', 'like', $prefix . '%')->orderBy('no_po', 'desc')->first();
         $no_po = $prefix . str_pad($last ? ((int) substr($last->no_po, -4)) + 1 : 1, 4, '0', STR_PAD_LEFT);
-        $bahans = Bahan::orderBy('bahan')->get(['id', 'kode', 'bahan', 'satuan']);
+        $bahans = Bahan::orderBy('bahan')->get(['id', 'kode', 'bahan', 'satuan', 'harga_po']);
         $suplayers = Suplayer::orderBy('nama_suplayer')->get(['id', 'kode', 'nama_suplayer', 'jatuh_tempo']);
         $distributors = Distributor::orderBy('nama')->get(['id', 'kode', 'nama']);
 
@@ -46,16 +47,16 @@ class PoEksternalController extends Controller
             'mata_uang' => 'nullable|string|max:10',
             'batas_bayar' => 'nullable|date',
             'id_suplayer' => 'nullable|exists:suplayers,id',
-            'invoice' => 'nullable|string|max:100',
-            'id_bahan' => 'nullable|exists:bahans,id',
-            'spk' => 'nullable|string|max:100',
-            'tinggi' => 'nullable|numeric',
-            'lebar' => 'nullable|numeric',
-            'luas' => 'nullable|numeric',
-            'qty' => 'nullable|numeric',
-            'harga' => 'nullable|numeric',
-            'total' => 'nullable|numeric',
-            'keterangan' => 'nullable|string',
+            // 'invoice' => 'nullable|string|max:100',
+            // 'id_bahan' => 'nullable|exists:bahans,id',
+            // 'spk' => 'nullable|string|max:100',
+            // 'tinggi' => 'nullable|numeric',
+            // 'lebar' => 'nullable|numeric',
+            // 'luas' => 'nullable|numeric',
+            // 'qty' => 'nullable|numeric',
+            // 'harga' => 'nullable|numeric',
+            // 'total' => 'nullable|numeric',
+            // 'keterangan' => 'nullable|string',
         ]);
 
         $no_po = $data['no_po'] ?? null;
@@ -73,16 +74,16 @@ class PoEksternalController extends Controller
         $po->mata_uang = $data['mata_uang'];
         $po->batas_bayar = $data['batas_bayar'];
         $po->id_suplayer = $data['id_suplayer'] ?: null;
-        $po->invoice = $data['invoice'];
-        $po->id_bahan = $data['id_bahan'] ?: null;
-        $po->spk = $data['spk'];
-        $po->tinggi = $data['tinggi'] ?: 0;
-        $po->lebar = $data['lebar'] ?: 0;
-        $po->luas = $data['luas'] ?: 0;
-        $po->qty = $data['qty'] ?: 0;
-        $po->harga = $data['harga'] ?: 0;
-        $po->total = $data['total'] ?: 0;
-        $po->keterangan = $data['keterangan'];
+        // $po->invoice = $data['invoice'];
+        // $po->id_bahan = $data['id_bahan'] ?: null;
+        // $po->spk = $data['spk'];
+        // $po->tinggi = $data['tinggi'] ?: 0;
+        // $po->lebar = $data['lebar'] ?: 0;
+        // $po->luas = $data['luas'] ?: 0;
+        // $po->qty = $data['qty'] ?: 0;
+        // $po->harga = $data['harga'] ?: 0;
+        // $po->total = $data['total'] ?: 0;
+        // $po->keterangan = $data['keterangan'];
         $po->save();
 
         return redirect()->back()->with('success', 'PO Eksternal berhasil ditambah');
@@ -94,22 +95,22 @@ class PoEksternalController extends Controller
 
         $data = $request->validate([
             'tgl' => 'required|date',
-            'no_po' => 'required|string|max:30|unique:po_eksternals,no_po,' . $id,
+            'no_po' => 'required|string|max:30',
             'hal' => 'nullable|string|max:200',
             'id_distributor' => 'nullable|exists:distributors,id',
             'mata_uang' => 'nullable|string|max:10',
             'batas_bayar' => 'nullable|date',
             'id_suplayer' => 'nullable|exists:suplayers,id',
-            'invoice' => 'nullable|string|max:100',
-            'id_bahan' => 'nullable|exists:bahans,id',
-            'spk' => 'nullable|string|max:100',
-            'tinggi' => 'nullable|numeric',
-            'lebar' => 'nullable|numeric',
-            'luas' => 'nullable|numeric',
-            'qty' => 'nullable|numeric',
-            'harga' => 'nullable|numeric',
-            'total' => 'nullable|numeric',
-            'keterangan' => 'nullable|string',
+            // 'invoice' => 'nullable|string|max:100',
+            // 'id_bahan' => 'nullable|exists:bahans,id',
+            // 'spk' => 'nullable|string|max:100',
+            // 'tinggi' => 'nullable|numeric',
+            // 'lebar' => 'nullable|numeric',
+            // 'luas' => 'nullable|numeric',
+            // 'qty' => 'nullable|numeric',
+            // 'harga' => 'nullable|numeric',
+            // 'total' => 'nullable|numeric',
+            // 'keterangan' => 'nullable|string',
         ]);
 
         $po->tgl = $data['tgl'];
@@ -119,16 +120,16 @@ class PoEksternalController extends Controller
         $po->mata_uang = $data['mata_uang'];
         $po->batas_bayar = $data['batas_bayar'];
         $po->id_suplayer = $data['id_suplayer'] ?: null;
-        $po->invoice = $data['invoice'];
-        $po->id_bahan = $data['id_bahan'] ?: null;
-        $po->spk = $data['spk'];
-        $po->tinggi = $data['tinggi'] ?: 0;
-        $po->lebar = $data['lebar'] ?: 0;
-        $po->luas = $data['luas'] ?: 0;
-        $po->qty = $data['qty'] ?: 0;
-        $po->harga = $data['harga'] ?: 0;
-        $po->total = $data['total'] ?: 0;
-        $po->keterangan = $data['keterangan'];
+        // $po->invoice = $data['invoice'];
+        // $po->id_bahan = $data['id_bahan'] ?: null;
+        // $po->spk = $data['spk'];
+        // $po->tinggi = $data['tinggi'] ?: 0;
+        // $po->lebar = $data['lebar'] ?: 0;
+        // $po->luas = $data['luas'] ?: 0;
+        // $po->qty = $data['qty'] ?: 0;
+        // $po->harga = $data['harga'] ?: 0;
+        // $po->total = $data['total'] ?: 0;
+        // $po->keterangan = $data['keterangan'];
         $po->update();
 
         return redirect()->back()->with('success', 'PO Eksternal berhasil diubah');
@@ -164,11 +165,158 @@ class PoEksternalController extends Controller
                 'bahan_kode' => $pr->bahan?->kode,
                 'bahan_nama' => $pr->bahan?->bahan,
                 'kode_spk' => $pr->kode_spk,
-                'lebar' => $pr->lebar,
-                'tinggi' => $pr->tinggi,
-                'harga' => $pr->harga_bahan,
-                'qty' => $pr->qty,
+                'lebar' => round($pr->lebar),
+                'tinggi' => round($pr->tinggi),
+                'harga' => round($pr->harga_bahan),
+                'harga_po' => $pr->bahan?->harga_po,
+                'qty' => round($pr->qty),
+                'satuan' => $pr->satuan,
             ],
         ]);
+    }
+
+    public function detail($id)
+    {
+        $po = PoEksternal::with('suplayer', 'items.bahan')->findOrFail($id);
+
+        $totalHarga = ListPoEksternal::where('po_eksternal_id', $po->id)->sum('total');
+        $diskonAmount = $totalHarga * ($po->diskon / 100);
+        $ppnAmount = $totalHarga * ($po->ppn / 100);
+        $po->total_harga = $totalHarga;
+        $po->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
+        $po->update();
+
+        $bahans = Bahan::orderBy('bahan')->get(['id', 'kode', 'bahan', 'satuan', 'harga_po']);
+
+        $invoices = Produksi::with('bahan')
+            ->whereHas('bahan', fn($q) => $q->where('jenis', 'Eksternal'))
+            ->whereNotNull('no_invoice')
+            ->orderBy('no_invoice')
+            ->get(['id', 'no_invoice', 'id_bahan', 'kode_spk', 'lebar', 'tinggi', 'qty', 'harga_bahan', 'satuan']);
+
+        return Inertia::render('Admin/PoEksternalDetail', compact('po', 'bahans', 'invoices'));
+    }
+
+    public function storeItem(Request $request, $id)
+    {
+        $po = PoEksternal::findOrFail($id);
+
+        $data = $request->validate([
+            'invoice' => 'nullable|string|max:100',
+            'id_bahan' => 'nullable|exists:bahans,id',
+            'spk' => 'nullable|string|max:100',
+            'tinggi' => 'nullable|numeric',
+            'lebar' => 'nullable|numeric',
+            'luas' => 'nullable|numeric',
+            'satuan' => 'nullable|string|max:30',
+            'qty' => 'nullable|numeric',
+            'harga' => 'nullable|numeric',
+            'total' => 'nullable|numeric',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        $item = new ListPoEksternal;
+        $item->po_eksternal_id = $po->id;
+        $item->invoice = $data['invoice'];
+        $item->id_bahan = $data['id_bahan'] ?: null;
+        $item->spk = $data['spk'];
+        $item->satuan = $data['satuan'] ?? null;
+        $item->tinggi = round($data['tinggi'] ?? 0);
+        $item->lebar = round($data['lebar'] ?? 0);
+        $item->luas = round($data['luas'] ?? 0);
+        $item->qty = round($data['qty'] ?? 0);
+        $item->harga = round($data['harga'] ?? 0);
+        $item->total = round($data['total'] ?? 0);
+        $item->keterangan = $data['keterangan'];
+        $item->save();
+ 
+        $this->recalculateTotalHarga($po->id);
+ 
+        return redirect()->back()->with('success', 'Item berhasil ditambah');
+    }
+ 
+    public function updateItem(Request $request, $id)
+    {
+        $item = ListPoEksternal::findOrFail($id);
+ 
+        $data = $request->validate([
+            'invoice' => 'nullable|string|max:100',
+            'id_bahan' => 'nullable|exists:bahans,id',
+            'spk' => 'nullable|string|max:100',
+            'tinggi' => 'nullable|numeric',
+            'lebar' => 'nullable|numeric',
+            'luas' => 'nullable|numeric',
+            'satuan' => 'nullable|string|max:30',
+            'qty' => 'nullable|numeric',
+            'harga' => 'nullable|numeric',
+            'total' => 'nullable|numeric',
+            'keterangan' => 'nullable|string',
+        ]);
+ 
+        $item->invoice = $data['invoice'];
+        $item->id_bahan = $data['id_bahan'] ?: null;
+        $item->spk = $data['spk'];
+        $item->satuan = $data['satuan'] ?? null;
+        $item->tinggi = round($data['tinggi'] ?? 0);
+        $item->lebar = round($data['lebar'] ?? 0);
+        $item->luas = round($data['luas'] ?? 0);
+        $item->qty = round($data['qty'] ?? 0);
+        $item->harga = round($data['harga'] ?? 0);
+        $item->total = round($data['total'] ?? 0);
+        $item->keterangan = $data['keterangan'];
+        $item->update();
+
+        $this->recalculateTotalHarga($item->po_eksternal_id);
+
+        return redirect()->back()->with('success', 'Item berhasil diubah');
+    }
+
+    public function deleteItem($id)
+    {
+        $item = ListPoEksternal::findOrFail($id);
+        $poId = $item->po_eksternal_id;
+        $item->delete();
+
+        $this->recalculateTotalHarga($poId);
+
+        return redirect()->back()->with('success', 'Item berhasil dihapus');
+    }
+
+    public function updateHeader(Request $request, $id)
+    {
+        $po = PoEksternal::findOrFail($id);
+
+        $data = $request->validate([
+            'diskon' => 'nullable|numeric',
+            'ppn' => 'nullable|numeric',
+        ]);
+
+        $totalHarga = ListPoEksternal::where('po_eksternal_id', $po->id)->sum('total');
+        $diskon = $data['diskon'] ?? 0;
+        $ppn = $data['ppn'] ?? 0;
+        $diskonAmount = $totalHarga * ($diskon / 100);
+        $ppnAmount = $totalHarga * ($ppn / 100);
+        $subTotal = $totalHarga - $diskonAmount + $ppnAmount;
+
+        $po->total_harga = $totalHarga;
+        $po->diskon = $diskon;
+        $po->ppn = $ppn;
+        $po->sub_total = $subTotal;
+        $po->update();
+
+        return redirect()->back()->with('success', 'Header berhasil diupdate');
+    }
+
+    private function recalculateTotalHarga($poId)
+    {
+        $totalHarga = ListPoEksternal::where('po_eksternal_id', $poId)->sum('total');
+        $po = PoEksternal::find($poId);
+        if ($po) {
+            $diskonAmount = $totalHarga * ($po->diskon / 100);
+            $ppnAmount = $totalHarga * ($po->ppn / 100);
+            $po->total_harga = $totalHarga;
+            $po->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
+            $po->update();
+        }
     }
 }

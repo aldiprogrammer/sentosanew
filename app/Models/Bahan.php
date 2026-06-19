@@ -22,6 +22,7 @@ class Bahan extends Model
         'harga_khusus',
         'harga_member',
         'harga_custom',
+        'harga_po',
         'cara_perhitungan',
     ];
 }

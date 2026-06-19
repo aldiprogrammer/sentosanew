@@ -167,7 +167,7 @@ function ProductionReceipt({ items, auth, paymentType, printedAt }) {
                 <div className="summary-row"><span>Total Faktur</span><span>{formatMoney(gtHarga)}</span></div>
                 <div className="summary-row"><span>Bayar</span><span>0</span></div>
                 <div className="summary-row"><span>Kembalian</span><span>0</span></div>
-                <div className="summary-row"><span>Point</span><span>{formatMoney(gtQty)}</span></div>
+                {/* <div className="summary-row"><span>Point</span><span>{formatMoney(gtQty)}</span></div> */}
             </div>
 
             <div className="notes">

@@ -8,7 +8,7 @@ export default function Finishing({ produksi }) {
     const [filterJenisBahan, setFilterJenisBahan] = useState('')
     const modalRef = useRef(null)
 
-    const kategoriList = ['INDOOR', 'INDOOR2', 'OUTDOOR', 'OUTDOOR2', 'DISPLAY', 'OFFSET', 'DLL']
+    const kategoriList = ['INDOOR', 'INDOOR 2', 'OUTDOOR', 'OUTDOOR 2', 'DISPLAY', 'OFFSET', 'DLL']
 
     const jenisBahanList = ['DLL', 'DYE', 'UV', 'OFFSET', 'TONER', 'ECOSOLVENT', 'SOLVENT']
 
@@ -134,9 +134,9 @@ export default function Finishing({ produksi }) {
                                                                                 <td className="text-[10px] text-center font-semibold tabular-nums">{item.qty}</td>
                                                                                 <td className="text-[10px] text-center">{item.sisi}</td>
                                                                                 <td className="text-[10px] text-center font-semibold tabular-nums">{item.metode_pengantaran}</td>
-                                                                            <td className="text-[10px] text-center font-semibold tabular-nums">{item.tgl_kirim}</td>
-                                                                            <td className="text-[10px] text-center max-w-[100px] truncate">{item.pinising?.catatan || ''}</td>
-                                                                        </tr>
+                                                                                <td className="text-[10px] text-center font-semibold tabular-nums">{item.tgl_kirim}</td>
+                                                                                <td className="text-[10px] text-center max-w-[100px] truncate">{item.pinising?.catatan || ''}</td>
+                                                                            </tr>
                                                                         ))}
                                                                     </tbody>
                                                                 </table>

@@ -2,13 +2,14 @@ import AdminLayout from '@/Layouts/AdminLayout'
 import { router } from '@inertiajs/react'
 import React, { useMemo, useRef, useState } from 'react'
 
-export default function Logistik({ produksi }) {
+export default function Logistik({ produksi, kurir }) {
     const [selected, setSelected] = useState(null)
+    const [selectedKurir, setSelectedKurir] = useState('')
     const [filterKategori, setFilterKategori] = useState('')
     const [filterJenisBahan, setFilterJenisBahan] = useState('')
     const modalRef = useRef(null)
 
-    const kategoriList = ['INDOOR', 'INDOOR2', 'OUTDOOR', 'OUTDOOR2', 'DISPLAY', 'OFFSET', 'DLL']
+    const kategoriList = ['INDOOR', 'INDOOR 2', 'OUTDOOR', 'OUTDOOR 2', 'DISPLAY', 'OFFSET', 'DLL']
 
     const jenisBahanList = ['DLL', 'DYE', 'UV', 'OFFSET', 'TONER', 'ECOSOLVENT', 'SOLVENT']
 
@@ -37,12 +38,118 @@ export default function Logistik({ produksi }) {
 
     const openModal = (item) => {
         setSelected(item)
+        setSelectedKurir('')
         modalRef.current?.showModal()
     }
 
     const closeModal = () => {
         setSelected(null)
         modalRef.current?.close()
+    }
+
+    const formatRp = (val) => {
+        const num = parseFloat(val)
+        if (isNaN(num)) return "-"
+        return "Rp " + num.toLocaleString("id-ID")
+    }
+
+    const buildSuratJalanHtml = (item, kurirNama) => {
+        const tgl = new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })
+        const namaCustomer = (item.customer?.nama || '').toUpperCase()
+        const namaKurir = (kurirNama || '').toUpperCase()
+        return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Surat Jalan</title>
+<style>
+body { font-family: Arial, sans-serif; font-size: 12px; margin: 0; padding: 20px; }
+.header { display: flex; align-items: center; gap: 20px; border-bottom: 2px solid #16a34a; padding-bottom: 12px; margin-bottom: 18px; }
+.header img { width: 90px; }
+.header .title { flex: 1; text-align: center; }
+.header .title h1 { margin: 0; font-size: 20px; color: #16a34a; letter-spacing: 2px; }
+.header .title p { margin: 3px 0; font-size: 11px; color: #555; }
+.info { margin-bottom: 15px; }
+.info table { width: 100%; font-size: 11px; }
+.info td { padding: 3px 5px; }
+table.items { width: 100%; border-collapse: collapse; font-size: 10px; }
+table.items th { background: #16a34a; color: #fff; padding: 7px 4px; text-align: center; }
+table.items td { padding: 5px 4px; border: 1px solid #ddd; }
+table.items tr:nth-child(even) { background: #f9f9f9; }
+.signatures { margin-top: 50px; display: flex; justify-content: space-between; text-align: center; }
+.signatures .sig-block { width: 30%; }
+.signatures .sig-block p.label { font-size: 11px; font-weight: bold; margin: 0 0 8px 0; }
+.signatures .sig-block .line { margin-top: 35px; border-top: 1px solid #000; padding-top: 8px; font-size: 12px; font-weight: bold; letter-spacing: 1px; }
+.total-row { font-weight: bold; background: #e8f5e9 !important; }
+@media print { body { padding: 10px; } @page { margin: 10mm; } }
+</style>
+</head>
+<body>
+<div class="header">
+    <img src="/logo.png" alt="Logo">
+    <div class="title">
+        <h1>SURAT JALAN</h1>
+        <p>SENTOSA PRINTING & DIGITAL SOLUTIONS</p>
+        <p>Jl. Raya Utama No. 123 | Telp: (021) 1234-5678</p>
+    </div>
+</div>
+<div class="info">
+    <table>
+        <tr><td style="width:100px"><strong>No Invoice</strong></td><td>: ${item.no_invoice || '-'}</td></tr>
+        <tr><td><strong>Tanggal</strong></td><td>: ${tgl}</td></tr>
+        <tr><td><strong>Customer</strong></td><td>: ${item.customer?.nama || '-'}</td></tr>
+    </table>
+</div>
+<table class="items">
+    <tr>
+        <th style="width:30px">No</th>
+        <th>Kode Bahan</th>
+        <th style="width:50px">Qty</th>
+        <th style="width:90px">Harga</th>
+        <th style="width:100px">Total Harga</th>
+        <th>Keterangan</th>
+    </tr>
+    <tr>
+        <td style="text-align:center">1</td>
+        <td>${item.bahan?.kode || '-'}</td>
+        <td style="text-align:center">${item.qty}</td>
+        <td style="text-align:right">${formatRp(item.harga_bahan)}</td>
+        <td style="text-align:right">${formatRp(item.total_harga)}</td>
+        <td>${item.keterangan || '-'}</td>
+    </tr>
+</table>
+<div class="signatures">
+    <div class="sig-block">
+        <p class="label">PENERIMA</p>
+        <div class="line">${namaCustomer || '( _____________________ )'}</div>
+    </div>
+    <div class="sig-block">
+        <p class="label">PENGIRIM</p>
+        <div class="line">${namaKurir || '( _____________________ )'}</div>
+    </div>
+    <div class="sig-block">
+        <p class="label">MENGETAHUI</p>
+        <div class="line"></div>
+    </div>
+</div>
+</body>
+</html>`
+    }
+
+    const cetakSuratJalan = (item) => {
+        if (!selectedKurir) {
+            Swal.fire('Pilih Kurir', 'Silakan pilih kurir pengirim terlebih dahulu', 'warning')
+            return
+        }
+        const namaKurir = kurir.find((k) => k.id == selectedKurir)?.nama || ''
+        const w = window.open('', '_blank', 'width=600,height=800')
+        if (!w) return
+        w.document.open()
+        w.document.write(buildSuratJalanHtml(item, namaKurir))
+        w.document.close()
+        w.addEventListener('load', () => {
+            w.focus()
+            setTimeout(() => w.print(), 300)
+        })
     }
 
     const handleProses = () => {
@@ -180,9 +287,25 @@ export default function Logistik({ produksi }) {
                             </div>
                         </div>
                     )}
-                    <div className="modal-action">
+                    <div className="form-control mt-4">
+                        <label className="label"><span className="label-text font-medium">Pilih Kurir Pengirim</span></label>
+                        <select
+                            value={selectedKurir}
+                            onChange={(e) => setSelectedKurir(e.target.value)}
+                            className="select select-bordered w-full"
+                        >
+                            <option value="">-- Pilih Kurir --</option>
+                            {kurir.map((k) => (
+                                <option key={k.id} value={k.id}>{k.nama}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="modal-action flex-wrap gap-2">
                         <button className="btn btn-ghost" onClick={closeModal}>Batal</button>
-                        <button className="btn btn-primary w-full" onClick={handleProses}>
+                        <button className="btn btn-secondary" onClick={() => cetakSuratJalan(selected)}>
+                            <i className="fas fa-truck"></i> Cetak Surat Jalan
+                        </button>
+                        <button className="btn btn-primary" onClick={handleProses}>
                             <i className="fas fa-check"></i> Selesai Logistik
                         </button>
                     </div>

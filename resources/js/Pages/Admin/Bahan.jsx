@@ -181,9 +181,9 @@ export default function Bahan({ bahan, kode }) {
         item.qty,
         item.harga ? "Rp " + item.harga : "-",
         item.harga_beli ? "Rp " + item.harga_beli : "-",
-        item.harga_umum ? "Rp " + item.harga_umum : "-",
-        item.harga_khusus ? "Rp " + item.harga_khusus : "-",
-        item.harga_member ? "Rp " + item.harga_member : "-",
+                        item.harga_umum ? "Rp " + String(item.harga_umum).replace(/\./g, '') : "-",
+                        item.harga_khusus ? "Rp " + String(item.harga_khusus).replace(/\./g, '') : "-",
+                        item.harga_member ? "Rp " + String(item.harga_member).replace(/\./g, '') : "-",
         item.harga_custom ? "Rp " + item.harga_custom : "-",
         item.cara_perhitungan,
       ]);
@@ -326,9 +326,9 @@ export default function Bahan({ bahan, kode }) {
                             <option value="STIKER">STIKER</option>
                             <option value="DLL">DLL</option> */}
                             <option value="INDOOR">INDOOR</option>
-                            <option value="INDOOR2">INDOOR2</option>
+                            <option value="INDOOR 2">INDOOR 2</option>
                             <option value="OUTDOOR">OUTDOOR</option>
-                            <option value="OUTDOOR2">OUTDOOR2</option>
+                            <option value="OUTDOOR 2">OUTDOOR 2</option>
                             <option value="DISPLAY">DISPLAY</option>
                             <option value="OFFSET">OFFSET</option>
                             <option value="DLL">DLL</option>
@@ -822,9 +822,9 @@ export default function Bahan({ bahan, kode }) {
                       <td>{item.qty}</td>
                       <td>{item.cara_perhitungan}</td>
                       <td>{item.harga_beli ? 'Rp ' + item.harga_beli : '-'}</td>
-                      <td>{item.harga_umum ? 'Rp ' + item.harga_umum : '-'}</td>
-                      <td>{item.harga_khusus ? 'Rp ' + item.harga_khusus : '-'}</td>
-                      <td>{item.harga_member ? 'Rp ' + item.harga_member : '-'}</td>
+                      <td>{item.harga_umum ? 'Rp ' + String(item.harga_umum).replace(/\./g, '') : '-'}</td>
+                      <td>{item.harga_khusus ? 'Rp ' + String(item.harga_khusus).replace(/\./g, '') : '-'}</td>
+                      <td>{item.harga_member ? 'Rp ' + String(item.harga_member).replace(/\./g, '') : '-'}</td>
                       <td>{item.harga_custom ? 'Rp ' + item.harga_custom : '-'}</td>
                     </tr>
                   ))}

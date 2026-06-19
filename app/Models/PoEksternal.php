@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class PoEksternal extends Model
 {
-    protected $fillable = [
-        'tgl', 'no_po', 'hal', 'id_distributor', 'mata_uang', 'batas_bayar',
-        'id_suplayer', 'invoice', 'id_bahan', 'spk',
-        'tinggi', 'lebar', 'luas', 'qty', 'harga', 'total', 'keterangan',
-    ];
+    // protected $fillable = [
+    //     'tgl', 'no_po', 'hal', 'id_distributor', 'mata_uang', 'batas_bayar',
+    //     'id_suplayer', 'invoice', 'id_bahan', 'spk',
+    //     'tinggi', 'lebar', 'luas', 'qty', 'harga', 'total', 'keterangan',
+    // ];
 
     public function suplayer()
     {
@@ -25,5 +25,10 @@ class PoEksternal extends Model
     public function distributor()
     {
         return $this->belongsTo(Distributor::class, 'id_distributor');
+    }
+
+    public function items()
+    {
+        return $this->hasMany(ListPoEksternal::class, 'po_eksternal_id');
     }
 }

@@ -58,12 +58,14 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
         if (items.length === 1) {
             const w = window.open('', '_blank', 'width=420,height=640')
             w.document.open(); w.document.write(buildReceiptHtml(items)); w.document.close()
+            w.addEventListener('load', () => { w.focus(); setTimeout(() => w.print(), 300) })
         } else {
             let idx = 0
             const openNext = () => {
                 if (idx >= items.length) return
                 const w = window.open('', '_blank', 'width=420,height=640')
                 w.document.open(); w.document.write(buildReceiptHtml([items[idx]])); w.document.close()
+                w.addEventListener('load', () => { w.focus(); setTimeout(() => w.print(), 300) })
                 const t = setInterval(() => { if (w.closed) { clearInterval(t); idx++; openNext() } }, 500)
             }
             openNext()
@@ -74,6 +76,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
         if (items.length === 0) return
         const w = window.open('', '_blank', 'width=500,height=700')
         w.document.open(); w.document.write(buildReceiptHtml(items)); w.document.close()
+        w.addEventListener('load', () => { w.focus(); setTimeout(() => w.print(), 300) })
     }
 
     const handleCetakStruk = () => {
@@ -116,6 +119,26 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                 setProcessing(false)
                 setPaymentError(errors.payment || 'Terjadi kesalahan')
             },
+        })
+    }
+
+    const reviewReceipt = (items) => {
+        const w = window.open('', '_blank', 'width=420,height=640')
+        if (!w) return
+        w.document.open()
+        w.document.write(buildReceiptHtml(items))
+        w.document.close()
+    }
+
+    const printReceipt = (items) => {
+        const w = window.open('', '_blank', 'width=420,height=640')
+        if (!w) return
+        w.document.open()
+        w.document.write(buildReceiptHtml(items))
+        w.document.close()
+        w.addEventListener('load', () => {
+            w.focus()
+            setTimeout(() => w.print(), 300)
         })
     }
 
@@ -391,14 +414,21 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                             )}
                         </div>
                     )}
-                    <div className="modal-action">
-                        <button className="btn btn-ghost" onClick={() => paymentModalRef.current?.close()}>Batal</button>
+                    <div className="modal-action flex-col gap-2">
+                        <div className="flex gap-2 w-full">
+                            <button className="btn btn-ghost flex-1" onClick={() => { reviewReceipt(selectedItems); paymentModalRef.current?.close() }}>
+                                <i className="fas fa-eye"></i> Review Struk
+                            </button>
+                            <button className="btn btn-outline flex-1" onClick={() => { printReceipt(selectedItems); paymentModalRef.current?.close() }}>
+                                <i className="fas fa-print"></i> Cetak Struk
+                            </button>
+                        </div>
                         <button
                             className="btn btn-primary w-full"
                             onClick={handlePaymentConfirm}
                             disabled={processing || (paymentType === 'utang' && wouldExceedLimit)}
                         >
-                            {processing ? <><span className="loading loading-spinner"></span> Memproses...</> : <><i className="fas fa-print"></i> Proses & Cetak Struk</>}
+                            {processing ? <><span className="loading loading-spinner"></span> Memproses...</> : <><i className="fas fa-check"></i> Proses & Cetak Struk</>}
                         </button>
                     </div>
                 </div>

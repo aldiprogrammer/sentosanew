@@ -12,6 +12,7 @@ use App\Http\Controllers\admin\KategoriDesainController;
 use App\Http\Controllers\admin\KurirController;
 use App\Http\Controllers\admin\LaporanPembukuanController;
 use App\Http\Controllers\admin\PenggunaController;
+use App\Http\Controllers\admin\PoPembelianBahanController;
 use App\Http\Controllers\admin\PoEksternalController;
 use App\Http\Controllers\admin\ProduksiController;
 use App\Http\Controllers\admin\SuplayerController;
@@ -126,6 +127,21 @@ Route::middleware('auth')->group(function () {
     Route::put('/po-eksternal/{id}', [PoEksternalController::class, 'update'])->name('update.po-eksternal');
     Route::delete('/po-eksternal/{id}', [PoEksternalController::class, 'delete'])->name('delete.po-eksternal');
     Route::get('/po-eksternal/cari-invoice', [PoEksternalController::class, 'cariInvoice']);
+    Route::get('/po-eksternal/{id}/detail', [PoEksternalController::class, 'detail'])->name('detail.po-eksternal');
+    Route::post('/po-eksternal/{id}/item', [PoEksternalController::class, 'storeItem'])->name('store-item.po-eksternal');
+    Route::put('/po-eksternal/item/{id}', [PoEksternalController::class, 'updateItem'])->name('update-item.po-eksternal');
+    Route::delete('/po-eksternal/item/{id}', [PoEksternalController::class, 'deleteItem'])->name('delete-item.po-eksternal');
+    Route::put('/po-eksternal/{id}/header', [PoEksternalController::class, 'updateHeader'])->name('update-header.po-eksternal');
+
+    Route::get('/po-pembelian-bahan', [PoPembelianBahanController::class, 'index'])->name('po-pembelian-bahan');
+    Route::post('/po-pembelian-bahan', [PoPembelianBahanController::class, 'store'])->name('store.po-pembelian-bahan');
+    Route::put('/po-pembelian-bahan/{id}', [PoPembelianBahanController::class, 'update'])->name('update.po-pembelian-bahan');
+    Route::delete('/po-pembelian-bahan/{id}', [PoPembelianBahanController::class, 'delete'])->name('delete.po-pembelian-bahan');
+    Route::get('/po-pembelian-bahan/{id}/detail', [PoPembelianBahanController::class, 'detail'])->name('detail.po-pembelian-bahan');
+    Route::post('/po-pembelian-bahan/{id}/item', [PoPembelianBahanController::class, 'storeItem'])->name('store-item.po-pembelian-bahan');
+    Route::put('/po-pembelian-bahan/item/{id}', [PoPembelianBahanController::class, 'updateItem'])->name('update-item.po-pembelian-bahan');
+    Route::delete('/po-pembelian-bahan/item/{id}', [PoPembelianBahanController::class, 'deleteItem'])->name('delete-item.po-pembelian-bahan');
+    Route::put('/po-pembelian-bahan/{id}/header', [PoPembelianBahanController::class, 'updateHeader'])->name('update-header.po-pembelian-bahan');
 });
 
 require __DIR__ . '/auth.php';

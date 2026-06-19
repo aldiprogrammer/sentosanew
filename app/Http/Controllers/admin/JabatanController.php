@@ -33,6 +33,8 @@ class JabatanController extends Controller
             ['key' => 'suplayer', 'label' => 'Suplayer', 'group' => 'Master Data'],
             ['key' => 'master-bahan', 'label' => 'Bahan', 'group' => 'Master Data'],
             ['key' => 'master-kategoridesain', 'label' => 'Kategori Desain', 'group' => 'Master Data'],
+            ['key' => 'po-eksternal', 'label' => 'PO Eksternal', 'group' => 'Umum'],
+            ['key' => 'po-pembelian-bahan', 'label' => 'PO Pembelian Bahan', 'group' => 'Umum'],
             ['key' => 'master-jabatan', 'label' => 'Jabatan', 'group' => 'Master Data'],
         ];
 
