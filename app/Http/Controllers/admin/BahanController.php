@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Bahan;
+use App\Models\Databahan;
+use App\Models\Hargabahan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class BahanController extends Controller
@@ -12,69 +14,152 @@ class BahanController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
-        $bahan = Bahan::when($search, function ($q, $search) {
-            $q->where('bahan', 'like', "%{$search}%")
-              ->orWhere('kode', 'like', "%{$search}%");
-        })->orderBy('id', 'desc')->paginate(10);
-        $bahan->appends(['search' => $search]);
-        $kode = 'BH-' . rand(0, 100000);
+        $databahan = Databahan::with(['hargaBahan' => function ($q) {
+            $q->orderBy('qty_min')->orderBy('id');
+        }])
+            ->when($search, function ($q, $search) {
+                $q->where(function ($query) use ($search) {
+                    $query->where('bahan', 'like', "%{$search}%")
+                        ->orWhere('kode', 'like', "%{$search}%")
+                        ->orWhereHas('hargaBahan', function ($harga) use ($search) {
+                            $harga->where('sisi', 'like', "%{$search}%")
+                                ->orWhere('qty_min', 'like', "%{$search}%")
+                                ->orWhere('qty_max', 'like', "%{$search}%");
+                        });
+                });
+            })->orderBy('id', 'desc')->paginate(10);
+        $databahan->appends(['search' => $search]);
+        $kode = 'BH-'.rand(0, 100000);
 
-        return Inertia::render('Admin/Bahan', compact('bahan', 'kode'));
+        return Inertia::render('Admin/Bahan', compact('databahan', 'kode'));
     }
 
     public function store(Request $request)
     {
-        $bh = new Bahan;
-        $bh->kode = $request->kode;
-        $bh->bahan = $request->bahan;
-        $bh->kategori = $request->kategori;
-        $bh->jenis = $request->jenis;
-        $bh->satuan = $request->satuan;
-        $bh->kategori_cetak = $request->kategori_cetak;
-        $bh->jenis_bahan = $request->jenis_bahan;
-        $bh->klik = $request->klik;
-        $bh->qty = $request->qty;
-        $bh->harga = 0;
-        $bh->harga_beli = $request->harga_beli ? preg_replace('/\D/', '', $request->harga_beli) : null;
-        $bh->harga_umum = $request->harga_umum ? preg_replace('/\D/', '', $request->harga_umum) : null;
-        $bh->harga_khusus = $request->harga_khusus ? preg_replace('/\D/', '', $request->harga_khusus) : null;
-        $bh->harga_member = $request->harga_member ? preg_replace('/\D/', '', $request->harga_member) : null;
-        $bh->harga_custom = $request->harga_custom ? preg_replace('/\D/', '', $request->harga_custom) : null;
-        $bh->cara_perhitungan = $request->cara_perhitungan;
-        $bh->save();
+        $request->validate([
+            'kode' => ['required', 'string', 'max:30'],
+            'bahan' => ['required', 'string', 'max:35'],
+            'kategori' => ['required', 'string', 'max:35'],
+        ]);
+
+        DB::transaction(function () use ($request) {
+            $db = Databahan::create($this->bahanPayload($request));
+
+            if ($this->hasHargaPayload($request)) {
+                Hargabahan::create($this->hargaPayload($request, $db->kode));
+            }
+        });
 
         return redirect()->back()->with('success', 'Data berhasil ditambah');
     }
 
     public function update(Request $request, $id)
     {
-        $bh = Bahan::find($id);
-        $bh->kode = $request->kode;
-        $bh->bahan = $request->bahan;
-        $bh->kategori = $request->kategori;
-        $bh->jenis = $request->jenis;
-        $bh->satuan = $request->satuan;
-        $bh->kategori_cetak = $request->kategori_cetak;
-        $bh->jenis_bahan = $request->jenis_bahan;
-        $bh->klik = $request->klik;
-        $bh->qty = $request->qty;
-        $bh->harga = 0;
-        $bh->harga_beli = $request->harga_beli ? preg_replace('/\D/', '', $request->harga_beli) : null;
-        $bh->harga_umum = $request->harga_umum ? preg_replace('/\D/', '', $request->harga_umum) : null;
-        $bh->harga_khusus = $request->harga_khusus ? preg_replace('/\D/', '', $request->harga_khusus) : null;
-        $bh->harga_member = $request->harga_member ? preg_replace('/\D/', '', $request->harga_member) : null;
-        $bh->harga_custom = $request->harga_custom ? preg_replace('/\D/', '', $request->harga_custom) : null;
-        $bh->cara_perhitungan = $request->cara_perhitungan;
-        $bh->update();
+        $request->validate([
+            'kode' => ['required', 'string', 'max:30'],
+            'bahan' => ['required', 'string', 'max:35'],
+            'kategori' => ['required', 'string', 'max:35'],
+        ]);
+
+        DB::transaction(function () use ($request, $id) {
+            $db = Databahan::findOrFail($id);
+            $kodeLama = $db->kode;
+            $db->update($this->bahanPayload($request));
+
+            if ($kodeLama !== $request->kode) {
+                Hargabahan::where('kode_bahan', $kodeLama)->update([
+                    'kode_bahan' => $request->kode,
+                ]);
+            }
+        });
 
         return redirect()->back()->with('success', 'Data berhasil diubah');
     }
 
+    public function storeHarga(Request $request, $kode)
+    {
+        Databahan::where('kode', $kode)->firstOrFail();
+        Hargabahan::create($this->hargaPayload($request, $kode));
+
+        return redirect()->back()->with('success', 'Harga bahan berhasil ditambah');
+    }
+
+    public function updateHarga(Request $request, $id)
+    {
+        $hb = Hargabahan::findOrFail($id);
+        $hb->update($this->hargaPayload($request, $hb->kode_bahan));
+
+        return redirect()->back()->with('success', 'Harga bahan berhasil diubah');
+    }
+
+    public function deleteHarga($id)
+    {
+        Hargabahan::findOrFail($id)->delete();
+
+        return redirect()->back()->with('success', 'Harga bahan berhasil dihapus');
+    }
+
     public function delete($id)
     {
-        $bh = Bahan::find($id);
-        $bh->delete();
+        $db = Databahan::findOrFail($id);
+        Hargabahan::where('kode_bahan', $db->kode)->delete();
+        $db->delete();
 
         return redirect()->back()->with('success', 'Data berhasil dihapus');
+    }
+
+    private function bahanPayload(Request $request): array
+    {
+        return [
+            'kode' => $request->kode,
+            'bahan' => $request->bahan,
+            'kategori' => $request->kategori,
+            'jenis' => $request->jenis,
+            'satuan' => $request->satuan,
+            'kategori_cetak' => $request->kategori_cetak,
+            'jenis_bahan' => $request->jenis_bahan,
+            'klik' => $request->klik,
+            'cara_perhitungan' => $request->cara_perhitungan,
+        ];
+    }
+
+    private function hargaPayload(Request $request, string $kode): array
+    {
+        return [
+            'kode_bahan' => $kode,
+            'sisi' => $request->sisi,
+            'qty_min' => $this->cleanNumber($request->qty_min),
+            'qty_max' => $this->cleanNumber($request->qty_max),
+            'harga_po' => $this->cleanNumber($request->harga_po ?? $request->harga_beli),
+            'harga_umum' => $this->cleanNumber($request->harga_umum),
+            'harga_khusus' => $this->cleanNumber($request->harga_khusus),
+            'harga_member' => $this->cleanNumber($request->harga_member),
+            'harga_custome' => $this->cleanNumber($request->harga_custome ?? $request->harga_custom),
+        ];
+    }
+
+    private function hasHargaPayload(Request $request): bool
+    {
+        return collect([
+            'sisi',
+            'qty_min',
+            'qty_max',
+            'harga_po',
+            'harga_beli',
+            'harga_umum',
+            'harga_khusus',
+            'harga_member',
+            'harga_custome',
+            'harga_custom',
+        ])->contains(fn ($field) => filled($request->input($field)));
+    }
+
+    private function cleanNumber($value): ?string
+    {
+        if (! filled($value)) {
+            return null;
+        }
+
+        return preg_replace('/\D/', '', $value);
     }
 }

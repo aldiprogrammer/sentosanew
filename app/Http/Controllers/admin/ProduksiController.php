@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Bahan;
 use App\Models\Customer;
+use App\Models\Databahan;
 use App\Models\Desain;
+use App\Models\Hargabahan;
 use App\Models\MataAyam;
 use App\Models\Pinising;
 use App\Models\Produksi;
@@ -17,7 +18,7 @@ class ProduksiController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
-        $produksi = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')
+        $produksi = Produksi::with('customer', 'bahan.hargaBahan', 'pinising', 'mataAyam')
             ->when(auth()->user()->role === 'Desainer', function ($q) {
                 $q->where('id_desainer', auth()->id());
             })
@@ -40,7 +41,7 @@ class ProduksiController extends Controller
             ->with('customer', 'kategoridesain')
             ->get();
         $customer = Customer::all();
-        $bahan = Bahan::all();
+        $bahan = Databahan::with('hargaBahan')->get();
 
         $kodespk = 'SPK-' . date('ymd') . rand(0, 10000);
         $kode_antrian = $this->kodeAntrianProduksiBerikutnya();
@@ -51,40 +52,9 @@ class ProduksiController extends Controller
     public function store(Request $request)
     {
 
-        $bahan = Bahan::where('id', $request->id_bahan)->first();
-
-        if ($request->pilihan_harga === 'Custom') {
-            $harga_produk = $request->harga_manual ?: 0;
-        } else {
-            $kategoriMap = [
-                'Umum' => 'harga_umum',
-                'Khusus' => 'harga_khusus',
-                'Member' => 'harga_member',
-                'Custom' => 'harga_custom',
-            ];
-            $kolom = $kategoriMap[$request->pilihan_harga] ?? 'harga_umum';
-            $harga_produk = $bahan->$kolom ?? $bahan->harga ?? 0;
-        }
-
-        if ($bahan->cara_perhitungan == 'QTY') {
-            $total_harga = $request->qty * $harga_produk;
-        } elseif ($bahan->cara_perhitungan == 'QTY KHUSUS') {
-            $total_harga = $request->qty * $harga_produk;
-        } elseif ($bahan->cara_perhitungan == 'LUAS') {
-            if ($request->satuan == 'Cm') {
-                $lebar = $request->lebar / 100;
-                $tinggi = $request->tinggi / 100;
-            } elseif ($request->satuan == 'Mm') {
-                $lebar = $request->lebar / 1000;
-                $tinggi = $request->tinggi / 1000;
-            } elseif ($request->satuan == 'Meter') {
-                $lebar = $request->lebar;
-                $tinggi = $request->tinggi;
-            }
-            $luas = $lebar * $tinggi;
-            $total =  $luas * $harga_produk;
-            $total_harga = $request->qty * $total;
-        }
+        $bahan = Databahan::find($request->id_bahan);
+        $harga_produk = $this->hargaProduk($bahan, $request);
+        $total_harga = $this->totalHarga($bahan, $request, $harga_produk);
         $desain = Desain::where('id_customer', $request->id_customer)
             ->where('tanggal', date('Y-m-d'))
             ->where('status', 0)
@@ -108,7 +78,7 @@ class ProduksiController extends Controller
         $pr->tinggi = $request->tinggi;
         $pr->qty = $request->qty;
         $pr->sisi = $request->sisi ?? '1 SISI';
-        $pr->cara_perhitungan = $bahan->cara_perhitungan;
+        $pr->cara_perhitungan = $bahan->cara_perhitungan ?? '';
         $pr->harga_bahan = $harga_produk;
         $pr->total_harga = $total_harga;
         $pr->catatan = '1';
@@ -149,42 +119,9 @@ class ProduksiController extends Controller
     public function update(Request $request, $id)
     {
         $pr = Produksi::find($id);
-        $bahan = Bahan::where('id', $request->id_bahan)->first();
-
-        if ($request->pilihan_harga === 'Custom') {
-            $harga_produk = $request->harga_manual ?: 0;
-        } else {
-            $kategoriMap = [
-                'Umum' => 'harga_umum',
-                'Khusus' => 'harga_khusus',
-                'Member' => 'harga_member',
-                'Custom' => 'harga_custom',
-            ];
-            $kolom = $kategoriMap[$request->pilihan_harga] ?? 'harga_umum';
-            $harga_produk = $bahan ? ($bahan->$kolom ?? $bahan->harga ?? 0) : 0;
-        }
-
-        if ($bahan && $bahan->cara_perhitungan == 'QTY') {
-            $total_harga = $request->qty * $harga_produk;
-        } elseif ($bahan && $bahan->cara_perhitungan == 'QTY KHUSUS') {
-            $total_harga = $request->qty * $harga_produk;
-        } elseif ($bahan && $bahan->cara_perhitungan == 'LUAS') {
-            if ($request->satuan == 'Cm') {
-                $lebar = $request->lebar / 100;
-                $tinggi = $request->tinggi / 100;
-            } elseif ($request->satuan == 'Mm') {
-                $lebar = $request->lebar / 1000;
-                $tinggi = $request->tinggi / 1000;
-            } elseif ($request->satuan == 'Meter') {
-                $lebar = $request->lebar;
-                $tinggi = $request->tinggi;
-            }
-            $luas = $lebar * $tinggi;
-            $total =  $luas * $harga_produk;
-            $total_harga = $request->qty * $total;
-        } else {
-            $total_harga = 0;
-        }
+        $bahan = Databahan::find($request->id_bahan);
+        $harga_produk = $this->hargaProduk($bahan, $request);
+        $total_harga = $this->totalHarga($bahan, $request, $harga_produk);
 
         $pr->id_customer = $request->id_customer;
         $pr->id_desain = $request->id_desain;
@@ -259,5 +196,92 @@ class ProduksiController extends Controller
         $nomorBerikutnya = (int) $nomorTerakhir + 1;
 
         return 'ANT-' . str_pad($nomorBerikutnya, $panjangNomor, '0', STR_PAD_LEFT);
+    }
+
+    private function hargaProduk(?Databahan $bahan, Request $request): float
+    {
+        if (! $bahan) {
+            return 0;
+        }
+
+        if ($request->pilihan_harga === 'Custom') {
+            return (float) ($request->harga_manual ?: 0);
+        }
+
+        $kolomHarga = [
+            'Umum' => 'harga_umum',
+            'Khusus' => 'harga_khusus',
+            'Member' => 'harga_member',
+            'Custom' => 'harga_custome',
+        ][$request->pilihan_harga] ?? 'harga_umum';
+
+        $qty = (float) ($request->qty ?: 0);
+        $sisi = trim((string) $request->sisi);
+        $hargaBahan = Hargabahan::where('kode_bahan', $bahan->kode)->get();
+        $pakaiSisi = $hargaBahan->contains(fn($harga) => trim((string) $harga->sisi) !== '');
+
+        if ($bahan->cara_perhitungan === 'QTY KHUSUS') {
+            $harga = $hargaBahan
+                ->filter(function ($harga) use ($qty, $sisi, $pakaiSisi) {
+                    $qtyMin = (float) ($harga->qty_min ?: 0);
+                    $qtyMaxKosong = trim((string) $harga->qty_max) === '';
+                    $qtyMax = $qtyMaxKosong ? INF : (float) $harga->qty_max;
+                    $sisiHarga = trim((string) $harga->sisi);
+
+                    if ($qtyMaxKosong && $qty !== $qtyMin) {
+                        return false;
+                    }
+
+                    if ($qty < $qtyMin || $qty > $qtyMax) {
+                        return false;
+                    }
+
+                    if ($pakaiSisi) {
+                        return strcasecmp($sisiHarga, $sisi) === 0;
+                    }
+
+                    return $sisiHarga === '';
+                })
+                ->sortByDesc(fn($harga) => (float) ($harga->qty_min ?: 0))
+                ->first();
+        } else {
+            $harga = $hargaBahan
+                ->sortBy(fn($harga) => (float) ($harga->qty_min ?: 0))
+                ->first();
+        }
+
+        return (float) ($harga?->$kolomHarga ?: 0);
+    }
+
+    private function totalHarga(?Databahan $bahan, Request $request, float $hargaProduk): float
+    {
+        if (! $bahan) {
+            return 0;
+        }
+
+        if (in_array($bahan->cara_perhitungan, ['QTY'])) {
+            return (float) $request->qty * $hargaProduk;
+        }
+
+        if (in_array($bahan->cara_perhitungan, ['QTY KHUSUS'])) {
+            return (float) $hargaProduk;
+        }
+
+        if ($bahan->cara_perhitungan === 'LUAS') {
+            $lebar = (float) $request->lebar;
+            $tinggi = (float) $request->tinggi;
+
+            if ($request->satuan === 'Cm') {
+                $lebar /= 100;
+                $tinggi /= 100;
+            } elseif ($request->satuan === 'Mm') {
+                $lebar /= 1000;
+                $tinggi /= 1000;
+            }
+
+            return (float) $request->qty * ($lebar * $tinggi * $hargaProduk);
+        }
+
+        return 0;
     }
 }

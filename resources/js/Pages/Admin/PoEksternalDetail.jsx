@@ -6,6 +6,74 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export default function PoEksternalDetail({ po, bahans, invoices }) {
+  const getHargaRows = (bahan) => bahan?.harga_bahan || bahan?.hargaBahan || [];
+
+  const hargaPoSesuaiQty = (bahan, qty) => {
+    const jumlah = Number(qty || 0);
+    const rows = getHargaRows(bahan);
+
+    if (rows.length === 0) return 0;
+
+    if (!jumlah) {
+      return [...rows].sort((a, b) => Number(a.qty_min || 0) - Number(b.qty_min || 0))[0]?.harga_po || 0;
+    }
+
+    const harga = rows
+      .filter((row) => {
+        const qtyMin = Number(row.qty_min || 0);
+        const qtyMax = row.qty_max === null || String(row.qty_max).trim() === ""
+          ? Infinity
+          : Number(row.qty_max);
+
+        return jumlah >= qtyMin && jumlah <= qtyMax;
+      })
+      .sort((a, b) => Number(b.qty_min || 0) - Number(a.qty_min || 0))[0];
+
+    return harga?.harga_po || 0;
+  };
+
+  const hitungHargaPo = (idBahan, qty) => {
+    const bahan = bahans.find((b) => Number(b.id) === Number(idBahan));
+
+    return hargaPoSesuaiQty(bahan, qty);
+  };
+
+  const bahanById = (idBahan) => bahans.find((b) => Number(b.id) === Number(idBahan));
+
+  const satuanBahan = (item) => item?.bahan?.satuan || item?.satuan || "";
+
+  const satuanBahanById = (idBahan) => {
+    const bahan = bahanById(idBahan);
+
+    return bahan?.satuan || "";
+  };
+
+  const satuanProduksiByInvoice = (invoice, fallback = "") => {
+    const inv = invoices.find((item) => item.no_invoice === invoice);
+
+    return inv?.satuan || fallback || "";
+  };
+
+  const hitungTotalItem = ({
+    idBahan = data.id_bahan,
+    tinggi = data.tinggi,
+    lebar = data.lebar,
+    luas = data.luas,
+    qty = data.qty,
+    harga = data.harga,
+  } = {}) => {
+    const bahan = bahanById(idBahan);
+    const caraPerhitungan = String(bahan?.cara_perhitungan || "").toUpperCase();
+    const nilaiLuas = parseFloat(luas) || hitungLuas(tinggi, lebar);
+    const nilaiQty = parseFloat(qty) || 0;
+    const nilaiHarga = parseFloat(harga) || 0;
+
+    if (caraPerhitungan === "LUAS") return Math.round(nilaiLuas * nilaiHarga);
+    if (caraPerhitungan === "QTY KHUSUS") return Math.round(nilaiHarga);
+
+    return Math.round(nilaiQty * nilaiHarga);
+  };
+
   const {
     data,
     setData,
@@ -23,6 +91,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
     lebar: "",
     luas: "",
     satuan: "",
+    satuan_ukuran: "",
     qty: "",
     harga: "",
     total: "",
@@ -56,7 +125,8 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
       tinggi: item.tinggi?.toString() || "",
       lebar: item.lebar?.toString() || "",
       luas: item.luas?.toString() || "",
-      satuan: item.satuan || "",
+      satuan: satuanBahan(item),
+      satuan_ukuran: satuanProduksiByInvoice(item.invoice, item.satuan),
       qty: item.qty?.toString() || "",
       harga: item.harga?.toString() || "",
       total: item.total?.toString() || "",
@@ -75,21 +145,15 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
     return Math.round(t * l);
   };
 
-  const hitungTotal = (qty, harga) => {
-    const q = parseFloat(qty) || 0;
-    const h = parseFloat(harga) || 0;
-    return Math.round(q * h);
-  };
-
   useEffect(() => {
     const luas = hitungLuas(data.tinggi, data.lebar);
     setData("luas", luas);
   }, [data.tinggi, data.lebar]);
 
   useEffect(() => {
-    const total = hitungTotal(data.qty, data.harga);
+    const total = hitungTotalItem();
     setData("total", total);
-  }, [data.qty, data.harga]);
+  }, [data.id_bahan, data.luas, data.qty, data.harga]);
 
   const saveItem = (e) => {
     e.preventDefault();
@@ -128,8 +192,10 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
         setData("spk", d.kode_spk);
         setData("lebar", d.lebar);
         setData("tinggi", d.tinggi);
-        setData("harga", d.harga);
+        setData("harga", hitungHargaPo(d.id_bahan, d.qty));
         setData("qty", d.qty);
+        setData("satuan", satuanBahanById(d.id_bahan));
+        setData("satuan_ukuran", d.satuan || "");
       }
     } catch { }
   };
@@ -208,7 +274,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
         const subTotal = th - diskonAmount + ppnAmount;
 
         const rows = po.items.map((item, index) => {
-          const sat = item.satuan || ""
+          const sat = satuanProduksiByInvoice(item.invoice)
           return [
             index + 1,
             item.invoice || "-",
@@ -362,7 +428,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                     <th>Lebar</th>
                     <th>Tinggi</th>
                     <th>Luas</th>
-                    <th>Satuan</th>
+                    <th>Satuan Bahan</th>
                     <th>Qty</th>
                     <th>Harga</th>
                     <th>Total</th>
@@ -377,22 +443,26 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                       </td>
                     </tr>
                   ) : (
-                    po.items.map((item, index) => (
-                      <tr key={item.id} onClick={() => openModalEdit(item)} className="cursor-pointer hover:bg-base-200">
-                        <td>{index + 1}</td>
-                        <td>{item.invoice || "-"}</td>
-                        <td>{item.bahan?.bahan || "-"}</td>
-                        <td>{item.spk || "-"}</td>
-                        <td>{item.lebar}</td>
-                        <td>{item.tinggi}</td>
-                        <td>{item.luas}</td>
-                        <td>{item.satuan || "-"}</td>
-                        <td>{item.qty}</td>
-                        <td>{formatRp(item.harga)}</td>
-                        <td>{formatRp(item.total)}</td>
-                        <td>{item.keterangan || "-"}</td>
-                      </tr>
-                    ))
+                    po.items.map((item, index) => {
+                      const satuanUkuran = satuanProduksiByInvoice(item.invoice);
+
+                      return (
+                        <tr key={item.id} onClick={() => openModalEdit(item)} className="cursor-pointer hover:bg-base-200">
+                          <td>{index + 1}</td>
+                          <td>{item.invoice || "-"}</td>
+                          <td>{item.bahan?.bahan || "-"}</td>
+                          <td>{item.spk || "-"}</td>
+                          <td>{item.lebar}{satuanUkuran ? ` ${satuanUkuran}` : ""}</td>
+                          <td>{item.tinggi}{satuanUkuran ? ` ${satuanUkuran}` : ""}</td>
+                          <td>{item.luas}{satuanUkuran ? ` ${satuanUkuran}` : ""}</td>
+                          <td>{satuanBahan(item) || "-"}</td>
+                          <td>{item.qty}</td>
+                          <td>{formatRp(item.harga)}</td>
+                          <td>{formatRp(item.total)}</td>
+                          <td>{item.keterangan || "-"}</td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -491,14 +561,14 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                     setData("invoice", val);
                     const inv = invoices.find((i) => i.no_invoice === val);
                     if (inv) {
-                      const bahan = bahans.find((b) => b.id == inv.id_bahan);
                       setData("id_bahan", inv.id_bahan);
                       setData("spk", inv.kode_spk);
                       setData("lebar", inv.lebar);
                       setData("tinggi", inv.tinggi);
-                      setData("harga", bahan?.harga_po || inv.harga_bahan || 0);
+                      setData("harga", hitungHargaPo(inv.id_bahan, inv.qty));
                       setData("qty", inv.qty);
-                      setData("satuan", inv.satuan || '');
+                      setData("satuan", satuanBahanById(inv.id_bahan));
+                      setData("satuan_ukuran", inv.satuan || '');
                     }
                   }}>
                     <option value="">-- Pilih Invoice --</option>
@@ -512,8 +582,8 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                   <select value={data.id_bahan} className="select select-bordered select-success w-full" onChange={(e) => {
                     const val = e.target.value;
                     setData("id_bahan", val);
-                    const bahan = bahans.find((b) => b.id == val);
-                    if (bahan?.harga_po) setData("harga", bahan.harga_po);
+                    setData("harga", hitungHargaPo(val, data.qty));
+                    setData("satuan", satuanBahanById(val));
                   }}>
                     <option value="">-- Pilih Bahan --</option>
                     {bahans.map((b) => (
@@ -522,7 +592,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                   </select>
                   {data.id_bahan && (
                     <span className="text-xs text-base-content/60 mt-1 ml-1">
-                      Satuan: {bahans.find((b) => b.id == data.id_bahan)?.satuan || '-'}
+                      Satuan bahan: {satuanBahanById(data.id_bahan) || '-'}
                     </span>
                   )}
                 </label>
@@ -534,24 +604,28 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
               <div className="bg-gray-100 p-2 rounded-lg">
                 <div className="grid grid-cols-2 gap-2">
                   <label className="form-control">
-                    <div className="label"><span className="label-text">Lebar ({data.satuan})</span></div>
+                    <div className="label"><span className="label-text">Lebar ({data.satuan_ukuran})</span></div>
                     <input type="number" step="0.01" value={data.lebar} className="input input-bordered input-success w-full" onChange={(e) => setData("lebar", e.target.value)} />
                   </label>
                   <label className="form-control">
-                    <div className="label"><span className="label-text">Tinggi ({data.satuan})</span></div>
+                    <div className="label"><span className="label-text">Tinggi ({data.satuan_ukuran})</span></div>
                     <input type="number" step="0.01" value={data.tinggi} className="input input-bordered input-success w-full" onChange={(e) => setData("tinggi", e.target.value)} />
                   </label>
                   <label className="form-control">
-                    <div className="label"><span className="label-text">Luas ({data.satuan})</span></div>
+                    <div className="label"><span className="label-text">Luas ({data.satuan_ukuran})</span></div>
                     <input type="text" value={data.luas} className="input input-bordered w-full bg-base-200" readOnly />
                   </label>
                   <label className="form-control">
-                    <div className="label"><span className="label-text">Satuan</span></div>
-                    <input type="text" value={data.satuan} className="input input-bordered w-full bg-base-200" onChange={(e) => setData("satuan", e.target.value)} />
+                    <div className="label"><span className="label-text">Satuan Bahan</span></div>
+                    <input type="text" value={data.satuan} className="input input-bordered w-full bg-base-200" readOnly />
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Qty</span></div>
-                    <input type="number" step="0.01" value={data.qty} className="input input-bordered input-success w-full" onChange={(e) => setData("qty", e.target.value)} />
+                    <input type="number" step="0.01" value={data.qty} className="input input-bordered input-success w-full" onChange={(e) => {
+                      const qty = e.target.value;
+                      setData("qty", qty);
+                      setData("harga", hitungHargaPo(data.id_bahan, qty));
+                    }} />
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Harga PO</span></div>
@@ -592,8 +666,8 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                   <select value={data.id_bahan} className="select select-bordered select-success w-full" onChange={(e) => {
                     const val = e.target.value;
                     setData("id_bahan", val);
-                    const bahan = bahans.find((b) => b.id == val);
-                    if (bahan?.harga_po) setData("harga", bahan.harga_po);
+                    setData("harga", hitungHargaPo(val, data.qty));
+                    setData("satuan", satuanBahanById(val));
                   }}>
                     <option value="">-- Pilih Bahan --</option>
                     {bahans.map((b) => (
@@ -602,7 +676,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                   </select>
                   {/* {data.id_bahan && (
                     <span className="text-xs text-base-content/60 mt-1 ml-1">
-                      Satuan: {bahans.find((b) => b.id == data.id_bahan)?.satuan || '-'}
+                      Satuan bahan: {satuanBahanById(data.id_bahan) || '-'}
                     </span>
                   )} */}
                 </label>
@@ -614,20 +688,28 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
               <div className="bg-gray-100 p-2 rounded-lg">
                 <div className="grid grid-cols-2 gap-2">
                   <label className="form-control">
-                    <div className="label"><span className="label-text">Lebar ({data.satuan})</span></div>
+                    <div className="label"><span className="label-text">Lebar ({data.satuan_ukuran})</span></div>
                     <input type="number" step="0.01" value={data.lebar} className="input input-bordered input-success w-full" onChange={(e) => setData("lebar", e.target.value)} />
                   </label>
                   <label className="form-control">
-                    <div className="label"><span className="label-text">Tinggi ({data.satuan})</span></div>
+                    <div className="label"><span className="label-text">Tinggi ({data.satuan_ukuran})</span></div>
                     <input type="number" step="0.01" value={data.tinggi} className="input input-bordered input-success w-full" onChange={(e) => setData("tinggi", e.target.value)} />
                   </label>
                   <label className="form-control">
-                    <div className="label"><span className="label-text">Luas ({data.satuan})</span></div>
+                    <div className="label"><span className="label-text">Luas ({data.satuan_ukuran})</span></div>
                     <input type="text" value={data.luas} className="input input-bordered w-full bg-base-200" readOnly />
                   </label>
                   <label className="form-control">
+                    <div className="label"><span className="label-text">Satuan Bahan</span></div>
+                    <input type="text" value={data.satuan} className="input input-bordered w-full bg-base-200" readOnly />
+                  </label>
+                  <label className="form-control">
                     <div className="label"><span className="label-text">Qty</span></div>
-                    <input type="number" step="0.01" value={data.qty} className="input input-bordered input-success w-full" onChange={(e) => setData("qty", e.target.value)} />
+                    <input type="number" step="0.01" value={data.qty} className="input input-bordered input-success w-full" onChange={(e) => {
+                      const qty = e.target.value;
+                      setData("qty", qty);
+                      setData("harga", hitungHargaPo(data.id_bahan, qty));
+                    }} />
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Harga  PO</span></div>

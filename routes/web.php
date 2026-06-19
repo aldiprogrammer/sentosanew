@@ -71,6 +71,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/bahan', [BahanController::class, 'index'])->name('bahan');
     Route::post('/bahan', [BahanController::class, 'store'])->name('store.bahan');
+    Route::post('/bahan/{kode}/harga', [BahanController::class, 'storeHarga'])->name('store.harga-bahan');
+    Route::put('/bahan/harga/{id}', [BahanController::class, 'updateHarga'])->name('update.harga-bahan');
+    Route::delete('/bahan/harga/{id}', [BahanController::class, 'deleteHarga'])->name('delete.harga-bahan');
     Route::delete('/bahan/{id}', [BahanController::class, 'delete'])->name('delete.bahan');
     Route::put('/bahan/{id}', [BahanController::class, 'update'])->name('update.bahan');
 

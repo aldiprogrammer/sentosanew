@@ -4,6 +4,7 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bahan;
+use App\Models\Databahan;
 use App\Models\Distributor;
 use App\Models\ListPoEksternal;
 use App\Models\PoEksternal;
@@ -27,9 +28,9 @@ class PoEksternalController extends Controller
             ->paginate(10);
         $poEksternal->appends(['search' => $search]);
 
-        $prefix = 'PO-' . date('ym') . '-';
-        $last = PoEksternal::where('no_po', 'like', $prefix . '%')->orderBy('no_po', 'desc')->first();
-        $no_po = $prefix . str_pad($last ? ((int) substr($last->no_po, -4)) + 1 : 1, 4, '0', STR_PAD_LEFT);
+        $prefix = 'PO-'.date('ym').'-';
+        $last = PoEksternal::where('no_po', 'like', $prefix.'%')->orderBy('no_po', 'desc')->first();
+        $no_po = $prefix.str_pad($last ? ((int) substr($last->no_po, -4)) + 1 : 1, 4, '0', STR_PAD_LEFT);
         $bahans = Bahan::orderBy('bahan')->get(['id', 'kode', 'bahan', 'satuan', 'harga_po']);
         $suplayers = Suplayer::orderBy('nama_suplayer')->get(['id', 'kode', 'nama_suplayer', 'jatuh_tempo']);
         $distributors = Distributor::orderBy('nama')->get(['id', 'kode', 'nama']);
@@ -61,9 +62,9 @@ class PoEksternalController extends Controller
 
         $no_po = $data['no_po'] ?? null;
         if (! $no_po) {
-            $prefix = 'PO-' . date('ym') . '-';
-            $last = PoEksternal::where('no_po', 'like', $prefix . '%')->orderBy('no_po', 'desc')->first();
-            $no_po = $prefix . str_pad($last ? ((int) substr($last->no_po, -4)) + 1 : 1, 4, '0', STR_PAD_LEFT);
+            $prefix = 'PO-'.date('ym').'-';
+            $last = PoEksternal::where('no_po', 'like', $prefix.'%')->orderBy('no_po', 'desc')->first();
+            $no_po = $prefix.str_pad($last ? ((int) substr($last->no_po, -4)) + 1 : 1, 4, '0', STR_PAD_LEFT);
         }
 
         $po = new PoEksternal;
@@ -186,10 +187,21 @@ class PoEksternalController extends Controller
         $po->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
         $po->update();
 
-        $bahans = Bahan::orderBy('bahan')->get(['id', 'kode', 'bahan', 'satuan', 'harga_po']);
+        $bahans = Databahan::with(['hargaBahan' => function ($q) {
+            $q->orderBy('qty_min')->orderBy('id');
+        }])
+            ->orderBy('bahan')
+            ->get([
+                'id',
+                'kode',
+                'bahan',
+                'satuan',
+                'jenis',
+                'cara_perhitungan',
+            ]);
 
         $invoices = Produksi::with('bahan')
-            ->whereHas('bahan', fn($q) => $q->where('jenis', 'Eksternal'))
+            ->whereHas('bahan', fn ($q) => $q->whereRaw('LOWER(jenis) = ?', ['eksternal']))
             ->whereNotNull('no_invoice')
             ->orderBy('no_invoice')
             ->get(['id', 'no_invoice', 'id_bahan', 'kode_spk', 'lebar', 'tinggi', 'qty', 'harga_bahan', 'satuan']);
@@ -203,7 +215,7 @@ class PoEksternalController extends Controller
 
         $data = $request->validate([
             'invoice' => 'nullable|string|max:100',
-            'id_bahan' => 'nullable|exists:bahans,id',
+            'id_bahan' => 'nullable|exists:databahans,id',
             'spk' => 'nullable|string|max:100',
             'tinggi' => 'nullable|numeric',
             'lebar' => 'nullable|numeric',
@@ -214,34 +226,35 @@ class PoEksternalController extends Controller
             'total' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
         ]);
+        $bahan = $data['id_bahan'] ? Databahan::find($data['id_bahan']) : null;
 
         $item = new ListPoEksternal;
         $item->po_eksternal_id = $po->id;
         $item->invoice = $data['invoice'];
         $item->id_bahan = $data['id_bahan'] ?: null;
         $item->spk = $data['spk'];
-        $item->satuan = $data['satuan'] ?? null;
+        $item->satuan = $bahan?->satuan;
         $item->tinggi = round($data['tinggi'] ?? 0);
         $item->lebar = round($data['lebar'] ?? 0);
         $item->luas = round($data['luas'] ?? 0);
         $item->qty = round($data['qty'] ?? 0);
         $item->harga = round($data['harga'] ?? 0);
-        $item->total = round($data['total'] ?? 0);
+        $item->total = $this->hitungTotalItem($bahan, $item->luas, $item->qty, $item->harga);
         $item->keterangan = $data['keterangan'];
         $item->save();
- 
+
         $this->recalculateTotalHarga($po->id);
- 
+
         return redirect()->back()->with('success', 'Item berhasil ditambah');
     }
- 
+
     public function updateItem(Request $request, $id)
     {
         $item = ListPoEksternal::findOrFail($id);
- 
+
         $data = $request->validate([
             'invoice' => 'nullable|string|max:100',
-            'id_bahan' => 'nullable|exists:bahans,id',
+            'id_bahan' => 'nullable|exists:databahans,id',
             'spk' => 'nullable|string|max:100',
             'tinggi' => 'nullable|numeric',
             'lebar' => 'nullable|numeric',
@@ -252,17 +265,18 @@ class PoEksternalController extends Controller
             'total' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
         ]);
- 
+        $bahan = $data['id_bahan'] ? Databahan::find($data['id_bahan']) : null;
+
         $item->invoice = $data['invoice'];
         $item->id_bahan = $data['id_bahan'] ?: null;
         $item->spk = $data['spk'];
-        $item->satuan = $data['satuan'] ?? null;
+        $item->satuan = $bahan?->satuan;
         $item->tinggi = round($data['tinggi'] ?? 0);
         $item->lebar = round($data['lebar'] ?? 0);
         $item->luas = round($data['luas'] ?? 0);
         $item->qty = round($data['qty'] ?? 0);
         $item->harga = round($data['harga'] ?? 0);
-        $item->total = round($data['total'] ?? 0);
+        $item->total = $this->hitungTotalItem($bahan, $item->luas, $item->qty, $item->harga);
         $item->keterangan = $data['keterangan'];
         $item->update();
 
@@ -318,5 +332,20 @@ class PoEksternalController extends Controller
             $po->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
             $po->update();
         }
+    }
+
+    private function hitungTotalItem(?Databahan $bahan, float|int $luas, float|int $qty, float|int $harga): int
+    {
+        $caraPerhitungan = strtoupper((string) $bahan?->cara_perhitungan);
+
+        if ($caraPerhitungan === 'LUAS') {
+            return round($luas * $harga);
+        }
+
+        if ($caraPerhitungan === 'QTY KHUSUS') {
+            return round($harga);
+        }
+
+        return round($qty * $harga);
     }
 }

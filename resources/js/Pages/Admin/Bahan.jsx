@@ -1,779 +1,492 @@
-import AdminLayout from "@/Layouts/AdminLayout";
-import { Link, router, useForm } from "@inertiajs/react";
-import React, { useEffect, useRef, useState } from "react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import AdminLayout from '@/Layouts/AdminLayout';
+import { Link, router, useForm } from '@inertiajs/react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import React, { useEffect, useRef, useState } from 'react';
 
-export default function Bahan({ bahan, kode }) {
-  const [search, setSearch] = useState('');
+const initialBahan = {
+  id: '',
+  kode: '',
+  bahan: '',
+  kategori: '',
+  satuan: '',
+  jenis: '',
+  kategori_cetak: '',
+  jenis_bahan: '',
+  klik: '',
+  cara_perhitungan: '',
+  sisi: '',
+  qty_min: '',
+  qty_max: '',
+  harga_po: '',
+  harga_umum: '',
+  harga_khusus: '',
+  harga_member: '',
+  harga_custome: '',
+};
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    router.get('/bahan', { search }, { preserveState: true, replace: true });
-  };
+const initialHarga = {
+  id: '',
+  kode_bahan: '',
+  sisi: '',
+  qty_min: '',
+  qty_max: '',
+  harga_po: '',
+  harga_umum: '',
+  harga_khusus: '',
+  harga_member: '',
+  harga_custome: '',
+};
+
+const kategoriOptions = ['DIGITAL', 'OFFSET'];
+const satuanOptions = ['BLOCK', 'BOX', 'LEMBAR', 'M2', 'PCS', 'RIM'];
+const jenisOptions = ['INTERNAL', 'EKSTERNAL'];
+const kategoriCetakOptions = [
+  'INDOOR',
+  'INDOOR 2',
+  'OUTDOOR',
+  'OUTDOOR 2',
+  'DISPLAY',
+  'OFFSET',
+  'DLL',
+];
+const jenisBahanOptions = [
+  'DLL',
+  'DYE',
+  'ECOSOLVENT',
+  'OFFSET',
+  'SOLVENT',
+  'TONER',
+  'UV',
+];
+const perhitunganOptions = ['QTY', 'LUAS', 'QTY KHUSUS'];
+
+const getHargaRows = (item) => item?.harga_bahan || item?.hargaBahan || [];
+const cleanNumber = (value) => String(value || '').replace(/\D/g, '');
+const formatRp = (value) => {
+  if (!value) return '-';
+  const number = Number(cleanNumber(value));
+  if (!number) return '-';
+  return `Rp ${number.toLocaleString('id-ID')}`;
+};
+
+export default function Bahan({ databahan, kode }) {
+  const [search, setSearch] = useState(
+    new URLSearchParams(window.location.search).get('search') || '',
+  );
+  const [selectedBahan, setSelectedBahan] = useState(null);
+  const [hargaMode, setHargaMode] = useState('create');
+
+  const tambahBahanRef = useRef(null);
+  const editBahanRef = useRef(null);
+  const hargaRef = useRef(null);
+
+  const bahanForm = useForm(initialBahan);
+  const hargaForm = useForm(initialHarga);
 
   useEffect(() => {
     const t = setTimeout(() => {
       router.get('/bahan', { search }, { preserveState: true, replace: true });
     }, 500);
+
     return () => clearTimeout(t);
   }, [search]);
 
-  const {
-    data,
-    setData,
-    post,
-    delete: destroy,
-    put,
-    processing,
-    reset,
-  } = useForm({
-    id: 0,
-    kode: "",
-    bahan: "",
-    kategori: "",
-    satuan: "",
-    jenis: "",
-    kategori_cetak: "",
-    jenis_bahan: "",
-    klik: "",
-    qty: "",
-    harga: "",
-    harga_beli: "",
-    harga_umum: "",
-    harga_khusus: "",
-    harga_member: "",
-    harga_custom: "",
-    cara_perhitungan: "",
-  });
+  const setBahanValue = (field, value) => bahanForm.setData(field, value);
+  const setHargaValue = (field, value) => hargaForm.setData(field, value);
 
-  const modalRef = useRef(null);
-  const openModal = () => {
-    modalRef.current.showModal();
-    setData("kode", kode);
-  };
-
-  const closeModal = () => {
-    modalRef.current.close();
-  };
-
-  const editmodalRef = useRef(null);
-  function handleHargaInput(e) {
-    const raw = e.target.value.replace(/\D/g, "");
-    setData("harga", raw);
-  }
-
-  const openModalEdit = (
-    id,
-    kode,
-    bahan,
-    kategori,
-    satuan,
-    jenis,
-    kategori_cetak,
-    jenis_bahan,
-    klik,
-    qty,
-    harga,
-    harga_beli,
-    harga_umum,
-    harga_khusus,
-    harga_member,
-    harga_custom,
-    cara_perhitungan
-  ) => {
-    editmodalRef.current.showModal();
-    setData({
-      id,
-      kode,
-      bahan,
-      kategori,
-      satuan,
-      jenis,
-      kategori_cetak,
-      jenis_bahan,
-      klik,
-      qty,
-      harga,
-      harga_beli,
-      harga_umum,
-      harga_khusus,
-      harga_member,
-      harga_custom,
-      cara_perhitungan,
+  const fillBahan = (item, includeHarga = false) => {
+    const hb = includeHarga ? getHargaRows(item)[0] || {} : {};
+    bahanForm.setData({
+      ...initialBahan,
+      id: item.id,
+      kode: item.kode || '',
+      bahan: item.bahan || '',
+      kategori: item.kategori || '',
+      satuan: item.satuan || '',
+      jenis: item.jenis || '',
+      kategori_cetak: item.kategori_cetak || '',
+      jenis_bahan: item.jenis_bahan || '',
+      klik: item.klik || '',
+      cara_perhitungan: item.cara_perhitungan || '',
+      sisi: hb.sisi || '',
+      qty_min: hb.qty_min || '',
+      qty_max: hb.qty_max || '',
+      harga_po: hb.harga_po || '',
+      harga_umum: hb.harga_umum || '',
+      harga_khusus: hb.harga_khusus || '',
+      harga_member: hb.harga_member || '',
+      harga_custome: hb.harga_custome || '',
     });
   };
 
-  const closeModalEdit = () => {
-    editmodalRef.current.close();
-    reset();
+  const openTambahBahan = () => {
+    bahanForm.setData({ ...initialBahan, kode });
+    tambahBahanRef.current.showModal();
   };
 
-  const duplicate = (item) => {
-    editmodalRef.current.close();
-    openModal();
-    setData({
-      id: 0,
-      kode: kode,
-      bahan: item.bahan,
-      kategori: item.kategori,
-      satuan: item.satuan,
-      jenis: item.jenis,
-      kategori_cetak: item.kategori_cetak,
-      jenis_bahan: item.jenis_bahan,
-      klik: item.klik,
-      qty: item.qty,
-      harga: item.harga,
-      harga_beli: item.harga_beli,
-      harga_umum: item.harga_umum,
-      harga_khusus: item.harga_khusus,
-      harga_member: item.harga_member,
-      harga_custom: item.harga_custom,
-      cara_perhitungan: item.cara_perhitungan,
+  const closeTambahBahan = () => {
+    tambahBahanRef.current.close();
+    bahanForm.setData(initialBahan);
+    bahanForm.clearErrors();
+  };
+
+  const openEditBahan = (item) => {
+    setSelectedBahan(item);
+    fillBahan(item);
+    editBahanRef.current.showModal();
+  };
+
+  const closeEditBahan = () => {
+    editBahanRef.current.close();
+    bahanForm.setData(initialBahan);
+    bahanForm.clearErrors();
+  };
+
+  const openTambahHarga = (item) => {
+    setSelectedBahan(item);
+    setHargaMode('create');
+    hargaForm.setData({ ...initialHarga, kode_bahan: item.kode });
+    hargaRef.current.showModal();
+  };
+
+  const openEditHarga = (item, harga) => {
+    setSelectedBahan(item);
+    setHargaMode('edit');
+    hargaForm.setData({
+      id: harga.id,
+      kode_bahan: harga.kode_bahan || item.kode,
+      sisi: harga.sisi || '',
+      qty_min: harga.qty_min || '',
+      qty_max: harga.qty_max || '',
+      harga_po: harga.harga_po || '',
+      harga_umum: harga.harga_umum || '',
+      harga_khusus: harga.harga_khusus || '',
+      harga_member: harga.harga_member || '',
+      harga_custome: harga.harga_custome || '',
     });
+    hargaRef.current.showModal();
   };
 
-  const save = (e) => {
+  const closeHarga = () => {
+    hargaRef.current.close();
+    hargaForm.setData(initialHarga);
+    hargaForm.clearErrors();
+  };
+
+  const saveBahan = (e) => {
     e.preventDefault();
-    post("/bahan", {
-      onSuccess: () => {
-        reset();
-        closeModal();
-      },
+    bahanForm.post('/bahan', {
+      onSuccess: closeTambahBahan,
     });
   };
 
-  const hapus = (id) => {
-    if (confirm("Yakin ingin menghapus")) {
-      destroy("/bahan/" + id);
-      closeModalEdit();
+  const updateBahan = (e) => {
+    e.preventDefault();
+    bahanForm.put(`/bahan/${bahanForm.data.id}`, {
+      onSuccess: closeEditBahan,
+    });
+  };
+
+  const deleteBahan = (id) => {
+    if (confirm('Yakin ingin menghapus bahan dan semua harganya?')) {
+      bahanForm.delete(`/bahan/${id}`, {
+        onSuccess: closeEditBahan,
+      });
     }
   };
 
-  const update = (e) => {
+  const duplicateBahan = () => {
+    const source = { ...bahanForm.data, id: '', kode };
+    closeEditBahan();
+    bahanForm.setData(source);
+    tambahBahanRef.current.showModal();
+  };
+
+  const saveHarga = (e) => {
     e.preventDefault();
-    put("/bahan/" + data.id, {
-      onSuccess: () => {
-        closeModalEdit();
-        reset();
-      },
+    if (hargaMode === 'edit') {
+      hargaForm.put(`/bahan/harga/${hargaForm.data.id}`, {
+        onSuccess: closeHarga,
+      });
+      return;
+    }
+
+    hargaForm.post(`/bahan/${selectedBahan.kode}/harga`, {
+      onSuccess: closeHarga,
     });
+  };
+
+  const deleteHarga = () => {
+    if (confirm('Yakin ingin menghapus harga ini?')) {
+      hargaForm.delete(`/bahan/harga/${hargaForm.data.id}`, {
+        onSuccess: closeHarga,
+      });
+    }
   };
 
   const exportPDF = () => {
     try {
-      const doc = new jsPDF("l", "mm", "a4");
+      const doc = new jsPDF('l', 'mm', 'a4');
       doc.setFontSize(16);
-      doc.text("Data Bahan", 14, 20);
+      doc.text('Data Bahan', 14, 20);
       doc.setFontSize(10);
-      doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
+      doc.text(`Tanggal: ${new Date().toLocaleDateString('id-ID')}`, 14, 27);
 
-      const rows = bahan.data.map((item, index) => [
-        index + 1,
-        item.kode,
-        item.bahan,
-        item.satuan,
-        item.kategori,
-        item.jenis,
-        item.kategori_cetak,
-        item.jenis_bahan,
-        item.klik,
-        item.qty,
-        item.harga ? "Rp " + item.harga : "-",
-        item.harga_beli ? "Rp " + item.harga_beli : "-",
-                        item.harga_umum ? "Rp " + String(item.harga_umum).replace(/\./g, '') : "-",
-                        item.harga_khusus ? "Rp " + String(item.harga_khusus).replace(/\./g, '') : "-",
-                        item.harga_member ? "Rp " + String(item.harga_member).replace(/\./g, '') : "-",
-        item.harga_custom ? "Rp " + item.harga_custom : "-",
-        item.cara_perhitungan,
-      ]);
+      const rows = databahan.data.flatMap((item, index) => {
+        const hargaRows = getHargaRows(item);
+        const list = hargaRows.length ? hargaRows : [{}];
+
+        return list.map((hb, hargaIndex) => [
+          hargaIndex === 0 ? index + 1 : '',
+          hargaIndex === 0 ? item.kode : '',
+          hargaIndex === 0 ? item.bahan : '',
+          hargaIndex === 0 ? item.satuan : '',
+          hargaIndex === 0 ? item.kategori : '',
+          hargaIndex === 0 ? item.jenis : '',
+          hb.sisi || '-',
+          hb.qty_min || '-',
+          hb.qty_max || '-',
+          formatRp(hb.harga_po),
+          formatRp(hb.harga_umum),
+          formatRp(hb.harga_khusus),
+          formatRp(hb.harga_member),
+          formatRp(hb.harga_custome),
+        ]);
+      });
 
       autoTable(doc, {
         startY: 32,
-        head: [["No", "Kode", "Bahan", "Satuan", "Kategori", "Jenis", "Kat. Cetak", "Jenis Bahan", "Klik", "Qty", "Harga", "Hrg Beli", "Hrg Umum", "Hrg Khusus", "Hrg Member", "Hrg Custom", "Perhitungan"]],
+        head: [
+          [
+            'No',
+            'Kode',
+            'Bahan',
+            'Satuan',
+            'Kategori',
+            'Jenis',
+            'Sisi',
+            'Qty Min',
+            'Qty Max',
+            'Harga PO',
+            'Harga Umum',
+            'Harga Khusus',
+            'Harga Member',
+            'Harga Custom',
+          ],
+        ],
         body: rows,
         styles: { fontSize: 7 },
         headStyles: { fillColor: [22, 163, 74] },
-        theme: "grid",
+        theme: 'grid',
       });
 
-      doc.save("data_bahan.pdf");
+      doc.save('data_bahan.pdf');
     } catch (error) {
-      console.error("Gagal export PDF:", error);
-      alert("Gagal mengexport PDF: " + error.message);
+      console.error('Gagal export PDF:', error);
+      alert(`Gagal mengexport PDF: ${error.message}`);
     }
   };
 
+  const renderSelect = (label, field, options, form, setter, required = true) => (
+    <label className="form-control">
+      <div className="label">
+        <span className="label-text">{label}</span>
+      </div>
+      <select
+        value={form.data[field]}
+        className="select select-bordered select-success w-full"
+        required={required}
+        onChange={(e) => setter(field, e.target.value)}
+      >
+        <option value="">-- Pilih {label} --</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+
+  const renderText = (
+    label,
+    field,
+    form,
+    setter,
+    required = false,
+    numeric = false,
+  ) => (
+    <label className="form-control">
+      <div className="label">
+        <span className="label-text">{label}</span>
+      </div>
+      <input
+        type="text"
+        value={form.data[field] || ''}
+        className="input input-bordered input-success w-full"
+        required={required}
+        onChange={(e) =>
+          setter(field, numeric ? cleanNumber(e.target.value) : e.target.value)
+        }
+      />
+    </label>
+  );
+
+  const renderBahanFields = (includeHarga = false) => (
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      {renderText('Kode', 'kode', bahanForm, setBahanValue, true)}
+      {renderText('Nama Bahan', 'bahan', bahanForm, setBahanValue, true)}
+      {renderSelect(
+        'Kategori',
+        'kategori',
+        kategoriOptions,
+        bahanForm,
+        setBahanValue,
+      )}
+      {renderSelect('Satuan', 'satuan', satuanOptions, bahanForm, setBahanValue)}
+      {renderSelect('Jenis', 'jenis', jenisOptions, bahanForm, setBahanValue)}
+      {renderSelect(
+        'Kategori Cetak',
+        'kategori_cetak',
+        kategoriCetakOptions,
+        bahanForm,
+        setBahanValue,
+      )}
+      {renderSelect(
+        'Jenis Bahan',
+        'jenis_bahan',
+        jenisBahanOptions,
+        bahanForm,
+        setBahanValue,
+      )}
+      {renderSelect(
+        'Cara Perhitungan',
+        'cara_perhitungan',
+        perhitunganOptions,
+        bahanForm,
+        setBahanValue,
+      )}
+      {renderText('Klik', 'klik', bahanForm, setBahanValue, true)}
+
+      {includeHarga && (
+        <>
+          <div className="divider col-span-full my-1">Harga Awal</div>
+          {renderText('Sisi', 'sisi', bahanForm, setBahanValue)}
+          {renderText('Qty Min', 'qty_min', bahanForm, setBahanValue, false, true)}
+          {renderText('Qty Max', 'qty_max', bahanForm, setBahanValue, false, true)}
+          {renderText('Harga PO', 'harga_po', bahanForm, setBahanValue, false, true)}
+          {renderText(
+            'Harga Umum',
+            'harga_umum',
+            bahanForm,
+            setBahanValue,
+            false,
+            true,
+          )}
+          {renderText(
+            'Harga Khusus',
+            'harga_khusus',
+            bahanForm,
+            setBahanValue,
+            false,
+            true,
+          )}
+          {renderText(
+            'Harga Member',
+            'harga_member',
+            bahanForm,
+            setBahanValue,
+            false,
+            true,
+          )}
+          {renderText(
+            'Harga Custom',
+            'harga_custome',
+            bahanForm,
+            setBahanValue,
+            false,
+            true,
+          )}
+        </>
+      )}
+    </div>
+  );
+
+  const renderHargaFields = () => (
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <label className="form-control">
+        <div className="label">
+          <span className="label-text">Kode Bahan</span>
+        </div>
+        <input
+          type="text"
+          value={hargaForm.data.kode_bahan || ''}
+          className="input input-bordered input-success w-full"
+          readOnly
+          required
+        />
+      </label>
+      {renderText('Sisi', 'sisi', hargaForm, setHargaValue)}
+      {renderText('Qty Min', 'qty_min', hargaForm, setHargaValue, false, true)}
+      {renderText('Qty Max', 'qty_max', hargaForm, setHargaValue, false, true)}
+      {renderText('Harga PO', 'harga_po', hargaForm, setHargaValue, false, true)}
+      {renderText(
+        'Harga Umum',
+        'harga_umum',
+        hargaForm,
+        setHargaValue,
+        false,
+        true,
+      )}
+      {renderText(
+        'Harga Khusus',
+        'harga_khusus',
+        hargaForm,
+        setHargaValue,
+        false,
+        true,
+      )}
+      {renderText(
+        'Harga Member',
+        'harga_member',
+        hargaForm,
+        setHargaValue,
+        false,
+        true,
+      )}
+      {renderText(
+        'Harga Custom',
+        'harga_custome',
+        hargaForm,
+        setHargaValue,
+        false,
+        true,
+      )}
+    </div>
+  );
+
   return (
     <AdminLayout>
-      <div className="grid grid-cols-1 xl:grid-cols-1">
-        <div className="xl:col-span-2 card bg-base-100 shadow-md border border-base-300">
+      <div className="grid grid-cols-1">
+        <div className="card border border-base-300 bg-base-100 shadow-md">
           <div className="card-body">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-2">
+            <div className="mb-2 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <h2 className="card-title">Data Bahan</h2>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button className="btn btn-primary" onClick={exportPDF}>
                   <i className="fas fa-file-pdf"></i> Export PDF
                 </button>
-                <button className="btn btn-success" onClick={openModal}>
+                <button className="btn btn-success" onClick={openTambahBahan}>
                   <i className="fas fa-plus"></i> Tambah Bahan
                 </button>
-
-                <dialog ref={modalRef} className="modal">
-                  <div className="modal-box">
-                    <button
-                      type="button"
-                      onClick={closeModal}
-                      className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-                    >
-                      ✕
-                    </button>
-
-                    <h3 className="text-lg font-bold mb-4">Tambah Bahan</h3>
-
-                    <form onSubmit={save}>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Kode</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.kode}
-                            className="input input-bordered input-success w-full"
-                            required
-                            onChange={(e) => setData("kode", e.target.value)}
-                          />
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Nama Bahan</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.bahan}
-                            className="input input-bordered input-success w-full"
-                            required
-                            onChange={(e) => setData("bahan", e.target.value)}
-                          />
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Kategori</span>
-                          </div>
-                          <select
-                            value={data.kategori}
-                            className="select select-bordered select-success w-full"
-                            required
-                            onChange={(e) => setData("kategori", e.target.value)}
-                          >
-                            <option value="">-- Pilih Kategori --</option>
-                            <option value="DIGITAL">DIGITAL</option>
-                            <option value="OFFSET">OFFSET</option>
-                          </select>
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Satuan</span>
-                          </div>
-                          <select
-                            value={data.satuan}
-                            className="select select-bordered select-success w-full"
-                            required
-                            onChange={(e) => setData("satuan", e.target.value)}
-                          >
-                            <option value="">-- Pilih Satuan --</option>
-                            <option value="BLOCK">BLOCK</option>
-                            <option value="BOX">BOX</option>
-                            <option value="LEMBAR">LEMBAR</option>
-                            <option value="M2">M2</option>
-                            <option value="PCS">PCS</option>
-                            <option value="RIM">RIM</option>
-                          </select>
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Jenis</span>
-                          </div>
-                          <select
-                            value={data.jenis}
-                            className="select select-bordered select-success w-full"
-                            required
-                            onChange={(e) => setData("jenis", e.target.value)}
-                          >
-                            <option value="">-- Pilih Jenis --</option>
-                            <option value="INTERNAL">INTERNAL</option>
-                            <option value="EKSTERNAL">EKSTERNAL</option>
-                          </select>
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Kategori Cetak</span>
-                          </div>
-                          <select
-                            value={data.kategori_cetak}
-                            className="select select-bordered select-success w-full"
-                            required
-                            onChange={(e) => setData("kategori_cetak", e.target.value)}
-                          >
-                            <option value="">-- Pilih Kategori Cetak --</option>
-                            {/* <option value="STANDART">STANDART</option>
-                            <option value="STIKER">STIKER</option>
-                            <option value="DLL">DLL</option> */}
-                            <option value="INDOOR">INDOOR</option>
-                            <option value="INDOOR 2">INDOOR 2</option>
-                            <option value="OUTDOOR">OUTDOOR</option>
-                            <option value="OUTDOOR 2">OUTDOOR 2</option>
-                            <option value="DISPLAY">DISPLAY</option>
-                            <option value="OFFSET">OFFSET</option>
-                            <option value="DLL">DLL</option>
-                          </select>
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Jenis Bahan</span>
-                          </div>
-                          <select
-                            value={data.jenis_bahan}
-                            className="select select-bordered select-success w-full"
-                            required
-                            onChange={(e) => setData("jenis_bahan", e.target.value)}
-                          >
-                            <option value="">-- Pilih Jenis Bahan --</option>
-                            <option value="DLL">DLL</option>
-                            <option value="DYE">DYE</option>
-                            <option value="ECOSOLVENT">ECOSOLVENT</option>
-                            <option value="OFFSET">OFFSET</option>
-                            <option value="SOLVENT">SOLVENT</option>
-                            <option value="TONER">TONER</option>
-                            <option value="UV">UV</option>
-
-                          </select>
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Cara Perhitungan</span>
-                          </div>
-                          <select
-                            value={data.cara_perhitungan}
-                            className="select select-bordered select-success w-full"
-                            required
-                            onChange={(e) => setData("cara_perhitungan", e.target.value)}
-                          >
-                            <option value="">-- Pilih Perhitungan --</option>
-                            <option value="QTY">QTY</option>
-                            <option value="LUAS">LUAS</option>
-                            <option value="QTY KHUSUS">QTY KHUSUS</option>
-                          </select>
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Klik</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.klik}
-                            className="input input-bordered input-success w-full"
-                            required
-                            onChange={(e) => setData("klik", e.target.value)}
-                          />
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Qty</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.qty}
-                            className="input input-bordered input-success w-full"
-                            onChange={(e) => setData("qty", e.target.value)}
-                          />
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Harga Beli</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.harga_beli || ""}
-                            className="input input-bordered input-success w-full"
-                            placeholder="Rp 0 (opsional)"
-                            onChange={(e) => setData("harga_beli", e.target.value.replace(/\D/g, ""))}
-                          />
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Harga Umum</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.harga_umum || ""}
-                            className="input input-bordered input-success w-full"
-                            placeholder="Rp 0"
-                            onChange={(e) => setData("harga_umum", e.target.value.replace(/\D/g, ""))}
-                          />
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Harga Khusus</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.harga_khusus || ""}
-                            className="input input-bordered input-success w-full"
-                            placeholder="Rp 0"
-                            onChange={(e) => setData("harga_khusus", e.target.value.replace(/\D/g, ""))}
-                          />
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Harga Member</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.harga_member || ""}
-                            className="input input-bordered input-success w-full"
-                            placeholder="Rp 0"
-                            onChange={(e) => setData("harga_member", e.target.value.replace(/\D/g, ""))}
-                          />
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Harga Custom</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.harga_custom || ""}
-                            className="input input-bordered input-success w-full"
-                            placeholder="Rp 0"
-                            onChange={(e) => setData("harga_custom", e.target.value.replace(/\D/g, ""))}
-                          />
-                        </label>
-                      </div>
-
-                      <div className="mt-6 flex gap-2">
-                        <button
-                          type="submit"
-                          disabled={processing}
-                          className="btn btn-success"
-                        >
-                          <i className="fas fa-save"></i> Simpan
-                        </button>
-                        <button
-                          type="button"
-                          onClick={closeModal}
-                          className="btn btn-error"
-                        >
-                          Batal
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </dialog>
-
-                <dialog ref={editmodalRef} className="modal">
-                  <div className="modal-box">
-                    <button
-                      type="button"
-                      onClick={closeModalEdit}
-                      className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-                    >
-                      ✕
-                    </button>
-
-                    <h3 className="text-lg font-bold mb-4">Edit Bahan</h3>
-
-                    <form onSubmit={update}>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Kode</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.kode}
-                            className="input input-bordered input-success w-full"
-                            required
-                            onChange={(e) => setData("kode", e.target.value)}
-                          />
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Nama Bahan</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.bahan}
-                            className="input input-bordered input-success w-full"
-                            required
-                            onChange={(e) => setData("bahan", e.target.value)}
-                          />
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Kategori</span>
-                          </div>
-                          <select
-                            value={data.kategori}
-                            className="select select-bordered select-success w-full"
-                            required
-                            onChange={(e) => setData("kategori", e.target.value)}
-                          >
-                            <option value="">-- Pilih Kategori --</option>
-                            <option value="DIGITAL">DIGITAL</option>
-                            <option value="OFFSET">OFFSET</option>
-                          </select>
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Satuan</span>
-                          </div>
-                          <select
-                            value={data.satuan}
-                            className="select select-bordered select-success w-full"
-                            required
-                            onChange={(e) => setData("satuan", e.target.value)}
-                          >
-                            <option value="">-- Pilih Satuan --</option>
-                            <option value="BLOCK">BLOCK</option>
-                            <option value="BOX">BOX</option>
-                            <option value="LEMBAR">LEMBAR</option>
-                            <option value="M2">M2</option>
-                            <option value="PCS">PCS</option>
-                            <option value="RIM">RIM</option>
-                          </select>
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Jenis</span>
-                          </div>
-                          <select
-                            value={data.jenis}
-                            className="select select-bordered select-success w-full"
-                            required
-                            onChange={(e) => setData("jenis", e.target.value)}
-                          >
-                            <option value="">-- Pilih Jenis --</option>
-                            <option value="INTERNAL">INTERNAL</option>
-                            <option value="EKSTERNAL">EKSTERNAL</option>
-                          </select>
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Kategori Cetak</span>
-                          </div>
-                          <select
-                            value={data.kategori_cetak}
-                            className="select select-bordered select-success w-full"
-                            required
-                            onChange={(e) => setData("kategori_cetak", e.target.value)}
-                          >
-                            <option value="">-- Pilih Kategori Cetak --</option>
-                            {/* <option value="STANDART">STANDART</option>
-                            <option value="STIKER">STIKER</option>
-                            <option value="DLL">DLL</option> */}
-
-                            <option value="INDOOR">INDOOR</option>
-                            <option value="INDOOR2">INDOOR2</option>
-                            <option value="OUTDOOR">OUTDOOR</option>
-                            <option value="OUTDOOR2">OUTDOOR2</option>
-                            <option value="DISPLAY">DISPLAY</option>
-                            <option value="OFFSET">OFFSET</option>
-                            <option value="DLL">DLL</option>
-
-                          </select>
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Jenis Bahan</span>
-                          </div>
-                          <select
-                            value={data.jenis_bahan}
-                            className="select select-bordered select-success w-full"
-                            required
-                            onChange={(e) => setData("jenis_bahan", e.target.value)}
-                          >
-                            <option value="">-- Pilih Jenis Bahan --</option>
-                            <option value="DLL">DLL</option>
-                            <option value="DYE">DYE</option>
-                            <option value="ECOSOLVENT">ECOSOLVENT</option>
-                            <option value="OFFSET">OFFSET</option>
-                            <option value="SOLVENT">SOLVENT</option>
-                            <option value="TONER">TONER</option>
-                            <option value="UV">UV</option>
-
-                          </select>
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Cara Perhitungan</span>
-                          </div>
-                          <select
-                            value={data.cara_perhitungan}
-                            className="select select-bordered select-success w-full"
-                            required
-                            onChange={(e) => setData("cara_perhitungan", e.target.value)}
-                          >
-                            <option value="">-- Pilih Perhitungan --</option>
-                            <option value="QTY">QTY</option>
-                            <option value="LUAS">LUAS</option>
-                            <option value="QTY KHUSUS">QTY KHUSUS</option>
-                          </select>
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Klik</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.klik}
-                            className="input input-bordered input-success w-full"
-                            required
-                            onChange={(e) => setData("klik", e.target.value)}
-                          />
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Qty</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.qty}
-                            className="input input-bordered input-success w-full"
-                            onChange={(e) => setData("qty", e.target.value)}
-                          />
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Harga Beli</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.harga_beli || ""}
-                            className="input input-bordered input-success w-full"
-                            placeholder="Rp 0 (opsional)"
-                            onChange={(e) => setData("harga_beli", e.target.value.replace(/\D/g, ""))}
-                          />
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Harga Umum</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.harga_umum || ""}
-                            className="input input-bordered input-success w-full"
-                            placeholder="Rp 0"
-                            onChange={(e) => setData("harga_umum", e.target.value.replace(/\D/g, ""))}
-                          />
-                        </label>
-
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Harga Khusus</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.harga_khusus || ""}
-                            className="input input-bordered input-success w-full"
-                            placeholder="Rp 0"
-                            onChange={(e) => setData("harga_khusus", e.target.value.replace(/\D/g, ""))}
-                          />
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Harga Member</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.harga_member || ""}
-                            className="input input-bordered input-success w-full"
-                            placeholder="Rp 0"
-                            onChange={(e) => setData("harga_member", e.target.value.replace(/\D/g, ""))}
-                          />
-                        </label>
-
-                        <label className="form-control">
-                          <div className="label">
-                            <span className="label-text">Harga Custom</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={data.harga_custom || ""}
-                            className="input input-bordered input-success w-full"
-                            placeholder="Rp 0"
-                            onChange={(e) => setData("harga_custom", e.target.value.replace(/\D/g, ""))}
-                          />
-                        </label>
-                      </div>
-
-                      <div className="mt-6 flex gap-2">
-                        <button
-                          type="submit"
-                          disabled={processing}
-                          className="btn btn-success"
-                        >
-                          <i className="fas fa-save"></i> Update
-                        </button>
-                        <button
-                          type="button"
-                          onClick={closeModalEdit}
-                          className="btn btn-warning"
-                        >
-                          Batal
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => hapus(data.id)}
-                          className="btn btn-error"
-                        >
-                          <i className="fas fa-trash"></i> Hapus
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => duplicate(data)}
-                          className="btn btn-info"
-                        >
-                          <i className="fas fa-copy"></i> Duplikat
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </dialog>
               </div>
             </div>
 
             <div className="mb-3">
               <input
                 type="text"
-                placeholder="Cari bahan..."
+                placeholder="Cari kode, bahan, sisi, atau qty..."
                 className="input input-bordered input-success w-full max-w-xs"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -781,7 +494,7 @@ export default function Bahan({ bahan, kode }) {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="table table-zebra" id="myTable">
+              <table className="table table-zebra table-sm">
                 <thead>
                   <tr>
                     <th>No</th>
@@ -793,48 +506,88 @@ export default function Bahan({ bahan, kode }) {
                     <th>Kategori Cetak</th>
                     <th>Jenis Bahan</th>
                     <th>Klik</th>
-                    <th>Qty</th>
                     <th>Perhitungan</th>
-                    {/* <th>Harga</th> */}
-                    <th>Harga Beli</th>
+                    <th>Sisi</th>
+                    <th>Qty Min</th>
+                    <th>Qty Max</th>
+                    <th>Harga PO</th>
                     <th>Harga Umum</th>
                     <th>Harga Khusus</th>
                     <th>Harga Member</th>
                     <th>Harga Custom</th>
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="text-xs">
-                  {bahan.data.map((item, index) => (
-                    <tr
-                      key={item.id}
-                      onClick={() => openModalEdit(item.id, item.kode, item.bahan, item.kategori, item.satuan, item.jenis, item.kategori_cetak, item.jenis_bahan, item.klik, item.qty, item.harga, item.harga_beli, item.harga_umum, item.harga_khusus, item.harga_member, item.harga_custom, item.cara_perhitungan)}
-                      className="cursor-pointer hover:bg-base-200"
-                    >
-                      <td>{bahan.from + index}</td>
-                      <td>{item.kode}</td>
-                      <td>{item.bahan}</td>
-                      <td>{item.satuan}</td>
-                      <td>{item.kategori}</td>
-                      <td>{item.jenis}</td>
-                      <td>{item.kategori_cetak}</td>
-                      <td>{item.jenis_bahan}</td>
-                      <td>{item.klik}</td>
-                      <td>{item.qty}</td>
-                      <td>{item.cara_perhitungan}</td>
-                      <td>{item.harga_beli ? 'Rp ' + item.harga_beli : '-'}</td>
-                      <td>{item.harga_umum ? 'Rp ' + String(item.harga_umum).replace(/\./g, '') : '-'}</td>
-                      <td>{item.harga_khusus ? 'Rp ' + String(item.harga_khusus).replace(/\./g, '') : '-'}</td>
-                      <td>{item.harga_member ? 'Rp ' + String(item.harga_member).replace(/\./g, '') : '-'}</td>
-                      <td>{item.harga_custom ? 'Rp ' + item.harga_custom : '-'}</td>
-                    </tr>
-                  ))}
+                  {databahan.data.map((item, index) => {
+                    const hargaRows = getHargaRows(item);
+                    const rows = hargaRows.length ? hargaRows : [{}];
+
+                    return rows.map((hb, hargaIndex) => (
+                      <tr key={`${item.id}-${hb.id || 'kosong'}-${hargaIndex}`}>
+                        {hargaIndex === 0 && (
+                          <>
+                            <td rowSpan={rows.length}>{databahan.from + index}</td>
+                            <td rowSpan={rows.length}>{item.kode}</td>
+                            <td rowSpan={rows.length}>{item.bahan}</td>
+                            <td rowSpan={rows.length}>{item.satuan}</td>
+                            <td rowSpan={rows.length}>{item.kategori}</td>
+                            <td rowSpan={rows.length}>{item.jenis}</td>
+                            <td rowSpan={rows.length}>{item.kategori_cetak}</td>
+                            <td rowSpan={rows.length}>{item.jenis_bahan}</td>
+                            <td rowSpan={rows.length}>{item.klik}</td>
+                            <td rowSpan={rows.length}>{item.cara_perhitungan}</td>
+                          </>
+                        )}
+                        <td>{hb.sisi || '-'}</td>
+                        <td>{hb.qty_min || '-'}</td>
+                        <td>{hb.qty_max || '-'}</td>
+                        <td>{formatRp(hb.harga_po)}</td>
+                        <td>{formatRp(hb.harga_umum)}</td>
+                        <td>{formatRp(hb.harga_khusus)}</td>
+                        <td>{formatRp(hb.harga_member)}</td>
+                        <td>{formatRp(hb.harga_custome)}</td>
+                        <td>
+                          <div className="flex min-w-52 flex-wrap gap-1">
+                            {hargaIndex === 0 && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="btn btn-warning btn-xs"
+                                  onClick={() => openEditBahan(item)}
+                                >
+                                  <i className="fas fa-pen"></i> Bahan
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-success btn-xs"
+                                  onClick={() => openTambahHarga(item)}
+                                >
+                                  <i className="fas fa-plus"></i> Harga
+                                </button>
+                              </>
+                            )}
+                            {hb.id && (
+                              <button
+                                type="button"
+                                className="btn btn-info btn-xs"
+                                onClick={() => openEditHarga(item, hb)}
+                              >
+                                <i className="fas fa-tags"></i> Edit Harga
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ));
+                  })}
                 </tbody>
               </table>
             </div>
 
-            {bahan.links && (
-              <div className="flex justify-center mt-4 join">
-                {bahan.links.map((link, i) => (
+            {databahan.links && (
+              <div className="join mt-4 flex justify-center">
+                {databahan.links.map((link, i) => (
                   <Link
                     key={i}
                     href={link.url || '#'}
@@ -849,6 +602,111 @@ export default function Bahan({ bahan, kode }) {
           </div>
         </div>
       </div>
+
+      <dialog ref={tambahBahanRef} className="modal">
+        <div className="modal-box max-w-4xl">
+          <button
+            type="button"
+            onClick={closeTambahBahan}
+            className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2"
+          >
+            x
+          </button>
+          <h3 className="mb-4 text-lg font-bold">Tambah Bahan</h3>
+          <form onSubmit={saveBahan}>
+            {renderBahanFields(true)}
+            <div className="mt-6 flex flex-wrap gap-2">
+              <button
+                type="submit"
+                disabled={bahanForm.processing}
+                className="btn btn-success"
+              >
+                <i className="fas fa-save"></i> Simpan
+              </button>
+              <button type="button" onClick={closeTambahBahan} className="btn btn-error">
+                Batal
+              </button>
+            </div>
+          </form>
+        </div>
+      </dialog>
+
+      <dialog ref={editBahanRef} className="modal">
+        <div className="modal-box max-w-4xl">
+          <button
+            type="button"
+            onClick={closeEditBahan}
+            className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2"
+          >
+            x
+          </button>
+          <h3 className="mb-4 text-lg font-bold">Edit Bahan</h3>
+          <form onSubmit={updateBahan}>
+            {renderBahanFields(false)}
+            <div className="mt-6 flex flex-wrap gap-2">
+              <button
+                type="submit"
+                disabled={bahanForm.processing}
+                className="btn btn-success"
+              >
+                <i className="fas fa-save"></i> Update
+              </button>
+              <button type="button" onClick={closeEditBahan} className="btn btn-warning">
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => deleteBahan(bahanForm.data.id)}
+                className="btn btn-error"
+              >
+                <i className="fas fa-trash"></i> Hapus
+              </button>
+              <button type="button" onClick={duplicateBahan} className="btn btn-info">
+                <i className="fas fa-copy"></i> Duplikat
+              </button>
+            </div>
+          </form>
+        </div>
+      </dialog>
+
+      <dialog ref={hargaRef} className="modal">
+        <div className="modal-box max-w-3xl">
+          <button
+            type="button"
+            onClick={closeHarga}
+            className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2"
+          >
+            x
+          </button>
+          <h3 className="mb-1 text-lg font-bold">
+            {hargaMode === 'edit' ? 'Edit Harga Bahan' : 'Tambah Harga Bahan'}
+          </h3>
+          <p className="mb-4 text-sm text-base-content/70">
+            {selectedBahan?.kode} - {selectedBahan?.bahan}
+          </p>
+          <form onSubmit={saveHarga}>
+            {renderHargaFields()}
+            <div className="mt-6 flex flex-wrap gap-2">
+              <button
+                type="submit"
+                disabled={hargaForm.processing}
+                className="btn btn-success"
+              >
+                <i className="fas fa-save"></i>{' '}
+                {hargaMode === 'edit' ? 'Update' : 'Simpan'}
+              </button>
+              <button type="button" onClick={closeHarga} className="btn btn-warning">
+                Batal
+              </button>
+              {hargaMode === 'edit' && (
+                <button type="button" onClick={deleteHarga} className="btn btn-error">
+                  <i className="fas fa-trash"></i> Hapus Harga
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+      </dialog>
     </AdminLayout>
   );
 }

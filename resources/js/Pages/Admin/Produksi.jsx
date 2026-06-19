@@ -55,11 +55,88 @@ function SearchableSelect({ options, value, onChange, placeholder }) {
   );
 }
 
+function QtyRangeInfo({ ranges, caraPerhitungan }) {
+  if (!ranges || ranges.length === 0) return null;
+
+  return (
+    <div className="mt-2 rounded border border-success/30 bg-base-100 p-2 text-xs">
+      <div className="font-semibold text-success">Range Qty Harga</div>
+      <div className="mt-1 flex gap-2 overflow-x-auto pb-1">
+        {ranges.map((harga, index) => (
+          <div
+            key={harga.id || index}
+            className="shrink-0 rounded bg-base-200 px-2 py-1"
+          >
+            <span className="font-medium">{harga.sisi || 'Tanpa sisi'}: </span>
+            <span>
+              {harga.qty_min || '0'}
+              {harga.qty_max
+                ? ` - ${harga.qty_max}`
+                : caraPerhitungan === 'QTY KHUSUS'
+                  ? ''
+                  : ' - Tidak terbatas'}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Produksi({ produksi, desain, bahan, customer, kode_antrian, kodespk }) {
   const { auth } = usePage().props;
   const isDesainer = auth.user?.role === 'Desainer';
   const today = new Date().toISOString().split("T")[0];
   const [search, setSearch] = useState('');
+
+  const hargaFieldByKategori = {
+    Umum: 'harga_umum',
+    Khusus: 'harga_khusus',
+    Member: 'harga_member',
+    Custom: 'harga_custome',
+  };
+
+  const getHargaRows = (bh) => bh?.harga_bahan || bh?.hargaBahan || [];
+
+  const getSisiOptions = (bh) => {
+    const sisiOptions = getHargaRows(bh)
+      .map((harga) => String(harga.sisi || '').trim())
+      .filter(Boolean);
+
+    return [...new Set(sisiOptions)];
+  };
+
+  const hargaSesuaiQty = (bh, qty, sisi) => {
+    const jumlah = Number(qty || 0);
+    const rows = getHargaRows(bh);
+    const sisiOptions = getSisiOptions(bh);
+    const pakaiSisi = sisiOptions.length > 0;
+
+    if (!jumlah || rows.length === 0) return null;
+
+    return rows
+      .filter((harga) => {
+        const qtyMin = Number(harga.qty_min || 0);
+        const qtyMaxKosong = harga.qty_max === null || String(harga.qty_max).trim() === '';
+        const qtyMax = qtyMaxKosong ? Infinity : Number(harga.qty_max);
+        const sisiHarga = String(harga.sisi || '').trim();
+
+        if (bh.cara_perhitungan === 'QTY KHUSUS' && qtyMaxKosong && jumlah !== qtyMin) {
+          return false;
+        }
+
+        if (jumlah < qtyMin || jumlah > qtyMax) return false;
+        if (pakaiSisi) return sisiHarga.toLowerCase() === String(sisi || '').trim().toLowerCase();
+
+        return sisiHarga === '';
+      })
+      .sort((a, b) => Number(b.qty_min || 0) - Number(a.qty_min || 0))[0] || null;
+  };
+
+  const hargaDasar = (bh) => {
+    return [...getHargaRows(bh)]
+      .sort((a, b) => Number(a.qty_min || 0) - Number(b.qty_min || 0))[0] || null;
+  };
 
 
 
@@ -100,6 +177,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
     bahan: "",
     harga_tampil: "",
     keterangan: "",
+    satuan_bahan: "",
     satuan: "",
     tinggi: "",
     lebar: "",
@@ -141,14 +219,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
   const editmodalRef = useRef(null);
   const openModalEdit = (pd) => {
     editmodalRef.current.showModal();
-    const kategoriMap = {
-      'Umum': 'harga_umum',
-      'Khusus': 'harga_khusus',
-      'Member': 'harga_member',
-      'Custom': 'harga_custom',
-    };
-    const kolomHarga = kategoriMap[pd.customer?.kategori] || 'harga_umum';
-    const harga = pd.bahan?.[kolomHarga] || pd.bahan?.harga || 0;
+    const harga = pd.harga_bahan || 0;
     setData({
       id: pd.id,
       id_desain: pd.id_desain,
@@ -165,6 +236,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       id_bahan: pd.id_bahan,
       harga_tampil: harga,
       keterangan: pd.keterangan,
+      satuan_bahan: pd.bahan?.satuan || "",
       satuan: pd.satuan,
       tinggi: pd.tinggi,
       lebar: pd.lebar,
@@ -250,37 +322,43 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       customer: cs.nama,
       kategori_customer: cs.kategori,
       pilihan_harga: cs.kategori,
+      harga_tampil: hitungHarga(prev.id_bahan, cs.kategori, prev.qty, prev.sisi),
       id_kategori_desain: ds?.id_kategori_desain ?? "0",
     }));
   };
 
-  const hitungHarga = (bahanId, pilihan) => {
+  const hitungHarga = (bahanId, pilihan, qty = data.qty, sisi = data.sisi) => {
     const bh = bahan.find((item) => item.id === Number(bahanId));
     if (!bh) return 0;
 
     if (pilihan === 'Custom') return 0;
 
-    const kategoriMap = {
-      'Umum': 'harga_umum',
-      'Khusus': 'harga_khusus',
-      'Member': 'harga_member',
-      'Custom': 'harga_custom',
-    };
+    const harga = bh.cara_perhitungan === 'QTY KHUSUS'
+      ? hargaSesuaiQty(bh, qty, sisi)
+      : hargaDasar(bh);
+    const kolomHarga = hargaFieldByKategori[pilihan] || 'harga_umum';
 
-    const kolomHarga = kategoriMap[pilihan] || 'harga_umum';
-    return bh[kolomHarga] || bh.harga || 0;
+    return harga?.[kolomHarga] || 0;
   };
 
   const handleBahan = (idBahan) => {
     const bh = bahan.find((item) => item.id === Number(idBahan));
     if (!bh) return;
 
-    const harga = hitungHarga(idBahan, data.pilihan_harga);
+    const sisiOptions = getSisiOptions(bh);
+    const sisi = sisiOptions.length > 0 && !sisiOptions.includes(data.sisi)
+      ? sisiOptions[0]
+      : sisiOptions.length > 0
+        ? data.sisi
+        : '';
+    const harga = hitungHarga(idBahan, data.pilihan_harga, data.qty, sisi);
 
     setData((prev) => ({
       ...prev,
       id_bahan: idBahan,
       bahan: bh.bahan,
+      satuan_bahan: bh.satuan || "",
+      sisi,
       harga_tampil: harga,
     }));
   };
@@ -290,7 +368,23 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       ...prev,
       pilihan_harga: pilihan,
       harga_manual: "",
-      harga_tampil: pilihan === 'Custom' ? 0 : hitungHarga(prev.id_bahan, pilihan),
+      harga_tampil: pilihan === 'Custom' ? 0 : hitungHarga(prev.id_bahan, pilihan, prev.qty, prev.sisi),
+    }));
+  };
+
+  const handleQty = (qty) => {
+    setData((prev) => ({
+      ...prev,
+      qty,
+      harga_tampil: prev.pilihan_harga === 'Custom' ? prev.harga_tampil : hitungHarga(prev.id_bahan, prev.pilihan_harga, qty, prev.sisi),
+    }));
+  };
+
+  const handleSisi = (sisi) => {
+    setData((prev) => ({
+      ...prev,
+      sisi,
+      harga_tampil: prev.pilihan_harga === 'Custom' ? prev.harga_tampil : hitungHarga(prev.id_bahan, prev.pilihan_harga, prev.qty, sisi),
     }));
   };
 
@@ -302,13 +396,25 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       doc.setFontSize(10);
       doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
       const rows = produksi.data.map((item, index) => [produksi.from + index, item.kode_spk, item.customer.nama, item.bahan.bahan, item.keterangan, item.satuan, item.tinggi, item.lebar, item.qty, item.sisi, item.metode_pengantaran, item.tgl_kirim]);
-      autoTable(doc, { startY: 32, head: [["No", "Kode SPK", "Customer", "Bahan", "Keterangan", "Satuan", "Tinggi", "Lebar", "Qty", "Sisi", "Metode P", "Tgl Kirim"]], body: rows, styles: { fontSize: 7 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
+      autoTable(doc, { startY: 32, head: [["No", "Kode SPK", "Customer", "Bahan", "Keterangan", "Satuan Ukuran", "Tinggi", "Lebar", "Qty", "Sisi", "Metode P", "Tgl Kirim"]], body: rows, styles: { fontSize: 7 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
       doc.save("data_produksi.pdf");
     } catch (error) {
       console.error("Gagal export PDF:", error);
       alert("Gagal mengexport PDF: " + error.message);
     }
   };
+
+  const selectedBahan = bahan.find((item) => item.id === Number(data.id_bahan));
+  const sisiOptions = getSisiOptions(selectedBahan);
+  const sisiDisabled = Boolean(data.id_bahan) && sisiOptions.length === 0;
+  const selectedHargaRanges = [...getHargaRows(selectedBahan)].sort((a, b) => {
+    const sisiA = String(a.sisi || '');
+    const sisiB = String(b.sisi || '');
+
+    if (sisiA !== sisiB) return sisiA.localeCompare(sisiB);
+
+    return Number(a.qty_min || 0) - Number(b.qty_min || 0);
+  });
 
   return (
     <>
@@ -483,11 +589,28 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   <span className="label-text">Bahan</span>
                                 </div>
                                 <SearchableSelect
-                                  options={bahan.map(bh => ({ value: bh.id, label: `${bh.kode}-${bh.bahan} ${bh.kategori} - ${bh.qty == '1' ? '' : bh.qty}` }))}
+                                  options={bahan.map(bh => ({ value: bh.id, label: `${bh.kode}-${bh.bahan}` }))}
                                   value={data.id_bahan}
                                   onChange={(val) => handleBahan(val)}
                                   className="text-xs"
                                   placeholder="Pilih Bahan"
+                                />
+                                <QtyRangeInfo
+                                  ranges={selectedHargaRanges}
+                                  caraPerhitungan={selectedBahan?.cara_perhitungan}
+                                />
+                              </label>
+
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Satuan Bahan</span>
+                                </div>
+                                <input
+                                  type="text"
+                                  value={data.satuan_bahan}
+                                  className="input input-bordered input-success w-full"
+                                  placeholder="Otomatis dari bahan"
+                                  readOnly
                                 />
                               </label>
 
@@ -546,24 +669,10 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 </label>
                               )}
 
+                              {/* Satuan Ukuran */}
                               <label className="form-control w-full">
                                 <div className="label">
-                                  <span className="label-text">Keterangan</span>
-                                </div>
-                                <textarea
-                                  name="keterangan"
-                                  value={data.keterangan}
-                                  onChange={(e) =>
-                                    setData("keterangan", e.target.value)
-                                  }
-                                  className="textarea textarea-bordered textarea-success w-full h-10"
-                                ></textarea>
-                              </label>
-
-                              {/* Satuan */}
-                              <label className="form-control w-full">
-                                <div className="label">
-                                  <span className="label-text">Satuan</span>
+                                  <span className="label-text">Satuan Ukuran</span>
                                 </div>
                                 <select
                                   name="satuan"
@@ -574,7 +683,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   className="select select-bordered select-success w-full"
                                   required
                                 >
-                                  <option value="">Pilih Satuan</option>
+                                  <option value="">Pilih Satuan Ukuran</option>
                                   <option value="Meter">Meter</option>
                                   <option value="Cm">Cm</option>
                                   <option value="Mm">Mm</option>
@@ -625,7 +734,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   type="number"
                                   name="qty"
                                   value={data.qty}
-                                  onChange={(e) => setData("qty", e.target.value)}
+                                  onChange={(e) => handleQty(e.target.value)}
                                   className="input input-bordered input-success w-full"
                                   required
                                 />
@@ -639,15 +748,15 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 <select
                                   name="sisi"
                                   value={data.sisi}
-                                  onChange={(e) =>
-                                    setData("sisi", e.target.value)
-                                  }
+                                  onChange={(e) => handleSisi(e.target.value)}
                                   className="select select-bordered select-success w-full"
-                                  required
+                                  required={!sisiDisabled}
+                                  disabled={sisiDisabled}
                                 >
-                                  <option value="">Pilih sisi</option>
-                                  <option value="1 SISI">1 SISI</option>
-                                  <option value="2 SISI">2 SISI</option>
+                                  <option value="">{sisiDisabled ? 'Tidak ada sisi' : 'Pilih sisi'}</option>
+                                  {(sisiOptions.length > 0 ? sisiOptions : ['1 SISI', '2 SISI']).map((sisi) => (
+                                    <option key={sisi} value={sisi}>{sisi}</option>
+                                  ))}
                                 </select>
                               </label>
 
@@ -692,6 +801,20 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   className="input input-bordered input-success w-full"
                                   required
                                 />
+                              </label>
+
+                              <label className="form-control w-full col-span-2">
+                                <div className="label">
+                                  <span className="label-text">Keterangan</span>
+                                </div>
+                                <textarea
+                                  name="keterangan"
+                                  value={data.keterangan}
+                                  onChange={(e) =>
+                                    setData("keterangan", e.target.value)
+                                  }
+                                  className="textarea textarea-bordered textarea-success w-full h-20"
+                                ></textarea>
                               </label>
                             </div>
                           </div>
@@ -942,6 +1065,23 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   className='text-xs'
                                   placeholder="Pilih Bahan"
                                 />
+                                <QtyRangeInfo
+                                  ranges={selectedHargaRanges}
+                                  caraPerhitungan={selectedBahan?.cara_perhitungan}
+                                />
+                              </label>
+
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Satuan Bahan</span>
+                                </div>
+                                <input
+                                  type="text"
+                                  value={data.satuan_bahan}
+                                  className="input input-bordered input-success w-full"
+                                  placeholder="Otomatis dari bahan"
+                                  readOnly
+                                />
                               </label>
 
                               {!isDesainer && (
@@ -999,24 +1139,10 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 </label>
                               )}
 
+                              {/* Satuan Ukuran */}
                               <label className="form-control w-full">
                                 <div className="label">
-                                  <span className="label-text">Keterangan</span>
-                                </div>
-                                <textarea
-                                  name="keterangan"
-                                  value={data.keterangan}
-                                  onChange={(e) =>
-                                    setData("keterangan", e.target.value)
-                                  }
-                                  className="textarea textarea-bordered textarea-success w-full h-10"
-                                ></textarea>
-                              </label>
-
-                              {/* Satuan */}
-                              <label className="form-control w-full">
-                                <div className="label">
-                                  <span className="label-text">Satuan</span>
+                                  <span className="label-text">Satuan Ukuran</span>
                                 </div>
                                 <select
                                   name="satuan"
@@ -1027,7 +1153,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   className="select select-bordered select-success w-full"
                                   required
                                 >
-                                  <option value="">Pilih Satuan</option>
+                                  <option value="">Pilih Satuan Ukuran</option>
                                   <option value="Meter">Meter</option>
                                   <option value="Cm">Cm</option>
                                   <option value="Mm">Mm</option>
@@ -1078,7 +1204,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   type="number"
                                   name="qty"
                                   value={data.qty}
-                                  onChange={(e) => setData("qty", e.target.value)}
+                                  onChange={(e) => handleQty(e.target.value)}
                                   className="input input-bordered input-success w-full"
                                   required
                                 />
@@ -1092,15 +1218,15 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 <select
                                   name="sisi"
                                   value={data.sisi}
-                                  onChange={(e) =>
-                                    setData("sisi", e.target.value)
-                                  }
+                                  onChange={(e) => handleSisi(e.target.value)}
                                   className="select select-bordered select-success w-full"
-                                  required
+                                  required={!sisiDisabled}
+                                  disabled={sisiDisabled}
                                 >
-                                  <option value="">Pilih sisi</option>
-                                  <option value="1 SISI">1 SISI</option>
-                                  <option value="2 SISI">2 SISI</option>
+                                  <option value="">{sisiDisabled ? 'Tidak ada sisi' : 'Pilih sisi'}</option>
+                                  {(sisiOptions.length > 0 ? sisiOptions : ['1 SISI', '2 SISI']).map((sisi) => (
+                                    <option key={sisi} value={sisi}>{sisi}</option>
+                                  ))}
                                 </select>
                               </label>
 
@@ -1145,6 +1271,20 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   className="input input-bordered input-success w-full"
                                   required
                                 />
+                              </label>
+
+                              <label className="form-control w-full col-span-2">
+                                <div className="label">
+                                  <span className="label-text">Keterangan</span>
+                                </div>
+                                <textarea
+                                  name="keterangan"
+                                  value={data.keterangan}
+                                  onChange={(e) =>
+                                    setData("keterangan", e.target.value)
+                                  }
+                                  className="textarea textarea-bordered textarea-success w-full h-20"
+                                ></textarea>
                               </label>
                             </div>
                           </div>
@@ -1272,7 +1412,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                           <td>{item.keterangan}</td>
                           <td>{item.tinggi} {item.satuan}</td>
                           <td>{item.lebar} {item.satuan}</td>
-                          <td>{item.qty}</td>
+                          <td>{item.qty} {item.bahan.satuan}</td>
                           <td>{item.sisi}</td>
                           {!isDesainer && <td>{Number(item.harga_bahan).toLocaleString('id-ID')}</td>}
                           {!isDesainer && <td>{Number(item.total_harga).toLocaleString('id-ID')}</td>}

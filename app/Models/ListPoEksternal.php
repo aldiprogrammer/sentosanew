@@ -17,6 +17,6 @@ class ListPoEksternal extends Model
 
     public function bahan()
     {
-        return $this->belongsTo(Bahan::class, 'id_bahan');
+        return $this->belongsTo(Databahan::class, 'id_bahan');
     }
 }
