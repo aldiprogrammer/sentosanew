@@ -1,6 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout'
-import { router, useForm, usePage } from '@inertiajs/react';
-import React, { useRef } from 'react'
+import { Link, router, useForm, usePage } from '@inertiajs/react';
+import React, { useEffect, useRef, useState } from 'react'
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -19,6 +19,19 @@ function formatRupiah(value) {
 
 export default function Customer({ customer, kode }) {
     const { auth } = usePage().props;
+    const [search, setSearch] = useState('');
+
+    useEffect(() => {
+        const t = setTimeout(() => {
+            router.get('/customer', { search }, { preserveState: true, replace: true });
+        }, 500);
+        return () => clearTimeout(t);
+    }, [search]);
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        router.get('/customer', { search }, { preserveState: true, replace: true });
+    };
     const restrictedRoles = ['customer service', 'desain', 'gudang', 'finishing', 'logistik'];
     const isEditable = !restrictedRoles.includes(auth.user?.role);
     const { data, setData, post, delete: destroy, put, processing, reset } = useForm({
@@ -108,7 +121,8 @@ export default function Customer({ customer, kode }) {
             doc.text("Data Customer", 14, 20);
             doc.setFontSize(10);
             doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
-            const rows = customer.map((item, index) => [index + 1, item.kode, item.sapaan, item.nama, item.nohp, item.kategori, item.alamat, item.limit ? "Rp " + formatRupiah(String(item.limit)) : "-", item.limit_akhir ? "Rp " + formatRupiah(String(item.limit_akhir)) : "-", item.jatuh_tempo || "-"]);
+            const items = customer.data || customer;
+            const rows = items.map((item, index) => [index + 1, item.kode, item.sapaan, item.nama, item.nohp, item.kategori, item.alamat, item.limit ? "Rp " + formatRupiah(String(item.limit)) : "-", item.limit_akhir ? "Rp " + formatRupiah(String(item.limit_akhir)) : "-", item.jatuh_tempo || "-"]);
             autoTable(doc, { startY: 32, head: [["No", "Kode", "Sapaan", "Nama", "No Hp", "Kategori", "Alamat", "Limit", "Limit Akhir", "Jatuh Tempo"]], body: rows, styles: { fontSize: 8 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
             doc.save("data_customer.pdf");
         } catch (error) {
@@ -541,6 +555,18 @@ export default function Customer({ customer, kode }) {
                             </div>
                         </div>
 
+                        <div className="mb-3">
+                            <form onSubmit={handleSearch}>
+                                <input
+                                    type="text"
+                                    placeholder="Cari nama atau no hp..."
+                                    className="input input-bordered input-success w-full max-w-xs"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+                            </form>
+                        </div>
+
                         <div>
                             <table className="table table-zebra" id="myTable">
                                 <thead>
@@ -558,13 +584,13 @@ export default function Customer({ customer, kode }) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {customer.map((item, index) => (
+                                    {(customer.data || customer).map((item, index) => (
                                         <tr
                                             key={item.id}
                                             onClick={() => openModalEdit(item.id, item.nama, item.alamat, item.kode, item.nohp, item.kategori, item.limit, item.sapaan, item.limit_akhir, item.jatuh_tempo)}
                                             className={`cursor-pointer hover:bg-base-200 ${Number(item.limit_akhir) >= Number(item.limit) ? 'bg-error/20' : ''}`}
                                         >
-                                            <td>{index + 1}</td>
+                                            <td>{customer.from ? customer.from + index : index + 1}</td>
                                             <td>{item.kode}</td>
                                             <td>{item.sapaan}</td>
                                             <td>{item.sapaan ? item.sapaan + '. ' : ''}{item.nama}</td>
@@ -576,8 +602,23 @@ export default function Customer({ customer, kode }) {
                                             <td>{item.jatuh_tempo || '-'}</td>
                                         </tr>
                                     ))}
-                                </tbody>
+                                    </tbody>
                             </table>
+
+                            {customer.links && (
+                                <div className="flex justify-center mt-4 join">
+                                    {customer.links.map((link, i) => (
+                                        <Link
+                                            key={i}
+                                            href={link.url || '#'}
+                                            className={`btn btn-sm join-item ${link.active ? 'btn-success' : ''} ${!link.url ? 'btn-disabled' : ''}`}
+                                            preserveState
+                                            replace
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

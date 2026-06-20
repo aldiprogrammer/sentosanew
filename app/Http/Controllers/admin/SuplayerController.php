@@ -10,9 +10,18 @@ use Inertia\Inertia;
 
 class SuplayerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $suplayer = Suplayer::with('rekening')->get();
+        $search = $request->query('search');
+        $suplayer = Suplayer::with('rekening')
+            ->when($search, function ($q, $search) {
+                $q->where('nama_suplayer', 'like', "%{$search}%")
+                  ->orWhere('produk', 'like', "%{$search}%")
+                  ->orWhere('nohp', 'like', "%{$search}%");
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+        $suplayer->appends(['search' => $search]);
         $kode = 'SP-'.rand(0, 100000);
 
         return Inertia::render('Admin/Suplayer', compact('suplayer', 'kode'));
@@ -75,7 +84,7 @@ class SuplayerController extends Controller
             'rekening.*.nama_rekening' => 'required_with:rekening.*.nama_bank',
         ]);
 
-        $sp = Suplayer::find($id);
+        $sp = Suplayer::findOrFail($id);
         $sp->kode = $request->kode;
         $sp->nama_suplayer = $request->nama_suplayer;
         $sp->alamat = $request->alamat;
@@ -106,7 +115,7 @@ class SuplayerController extends Controller
 
     public function delete($id)
     {
-        $sp = Suplayer::find($id);
+        $sp = Suplayer::findOrFail($id);
         $sp->delete();
 
         return redirect()->back()->with('success', 'Data berhasil dihapus');

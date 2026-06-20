@@ -106,7 +106,7 @@ export default function AdminLayout({ children }) {
                                 </Link>
                             </li>
                         )}
-                        {(hasMenu('pengguna') || hasMenu('distributor') || hasMenu('kurir') || hasMenu('suplayer') || hasMenu('master-bahan') || hasMenu('master-kategoridesain') || hasMenu('master-jabatan')) && (
+                        {(hasMenu('pengguna') || hasMenu('distributor') || hasMenu('kurir') || hasMenu('suplayer') || hasMenu('suplayer-pembelian-bahan') || hasMenu('master-bahan') || hasMenu('master-kategoridesain') || hasMenu('master-jabatan')) && (
                             <li>
                                 <details>
                                     <summary className="rounded-xl">
@@ -146,7 +146,12 @@ export default function AdminLayout({ children }) {
                                         )}
                                         {hasMenu('suplayer') && (
                                             <li>
-                                                <Link href={route('suplayer')}>Suplayer</Link>
+                                                <Link href={route('suplayer')}>Suplayer Eksternal</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('suplayer-pembelian-bahan') && (
+                                            <li>
+                                                <Link href={route('suplayer-pembelian-bahan')}>Suplayer Pembelian Bahan</Link>
                                             </li>
                                         )}
                                     </ul>

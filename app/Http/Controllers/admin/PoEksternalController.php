@@ -32,7 +32,8 @@ class PoEksternalController extends Controller
         $last = PoEksternal::where('no_po', 'like', $prefix.'%')->orderBy('no_po', 'desc')->first();
         $no_po = $prefix.str_pad($last ? ((int) substr($last->no_po, -4)) + 1 : 1, 4, '0', STR_PAD_LEFT);
         $bahans = Bahan::orderBy('bahan')->get(['id', 'kode', 'bahan', 'satuan', 'harga_po']);
-        $suplayers = Suplayer::orderBy('nama_suplayer')->get(['id', 'kode', 'nama_suplayer', 'jatuh_tempo']);
+        $suplayers = Suplayer::orderBy('nama_suplayer')
+            ->get(['id', 'kode', 'nama_suplayer', 'jatuh_tempo']);
         $distributors = Distributor::orderBy('nama')->get(['id', 'kode', 'nama']);
 
         return Inertia::render('Admin/PoEksternal', compact('poEksternal', 'no_po', 'bahans', 'suplayers', 'distributors'));
@@ -47,6 +48,7 @@ class PoEksternalController extends Controller
             'id_distributor' => 'nullable|exists:distributors,id',
             'mata_uang' => 'nullable|string|max:10',
             'batas_bayar' => 'nullable|date',
+            'pembayaran' => 'nullable|in:CASH,CREDIT',
             'id_suplayer' => 'nullable|exists:suplayers,id',
             // 'invoice' => 'nullable|string|max:100',
             // 'id_bahan' => 'nullable|exists:bahans,id',
@@ -74,6 +76,7 @@ class PoEksternalController extends Controller
         $po->id_distributor = $data['id_distributor'] ?: null;
         $po->mata_uang = $data['mata_uang'];
         $po->batas_bayar = $data['batas_bayar'];
+        $po->pembayaran = $data['pembayaran'];
         $po->id_suplayer = $data['id_suplayer'] ?: null;
         // $po->invoice = $data['invoice'];
         // $po->id_bahan = $data['id_bahan'] ?: null;
@@ -101,6 +104,7 @@ class PoEksternalController extends Controller
             'id_distributor' => 'nullable|exists:distributors,id',
             'mata_uang' => 'nullable|string|max:10',
             'batas_bayar' => 'nullable|date',
+            'pembayaran' => 'nullable|in:CASH,CREDIT',
             'id_suplayer' => 'nullable|exists:suplayers,id',
             // 'invoice' => 'nullable|string|max:100',
             // 'id_bahan' => 'nullable|exists:bahans,id',
@@ -120,6 +124,7 @@ class PoEksternalController extends Controller
         $po->id_distributor = $data['id_distributor'] ?: null;
         $po->mata_uang = $data['mata_uang'];
         $po->batas_bayar = $data['batas_bayar'];
+        $po->pembayaran = $data['pembayaran'];
         $po->id_suplayer = $data['id_suplayer'] ?: null;
         // $po->invoice = $data['invoice'];
         // $po->id_bahan = $data['id_bahan'] ?: null;

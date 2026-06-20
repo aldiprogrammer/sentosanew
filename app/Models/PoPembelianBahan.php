@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class PoPembelianBahan extends Model
 {
-    protected $fillable = ['tgl', 'no_po', 'id_suplayer', 'hal', 'diskon', 'ppn', 'sub_total'];
+    protected $fillable = ['tgl', 'no_po', 'id_suplayer', 'hal', 'pembayaran', 'diskon', 'ppn', 'sub_total'];
 
     public function suplayer()
     {
-        return $this->belongsTo(Suplayer::class, 'id_suplayer');
+        return $this->belongsTo(SuplayerPembelianBahan::class, 'id_suplayer');
     }
 
     public function items()

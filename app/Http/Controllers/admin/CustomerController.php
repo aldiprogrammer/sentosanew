@@ -9,9 +9,16 @@ use Inertia\Inertia;
 
 class CustomerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $customer = Customer::all();
+        $search = $request->query('search');
+        $customer = Customer::when($search, function ($q, $search) {
+            $q->where('nama', 'like', "%{$search}%")
+              ->orWhere('nohp', 'like', "%{$search}%");
+        })
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+        $customer->appends(['search' => $search]);
         $kode = $this->kodeCustomer();
 
         return Inertia::render('Admin/Customer', compact('customer', 'kode'));

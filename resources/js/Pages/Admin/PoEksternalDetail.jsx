@@ -277,6 +277,8 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
         doc.text(":  " + (po.mata_uang || "-"), 14 + colW + 36, 83);
         doc.text("Jatuh Tempo", 14 + colW + 4, 91);
         doc.text(":  " + (po.batas_bayar || "-"), 14 + colW + 36, 91);
+        doc.text("Pembayaran", 14 + colW + 4, 99);
+        doc.text(":  " + (po.pembayaran || "-"), 14 + colW + 36, 99);
 
         const th = parseFloat(po.total_harga || 0);
         const d = parseFloat(po.diskon || 0);
@@ -294,7 +296,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
             item.spk || "-",
             item.lebar + (sat ? " " + sat : ""),
             item.tinggi + (sat ? " " + sat : ""),
-            item.qty,
+            item.qty + " " + item.bahan?.satuan,
             parseFloat(item.harga || 0).toLocaleString("id-ID"),
             parseFloat(item.total || 0).toLocaleString("id-ID"),
             item.keterangan || "-",
@@ -396,7 +398,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
               <div className="card bg-base-100 border border-base-300 shadow-sm">
                 <div className="card-body p-4">
                   <p className="text-xs text-base-content/50 uppercase tracking-wider">No PO</p>
@@ -421,6 +423,12 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                   <p className="text-lg font-bold">{po.hal || "-"}</p>
                 </div>
               </div>
+              <div className="card bg-base-100 border border-base-300 shadow-sm">
+                <div className="card-body p-4">
+                  <p className="text-xs text-base-content/50 uppercase tracking-wider">Pembayaran</p>
+                  <p className="text-lg font-bold">{po.pembayaran || "-"}</p>
+                </div>
+              </div>
             </div>
 
             <div className="flex justify-end mb-3">
@@ -440,7 +448,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                     <th>Lebar</th>
                     <th>Tinggi</th>
                     <th>Luas</th>
-                    <th>Satuan Bahan</th>
+                    {/* <th>Satuan Bahan</th> */}
                     <th>Qty</th>
                     <th>Harga</th>
                     <th>Total</th>
@@ -467,8 +475,8 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                           <td>{item.lebar}{satuanUkuran ? ` ${satuanUkuran}` : ""}</td>
                           <td>{item.tinggi}{satuanUkuran ? ` ${satuanUkuran}` : ""}</td>
                           <td>{item.luas}{satuanUkuran ? ` ${satuanUkuran}` : ""}</td>
-                          <td>{satuanBahan(item) || "-"}</td>
-                          <td>{item.qty}</td>
+                          {/* <td>{satuanBahan(item) || "-"}</td> */}
+                          <td>{item.qty} {item.bahan?.satuan}</td>
                           <td>{formatRp(item.harga)}</td>
                           <td>{formatRp(item.total)}</td>
                           <td>{item.keterangan || "-"}</td>

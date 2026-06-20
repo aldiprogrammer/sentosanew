@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Bahan;
+use App\Models\Databahan;
 use App\Models\PoPembelianBahan;
 use App\Models\PoPembelianBahanItem;
-use App\Models\Suplayer;
+use App\Models\SuplayerPembelianBahan;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -27,7 +27,8 @@ class PoPembelianBahanController extends Controller
         $prefix = 'PB-' . date('ym') . '-';
         $last = PoPembelianBahan::where('no_po', 'like', $prefix . '%')->orderBy('no_po', 'desc')->first();
         $no_po = $prefix . str_pad($last ? ((int) substr($last->no_po, -4)) + 1 : 1, 4, '0', STR_PAD_LEFT);
-        $suplayers = Suplayer::orderBy('nama_suplayer')->get(['id', 'kode', 'nama_suplayer']);
+        $suplayers = SuplayerPembelianBahan::orderBy('nama_suplayer')
+            ->get(['id', 'kode', 'nama_suplayer']);
 
         return Inertia::render('Admin/PoPembelianBahan', compact('po', 'no_po', 'suplayers'));
     }
@@ -37,8 +38,9 @@ class PoPembelianBahanController extends Controller
         $data = $request->validate([
             'tgl' => 'required|date',
             'no_po' => 'nullable|string|max:30',
-            'id_suplayer' => 'nullable|exists:suplayers,id',
+            'id_suplayer' => 'nullable|exists:suplayer_pembelian_bahans,id',
             'hal' => 'nullable|string|max:200',
+            'pembayaran' => 'nullable|in:CASH,CREDIT',
         ]);
 
         PoPembelianBahan::create($data);
@@ -51,8 +53,9 @@ class PoPembelianBahanController extends Controller
         $data = $request->validate([
             'tgl' => 'required|date',
             'no_po' => 'nullable|string|max:30',
-            'id_suplayer' => 'nullable|exists:suplayers,id',
+            'id_suplayer' => 'nullable|exists:suplayer_pembelian_bahans,id',
             'hal' => 'nullable|string|max:200',
+            'pembayaran' => 'nullable|in:CASH,CREDIT',
         ]);
 
         $po = PoPembelianBahan::findOrFail($id);
@@ -70,7 +73,7 @@ class PoPembelianBahanController extends Controller
         $po->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
         $po->update();
 
-        $bahans = Bahan::orderBy('bahan')->get(['id', 'kode', 'bahan', 'satuan']);
+        $bahans = Databahan::orderBy('bahan')->get(['id', 'kode', 'bahan', 'satuan']);
 
         return Inertia::render('Admin/PoPembelianBahanDetail', compact('po', 'bahans'));
     }
@@ -80,7 +83,7 @@ class PoPembelianBahanController extends Controller
         $po = PoPembelianBahan::findOrFail($id);
 
         $data = $request->validate([
-            'id_bahan' => 'nullable|exists:bahans,id',
+            'id_bahan' => 'nullable|exists:databahans,id',
             'panjang' => 'nullable|numeric',
             'lebar' => 'nullable|numeric',
             'luas' => 'nullable|numeric',
@@ -102,7 +105,7 @@ class PoPembelianBahanController extends Controller
     public function updateItem(Request $request, $id)
     {
         $data = $request->validate([
-            'id_bahan' => 'nullable|exists:bahans,id',
+            'id_bahan' => 'nullable|exists:databahans,id',
             'panjang' => 'nullable|numeric',
             'lebar' => 'nullable|numeric',
             'luas' => 'nullable|numeric',

@@ -22,6 +22,7 @@ export default function PoPembelianBahan({ po, no_po, suplayers }) {
     no_po: no_po,
     id_suplayer: "",
     hal: "",
+    pembayaran: "",
   });
 
   const modalRef = useRef(null);
@@ -43,6 +44,7 @@ export default function PoPembelianBahan({ po, no_po, suplayers }) {
       no_po: item.no_po,
       id_suplayer: item.id_suplayer?.toString() || "",
       hal: item.hal || "",
+      pembayaran: item.pembayaran || "",
     });
   };
 
@@ -111,6 +113,7 @@ export default function PoPembelianBahan({ po, no_po, suplayers }) {
                     <th>No PO</th>
                     <th>Suplayer</th>
                     <th>Hal</th>
+                    <th>Pembayaran</th>
                     <th>Diskon</th>
                     <th>PPN</th>
                     <th>Sub Total</th>
@@ -125,6 +128,7 @@ export default function PoPembelianBahan({ po, no_po, suplayers }) {
                       <td className="font-semibold">{item.no_po}</td>
                       <td>{item.suplayer?.nama_suplayer || "-"}</td>
                       <td>{item.hal || "-"}</td>
+                      <td>{item.pembayaran || "-"}</td>
                       <td>{item.diskon ? item.diskon + "%" : "-"}</td>
                       <td>{item.ppn ? item.ppn + "%" : "-"}</td>
                       <td>{formatRp(item.sub_total)}</td>
@@ -187,6 +191,14 @@ export default function PoPembelianBahan({ po, no_po, suplayers }) {
                   <div className="label"><span className="label-text">Hal</span></div>
                   <input type="text" value={data.hal} className="input input-bordered input-success w-full" onChange={(e) => setData("hal", e.target.value)} />
                 </label>
+                <label className="form-control">
+                  <div className="label"><span className="label-text">Pembayaran</span></div>
+                  <select value={data.pembayaran} className="select select-bordered select-success w-full" onChange={(e) => setData("pembayaran", e.target.value)}>
+                    <option value="">-- Pilih Pembayaran --</option>
+                    <option value="CASH">CASH</option>
+                    <option value="CREDIT">CREDIT</option>
+                  </select>
+                </label>
               </div>
             </div>
             <div className="mt-6 flex gap-2">
@@ -226,6 +238,14 @@ export default function PoPembelianBahan({ po, no_po, suplayers }) {
                 <label className="form-control">
                   <div className="label"><span className="label-text">Hal</span></div>
                   <input type="text" value={data.hal} className="input input-bordered input-success w-full" onChange={(e) => setData("hal", e.target.value)} />
+                </label>
+                <label className="form-control">
+                  <div className="label"><span className="label-text">Pembayaran</span></div>
+                  <select value={data.pembayaran} className="select select-bordered select-success w-full" onChange={(e) => setData("pembayaran", e.target.value)}>
+                    <option value="">-- Pilih Pembayaran --</option>
+                    <option value="CASH">CASH</option>
+                    <option value="CREDIT">CREDIT</option>
+                  </select>
                 </label>
               </div>
             </div>

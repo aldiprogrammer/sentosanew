@@ -16,6 +16,7 @@ use App\Http\Controllers\admin\PoPembelianBahanController;
 use App\Http\Controllers\admin\PoEksternalController;
 use App\Http\Controllers\admin\ProduksiController;
 use App\Http\Controllers\admin\SuplayerController;
+use App\Http\Controllers\admin\SuplayerPembelianBahanController;
 use App\Http\Controllers\admin\OtorisasiController;
 use App\Http\Controllers\produksi\FinishingController;
 use App\Http\Controllers\produksi\LogistikController;
@@ -108,6 +109,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/suplayer', [SuplayerController::class, 'store'])->name('store.suplayer');
     Route::put('/suplayer/{id}', [SuplayerController::class, 'update'])->name('update.suplayer');
     Route::delete('/suplayer/{id}', [SuplayerController::class, 'delete'])->name('delete.suplayer');
+
+    Route::get('/suplayer-pembelian-bahan', [SuplayerPembelianBahanController::class, 'index'])->name('suplayer-pembelian-bahan');
+    Route::post('/suplayer-pembelian-bahan', [SuplayerPembelianBahanController::class, 'store'])->name('store.suplayer-pembelian-bahan');
+    Route::put('/suplayer-pembelian-bahan/{id}', [SuplayerPembelianBahanController::class, 'update'])->name('update.suplayer-pembelian-bahan');
+    Route::delete('/suplayer-pembelian-bahan/{id}', [SuplayerPembelianBahanController::class, 'delete'])->name('delete.suplayer-pembelian-bahan');
 
     Route::get('/dataproduksi', [ProduksiProduksiController::class, 'dataproduksi'])->name('dataproduksi');
     Route::put('/dataproduksi/proses-produksi', [ProduksiProduksiController::class, 'prosesProduksi'])->name('proses.produksi');

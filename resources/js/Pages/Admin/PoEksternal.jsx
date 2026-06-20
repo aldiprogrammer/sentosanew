@@ -34,6 +34,7 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
     id_distributor: "",
     mata_uang: "",
     batas_bayar: "",
+    pembayaran: "",
     id_suplayer: "",
     invoice: "",
     id_bahan: "",
@@ -116,6 +117,7 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
       id_distributor: item.id_distributor?.toString() || "",
       mata_uang: item.mata_uang || "",
       batas_bayar: item.batas_bayar || "",
+      pembayaran: item.pembayaran || "",
       id_suplayer: item.id_suplayer?.toString() || "",
       // invoice: item.invoice || "",
       // id_bahan: item.id_bahan?.toString() || "",
@@ -202,13 +204,14 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
                     <th>Hal</th>
                     <th>Mata Uang</th>
                     <th>Batas Bayar</th>
+                    <th>Pembayaran</th>
                     <th>Suplayer</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="text-xs">
                   {poEksternal.data.map((item, index) => (
-                    <tr key={item.id} className="hover:bg-base-200">
+                    <tr key={item.id} onClick={() => openModalEdit(item)} className="cursor-pointer hover:bg-base-200">
                       <td>{poEksternal.from + index}</td>
                       <td>{item.tgl}</td>
                       <td className="font-semibold">{item.no_po}</td>
@@ -216,20 +219,16 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
 
                       <td>{item.mata_uang || "-"}</td>
                       <td>{item.batas_bayar || "-"}</td>
+                      <td>{item.pembayaran || "-"}</td>
                       <td>{item.suplayer?.nama_suplayer || "-"}</td>
                       <td>
                         <Link
                           href={"/po-eksternal/" + item.id + "/detail"}
                           className="btn btn-xs btn-info"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <i className="fas fa-list"></i> Detail
                         </Link>
-                        <button
-                          onClick={() => openModalEdit(item)}
-                          className="btn btn-xs btn-warning ml-1"
-                        >
-                          <i className="fas fa-edit"></i>
-                        </button>
                       </td>
                     </tr>
                   ))}
@@ -309,6 +308,14 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
                   <label className="form-control">
                     <div className="label"><span className="label-text">Batas Bayar</span></div>
                     <input type="date" value={data.batas_bayar} className="input input-bordered input-success w-full" onChange={(e) => setData("batas_bayar", e.target.value)} />
+                  </label>
+                  <label className="form-control">
+                    <div className="label"><span className="label-text">Pembayaran</span></div>
+                    <select value={data.pembayaran} className="select select-bordered select-success w-full" onChange={(e) => setData("pembayaran", e.target.value)}>
+                      <option value="">-- Pilih Pembayaran --</option>
+                      <option value="CASH">CASH</option>
+                      <option value="CREDIT">CREDIT</option>
+                    </select>
                   </label>
                 </div>
               </div>
@@ -431,6 +438,14 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
                   <label className="form-control">
                     <div className="label"><span className="label-text">Batas Bayar</span></div>
                     <input type="date" value={data.batas_bayar} className="input input-bordered input-success w-full" onChange={(e) => setData("batas_bayar", e.target.value)} />
+                  </label>
+                  <label className="form-control">
+                    <div className="label"><span className="label-text">Pembayaran</span></div>
+                    <select value={data.pembayaran} className="select select-bordered select-success w-full" onChange={(e) => setData("pembayaran", e.target.value)}>
+                      <option value="">-- Pilih Pembayaran --</option>
+                      <option value="CASH">CASH</option>
+                      <option value="CREDIT">CREDIT</option>
+                    </select>
                   </label>
                 </div>
               </div>

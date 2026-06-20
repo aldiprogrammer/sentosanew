@@ -1,5 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout'
-import { router, useForm, usePage } from '@inertiajs/react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
 import React, { useRef, useEffect, useState } from 'react'
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -8,6 +8,19 @@ export default function Otorisasi({ otorisasi }) {
     const { auth } = usePage().props;
     const role = auth.user?.role;
     const canProses = ['admin', 'super admin', 'store manager'].includes(role);
+    const [search, setSearch] = useState('');
+
+    useEffect(() => {
+        const t = setTimeout(() => {
+            router.get('/otorisasi', { search }, { preserveState: true, replace: true });
+        }, 500);
+        return () => clearTimeout(t);
+    }, [search]);
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        router.get('/otorisasi', { search }, { preserveState: true, replace: true });
+    };
     const { data, setData, post, delete: destroy, put, processing, reset } = useForm({
         id: 0,
         kode_spk: '',
@@ -142,7 +155,8 @@ export default function Otorisasi({ otorisasi }) {
             doc.text("Data Otorisasi", 14, 20);
             doc.setFontSize(10);
             doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
-            const rows = otorisasi.map((item, index) => [index + 1, item.kode_spk, item.customer?.nama, item.customer?.no_hp, item.tanggal_pengajuan, item.tanggal_disetujui ?? '-']);
+            const items = otorisasi.data || otorisasi;
+            const rows = items.map((item, index) => [index + 1, item.kode_spk, item.customer?.nama, item.customer?.no_hp, item.tanggal_pengajuan, item.tanggal_disetujui ?? '-']);
             autoTable(doc, { startY: 32, head: [["No", "Kode SPK", "Customer", "No HP", "Tgl Pengajuan", "Tgl Disetujui"]], body: rows, styles: { fontSize: 10 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
             doc.save("data_otorisasi.pdf");
         } catch (error) {
@@ -326,6 +340,18 @@ export default function Otorisasi({ otorisasi }) {
                             </div>
                         </div>
 
+                        <div className="mb-3">
+                            <form onSubmit={handleSearch}>
+                                <input
+                                    type="text"
+                                    placeholder="Cari kode SPK atau customer..."
+                                    className="input input-bordered input-success w-full max-w-xs"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+                            </form>
+                        </div>
+
                         <div>
                             <table className="table table-zebra" id="myTable">
                                 <thead>
@@ -339,13 +365,13 @@ export default function Otorisasi({ otorisasi }) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {otorisasi.map((item, index) => (
+                                    {(otorisasi.data || otorisasi).map((item, index) => (
                                         <tr
                                             key={item.id}
                                             onClick={() => openModalEdit(item)}
                                             className="cursor-pointer hover:bg-base-200"
                                         >
-                                            <td>{index + 1}</td>
+                                            <td>{otorisasi.from ? otorisasi.from + index : index + 1}</td>
                                             <td>{item.kode_spk}</td>
                                             <td>{item.customer?.nama}</td>
                                             <td>{item.customer?.nohp}</td>
@@ -353,8 +379,23 @@ export default function Otorisasi({ otorisasi }) {
                                             <td>{item.status == '0' ? 'Menunggu' : 'Disetujui'}</td>
                                         </tr>
                                     ))}
-                                </tbody>
+                                    </tbody>
                             </table>
+
+                            {otorisasi.links && (
+                                <div className="flex justify-center mt-4 join">
+                                    {otorisasi.links.map((link, i) => (
+                                        <Link
+                                            key={i}
+                                            href={link.url || '#'}
+                                            className={`btn btn-sm join-item ${link.active ? 'btn-success' : ''} ${!link.url ? 'btn-disabled' : ''}`}
+                                            preserveState
+                                            replace
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

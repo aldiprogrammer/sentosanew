@@ -89,7 +89,7 @@ table.items tr:nth-child(even) { background: #f9f9f9; }
     <div class="title">
         <h1>SURAT JALAN</h1>
         <p>SENTOSA PRINTING & DIGITAL SOLUTIONS</p>
-        <p>Jl. Raya Utama No. 123 | Telp: (021) 1234-5678</p>
+        <p>Jl. Laksana No.75/73 A Medan | Telp: (061) 7359007</p>
     </div>
 </div>
 <div class="info">

@@ -10,9 +10,19 @@ use Inertia\Inertia;
 
 class OtorisasiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $otorisasi = Otorisasi::with('customer')->get();
+        $search = $request->query('search');
+        $otorisasi = Otorisasi::with('customer')
+            ->when($search, function ($q, $search) {
+                $q->where('kode_spk', 'like', "%{$search}%")
+                  ->orWhereHas('customer', function ($q) use ($search) {
+                      $q->where('nama', 'like', "%{$search}%");
+                  });
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+        $otorisasi->appends(['search' => $search]);
 
         return Inertia::render('Admin/Otorisasi', compact('otorisasi'));
     }

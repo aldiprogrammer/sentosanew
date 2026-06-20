@@ -222,6 +222,8 @@ export default function PoPembelianBahanDetail({ po, bahans }) {
         doc.setFont("Helvetica", "normal");
         doc.text("Nama", 14 + colW + 4, 75);
         doc.text(":  " + (po.suplayer?.nama_suplayer || "-"), 14 + colW + 36, 75);
+        doc.text("Pembayaran", 14 + colW + 4, 83);
+        doc.text(":  " + (po.pembayaran || "-"), 14 + colW + 36, 83);
 
         const rows = po.items.map((item, index) => [
           index + 1,
@@ -330,7 +332,7 @@ export default function PoPembelianBahanDetail({ po, bahans }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 p-4 bg-base-200 rounded-box">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4 p-4 bg-base-200 rounded-box">
               <div>
                 <span className="text-xs text-gray-500">No PO</span>
                 <p className="font-semibold">{po.no_po}</p>
@@ -346,6 +348,10 @@ export default function PoPembelianBahanDetail({ po, bahans }) {
               <div>
                 <span className="text-xs text-gray-500">Hal</span>
                 <p className="font-semibold">{po.hal || "-"}</p>
+              </div>
+              <div>
+                <span className="text-xs text-gray-500">Pembayaran</span>
+                <p className="font-semibold">{po.pembayaran || "-"}</p>
               </div>
             </div>
 
@@ -493,7 +499,7 @@ export default function PoPembelianBahanDetail({ po, bahans }) {
                 <label className="form-control">
                   <div className="label"><span className="label-text">Bahan</span></div>
                   <SearchableSelect
-                    options={bahans.map(b => ({ value: b.id, label: `${b.kode} - ${b.bahan}` }))}
+                    options={bahans.map(b => ({ value: b.id, label: `${b.kode || '-'} - ${b.bahan || '-'}` }))}
                     value={data.id_bahan}
                     onChange={(val) => setData("id_bahan", val)}
                     placeholder="Pilih Bahan"
@@ -555,7 +561,7 @@ export default function PoPembelianBahanDetail({ po, bahans }) {
                 <label className="form-control">
                   <div className="label"><span className="label-text">Bahan</span></div>
                   <SearchableSelect
-                    options={bahans.map(b => ({ value: b.id, label: `${b.kode} - ${b.bahan}` }))}
+                    options={bahans.map(b => ({ value: b.id, label: `${b.kode || '-'} - ${b.bahan || '-'}` }))}
                     value={data.id_bahan}
                     onChange={(val) => setData("id_bahan", val)}
                     placeholder="Pilih Bahan"

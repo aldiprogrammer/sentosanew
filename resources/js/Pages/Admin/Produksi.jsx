@@ -465,21 +465,12 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 <div className="label">
                                   <span className="label-text">Customer</span>
                                 </div>
-                                <select
-                                  name="id_customer"
-                                  onChange={(e) =>
-                                    handleCustomer(e.target.value)
-                                  }
-                                  className="select select-bordered select-success w-full"
-                                  required
-                                >
-                                  <option value="">Pilih Customer</option>
-                                  {customer.map((ds, index) => (
-                                    <option value={ds.id}>
-                                      {ds.nama}
-                                    </option>
-                                  ))}
-                                </select>
+                                <SearchableSelect
+                                  options={customer.map(cs => ({ value: cs.id, label: cs.nama }))}
+                                  value={data.id_customer}
+                                  onChange={(val) => handleCustomer(val)}
+                                  placeholder="Pilih Customer"
+                                />
                               </label>
 
                               {/* Kode Antrian */}
@@ -934,24 +925,12 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 <div className="label">
                                   <span className="label-text">Customer</span>
                                 </div>
-                                <select
-                                  name="id_customer"
+                                <SearchableSelect
+                                  options={customer.map(cs => ({ value: cs.id, label: cs.nama }))}
                                   value={data.id_customer}
-                                  onChange={(e) =>
-                                    handleCustomer(e.target.value)
-                                  }
-                                  className="select select-bordered select-success w-full"
-                                  required
-                                >
-                                  <option value={data.id_customer}>
-                                    {data.customer}
-                                  </option>
-                                  {customer.map((ds, index) => (
-                                    <option value={ds.id}>
-                                      {ds.nama}
-                                    </option>
-                                  ))}
-                                </select>
+                                  onChange={(val) => handleCustomer(val)}
+                                  placeholder="Pilih Customer"
+                                />
                               </label>
 
                               {/* Kode Antrian */}

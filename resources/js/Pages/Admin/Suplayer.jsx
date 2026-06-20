@@ -1,6 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout'
-import { useForm } from '@inertiajs/react';
-import React, { useRef } from 'react'
+import { Link, router, useForm } from '@inertiajs/react';
+import React, { useEffect, useRef, useState } from 'react'
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -17,7 +17,28 @@ function formatRupiah(value) {
     return 'Rp ' + digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
-export default function Suplayer({ suplayer, kode }) {
+export default function Suplayer({
+    suplayer,
+    kode,
+    title = 'Data Suplayer Eksternal',
+    baseUrl = '/suplayer',
+    exportTitle = 'Data Suplayer Eksternal',
+    exportFileName = 'data_suplayer_eksternal.pdf',
+}) {
+    const [search, setSearch] = useState('');
+
+    useEffect(() => {
+        const t = setTimeout(() => {
+            router.get('/suplayer', { search }, { preserveState: true, replace: true });
+        }, 500);
+        return () => clearTimeout(t);
+    }, [search]);
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        router.get('/suplayer', { search }, { preserveState: true, replace: true });
+    };
+
     const { data, setData, post, delete: destroy, put, processing, reset } = useForm({
         id: 0,
         kode: '',
@@ -75,7 +96,7 @@ export default function Suplayer({ suplayer, kode }) {
 
     const save = (e) => {
         e.preventDefault();
-        post('/suplayer', {
+        post(baseUrl, {
             onSuccess: () => {
                 reset();
                 closeModal();
@@ -85,14 +106,14 @@ export default function Suplayer({ suplayer, kode }) {
 
     const hapus = (id) => {
         if (confirm('Yakin ingin menghapus')) {
-            destroy('/suplayer/' + id);
+            destroy(baseUrl + '/' + id);
             closeModalEdit();
         }
     };
 
     const update = (e) => {
         e.preventDefault();
-        put('/suplayer/' + data.id, {
+        put(baseUrl + '/' + data.id, {
             onSuccess: () => {
                 closeModalEdit();
                 reset();
@@ -167,12 +188,13 @@ export default function Suplayer({ suplayer, kode }) {
         try {
             const doc = new jsPDF("l", "mm", "a4");
             doc.setFontSize(16);
-            doc.text("Data Suplayer", 14, 20);
+            doc.text(exportTitle, 14, 20);
             doc.setFontSize(10);
             doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
-            const rows = suplayer.map((item, index) => [index + 1, item.kode, item.nama_suplayer, item.alamat, formatPhone(item.nohp), item.produk, formatRupiah(item.harga), item.jatuh_tempo || '-', item.rekening ? item.rekening.map(r => r.nama_bank).join(", ") : "-"]);
+            const items = suplayer.data || suplayer;
+            const rows = items.map((item, index) => [index + 1, item.kode, item.nama_suplayer, item.alamat, formatPhone(item.nohp), item.produk, formatRupiah(item.harga), item.jatuh_tempo || '-', item.rekening ? item.rekening.map(r => r.nama_bank).join(", ") : "-"]);
             autoTable(doc, { startY: 32, head: [["No", "Kode", "Nama Suplayer", "Alamat", "No HP", "Produk", "Harga", "Jatuh Tempo", "Rekening"]], body: rows, styles: { fontSize: 7 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
-            doc.save("data_suplayer.pdf");
+            doc.save(exportFileName);
         } catch (error) {
             console.error("Gagal export PDF:", error);
             alert("Gagal mengexport PDF: " + error.message);
@@ -185,7 +207,7 @@ export default function Suplayer({ suplayer, kode }) {
                 <div className="xl:col-span-2 card bg-base-100 shadow-md border border-base-300">
                     <div className="card-body">
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-                            <h2 className="card-title">Data Suplayer</h2>
+                            <h2 className="card-title">{title}</h2>
                             <div className="flex gap-2">
                                 <button className="btn btn-primary" onClick={exportPDF}>
                                     <i className="fas fa-file-pdf"></i> Export PDF
@@ -226,6 +248,18 @@ export default function Suplayer({ suplayer, kode }) {
                             </div>
                         </div>
 
+                        <div className="mb-3">
+                            <form onSubmit={handleSearch}>
+                                <input
+                                    type="text"
+                                    placeholder="Cari nama suplayer, produk, atau no hp..."
+                                    className="input input-bordered input-success w-full max-w-xs"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+                            </form>
+                        </div>
+
                         <div>
                             <table className="table table-zebra" id="myTable">
                                 <thead>
@@ -242,9 +276,9 @@ export default function Suplayer({ suplayer, kode }) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {suplayer.map((item, index) => (
+                                    {(suplayer.data || suplayer).map((item, index) => (
                                         <tr key={item.id} onClick={() => openModalEdit(item)} className="cursor-pointer hover:bg-base-200">
-                                            <td>{index + 1}</td>
+                                            <td>{suplayer.from ? suplayer.from + index : index + 1}</td>
                                             <td>{item.kode}</td>
                                             <td>{item.nama_suplayer}</td>
                                             <td>{item.alamat}</td>
@@ -263,6 +297,21 @@ export default function Suplayer({ suplayer, kode }) {
                                     ))}
                                 </tbody>
                             </table>
+
+                            {suplayer.links && (
+                                <div className="flex justify-center mt-4 join">
+                                    {suplayer.links.map((link, i) => (
+                                        <Link
+                                            key={i}
+                                            href={link.url || '#'}
+                                            className={`btn btn-sm join-item ${link.active ? 'btn-success' : ''} ${!link.url ? 'btn-disabled' : ''}`}
+                                            preserveState
+                                            replace
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
