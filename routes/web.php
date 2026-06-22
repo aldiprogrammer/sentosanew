@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\admin\BahanController;
+use App\Http\Controllers\admin\BahanbeliController;
 use App\Http\Controllers\admin\CustomerController;
 use App\Http\Controllers\admin\DashboardController;
 use App\Http\Controllers\admin\DataOrderController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\admin\JabatanController;
 use App\Http\Controllers\admin\KategoriDesainController;
 use App\Http\Controllers\admin\KurirController;
 use App\Http\Controllers\admin\LaporanPembukuanController;
+use App\Http\Controllers\admin\MaterbahanController;
 use App\Http\Controllers\admin\PenggunaController;
 use App\Http\Controllers\admin\PoPembelianBahanController;
 use App\Http\Controllers\admin\PoEksternalController;
@@ -77,6 +79,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/bahan/harga/{id}', [BahanController::class, 'deleteHarga'])->name('delete.harga-bahan');
     Route::delete('/bahan/{id}', [BahanController::class, 'delete'])->name('delete.bahan');
     Route::put('/bahan/{id}', [BahanController::class, 'update'])->name('update.bahan');
+
+    Route::get('/materbahan', [MaterbahanController::class, 'index'])->name('materbahan');
+    Route::post('/materbahan', [MaterbahanController::class, 'store'])->name('store.materbahan');
+    Route::put('/materbahan/{id}', [MaterbahanController::class, 'update'])->name('update.materbahan');
+    Route::delete('/materbahan/{id}', [MaterbahanController::class, 'delete'])->name('delete.materbahan');
+
+    Route::get('/bahanbeli', [BahanbeliController::class, 'index'])->name('bahanbeli');
+    Route::post('/bahanbeli', [BahanbeliController::class, 'store'])->name('store.bahanbeli');
+    Route::put('/bahanbeli/{id}', [BahanbeliController::class, 'update'])->name('update.bahanbeli');
+    Route::delete('/bahanbeli/{id}', [BahanbeliController::class, 'delete'])->name('delete.bahanbeli');
 
     Route::get('/desain', [DesainController::class, 'index'])->name('desain');
     Route::post('/desain', [DesainController::class, 'store'])->name('store.desain');
@@ -151,6 +163,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/po-pembelian-bahan/item/{id}', [PoPembelianBahanController::class, 'updateItem'])->name('update-item.po-pembelian-bahan');
     Route::delete('/po-pembelian-bahan/item/{id}', [PoPembelianBahanController::class, 'deleteItem'])->name('delete-item.po-pembelian-bahan');
     Route::put('/po-pembelian-bahan/{id}/header', [PoPembelianBahanController::class, 'updateHeader'])->name('update-header.po-pembelian-bahan');
+    Route::put('/po-pembelian-bahan/{id}/update-stok', [PoPembelianBahanController::class, 'updateStok'])->name('update-stok.po-pembelian-bahan');
+    Route::put('/po-pembelian-bahan/{id}/tarik-stok', [PoPembelianBahanController::class, 'tarikStok'])->name('tarik-stok.po-pembelian-bahan');
 });
 
 require __DIR__ . '/auth.php';

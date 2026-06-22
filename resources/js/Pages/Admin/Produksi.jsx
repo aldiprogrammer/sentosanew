@@ -519,6 +519,19 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   required
                                 ></textarea>
                               </label>
+                              <label className="form-control w-full col-span-2">
+                                <div className="label">
+                                  <span className="label-text">Keterangan</span>
+                                </div>
+                                <textarea
+                                  name="keterangan"
+                                  value={data.keterangan}
+                                  onChange={(e) =>
+                                    setData("keterangan", e.target.value)
+                                  }
+                                  className="textarea textarea-bordered textarea-success w-full h-20"
+                                ></textarea>
+                              </label>
                             </div>
                           </div>
 
@@ -805,19 +818,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 />
                               </label>
 
-                              <label className="form-control w-full col-span-2">
-                                <div className="label">
-                                  <span className="label-text">Keterangan</span>
-                                </div>
-                                <textarea
-                                  name="keterangan"
-                                  value={data.keterangan}
-                                  onChange={(e) =>
-                                    setData("keterangan", e.target.value)
-                                  }
-                                  className="textarea textarea-bordered textarea-success w-full h-20"
-                                ></textarea>
-                              </label>
+
                             </div>
                           </div>
 
@@ -977,6 +978,20 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   onChange={handleChange}
                                   className="textarea textarea-bordered textarea-success w-full h-10"
                                   required
+                                ></textarea>
+                              </label>
+
+                              <label className="form-control w-full col-span-2">
+                                <div className="label">
+                                  <span className="label-text">Keterangan</span>
+                                </div>
+                                <textarea
+                                  name="keterangan"
+                                  value={data.keterangan}
+                                  onChange={(e) =>
+                                    setData("keterangan", e.target.value)
+                                  }
+                                  className="textarea textarea-bordered textarea-success w-full h-20"
                                 ></textarea>
                               </label>
                             </div>
@@ -1263,19 +1278,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 />
                               </label>
 
-                              <label className="form-control w-full col-span-2">
-                                <div className="label">
-                                  <span className="label-text">Keterangan</span>
-                                </div>
-                                <textarea
-                                  name="keterangan"
-                                  value={data.keterangan}
-                                  onChange={(e) =>
-                                    setData("keterangan", e.target.value)
-                                  }
-                                  className="textarea textarea-bordered textarea-success w-full h-20"
-                                ></textarea>
-                              </label>
+
                             </div>
                           </div>
 

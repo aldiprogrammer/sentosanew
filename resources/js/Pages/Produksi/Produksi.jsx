@@ -3,13 +3,34 @@ import { router } from '@inertiajs/react'
 import React, { useMemo, useRef, useState } from 'react'
 import { buildFinishingReceiptHtml } from './StrukFinishingTemplate'
 
-export default function Produksi({ produksi }) {
+export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
     const [selected, setSelected] = useState(null)
     const [filterKategori, setFilterKategori] = useState('')
     const [filterJenisBahan, setFilterJenisBahan] = useState('')
+    const [sisaPutihPanjang, setSisaPutihPanjang] = useState('')
+    const [sisaPutihLebar, setSisaPutihLebar] = useState('')
+    const [selectedBahanbeli, setSelectedBahanbeli] = useState('')
     const modalRef = useRef(null)
 
     const emptyText = '-'
+
+    const totalSisaPutih = useMemo(() => {
+        const p = parseFloat(sisaPutihPanjang) || 0
+        const l = parseFloat(sisaPutihLebar) || 0
+        return p * l
+    }, [sisaPutihPanjang, sisaPutihLebar])
+
+    const bahanbeliOptions = useMemo(() => {
+        if (!selected) return []
+        return bahanbeliList?.filter((b) => b.id_master_bahan === selected.bahan?.kode) || []
+    }, [selected, bahanbeliList])
+
+    const stokTerpilih = useMemo(() => {
+        if (!selectedBahanbeli) return null
+        return itemstokbahans
+            ?.filter((s) => s.kode_bahan_beli === selectedBahanbeli)
+            .find((s) => parseFloat(s.luas) > 0 && parseInt(s.qty) > 0) || null
+    }, [selectedBahanbeli, itemstokbahans])
 
     const reviewReceipt = (item) => {
         const w = window.open('', '_blank', 'width=420,height=640')
@@ -60,6 +81,9 @@ export default function Produksi({ produksi }) {
 
     const openModal = (item) => {
         setSelected(item)
+        setSisaPutihPanjang('')
+        setSisaPutihLebar('')
+        setSelectedBahanbeli('')
         modalRef.current?.showModal()
     }
 
@@ -70,7 +94,12 @@ export default function Produksi({ produksi }) {
 
     const handleProses = () => {
         if (!selected) return
-        router.put(`/produksi/produksi/${selected.id}/proses`, {}, {
+        router.put(`/produksi/produksi/${selected.id}/proses`, {
+            sisa_putih_panjang: sisaPutihPanjang,
+            sisa_putih_lebar: sisaPutihLebar,
+            sisa_putih_total: String(totalSisaPutih),
+            kode_bahanbeli: selectedBahanbeli,
+        }, {
             preserveScroll: true,
             onSuccess: () => {
                 closeModal()
@@ -193,7 +222,7 @@ export default function Produksi({ produksi }) {
                             </div>
                             <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
                                 <span className="text-sm text-base-content/70">Bahan</span>
-                                <span>{selected.bahan?.bahan}</span>
+                                <span>{selected.bahan?.kode}-{selected.bahan?.bahan}</span>
                             </div>
                             <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
                                 <span className="text-sm text-base-content/70">Jenis Bahan</span>
@@ -203,6 +232,80 @@ export default function Produksi({ produksi }) {
                                 <span className="text-sm text-base-content/70">Kategori Cetak</span>
                                 <span>{selected.bahan?.kategori_cetak}</span>
                             </div>
+
+                            <div className="divider text-xs text-base-content/50">Sisa Putih</div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <label className="form-control">
+                                    <span className="label-text text-xs">Panjang</span>
+                                    <input
+                                        type="number"
+                                        value={sisaPutihPanjang}
+                                        onChange={(e) => setSisaPutihPanjang(e.target.value)}
+                                        className="input input-bordered input-sm"
+                                        placeholder="0"
+                                    />
+                                </label>
+                                <label className="form-control">
+                                    <span className="label-text text-xs">Lebar</span>
+                                    <input
+                                        type="number"
+                                        value={sisaPutihLebar}
+                                        onChange={(e) => setSisaPutihLebar(e.target.value)}
+                                        className="input input-bordered input-sm"
+                                        placeholder="0"
+                                    />
+                                </label>
+                            </div>
+                            <div className="flex justify-between items-center p-2 bg-base-200 rounded-lg">
+                                <span className="text-xs text-base-content/70">Total Sisa Putih</span>
+                                <span className="font-semibold text-sm">{totalSisaPutih}</span>
+                            </div>
+                            <label className="form-control">
+                                <span className="label-text text-xs">Kode Bahan Beli</span>
+                                <select
+                                    value={selectedBahanbeli}
+                                    onChange={(e) => setSelectedBahanbeli(e.target.value)}
+                                    className="select select-bordered select-sm"
+                                >
+                                    <option value="">Pilih Bahan Beli</option>
+                                    {bahanbeliOptions.map((bb) => (
+                                        <option key={bb.kode_bahan} value={bb.kode_bahan}>
+                                            {bb.kode_bahan} - {bb.keterangan}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+
+                            {stokTerpilih && (
+                                <div className="grid grid-cols-2 gap-2 p-2 bg-base-200 rounded-lg">
+                                    <div>
+                                        <span className="text-xs text-base-content/70">Panjang</span>
+                                        <p className="font-semibold text-sm">{stokTerpilih.panjang}</p>
+                                    </div>
+                                    <div>
+                                        <span className="text-xs text-base-content/70">Lebar</span>
+                                        <p className="font-semibold text-sm">{stokTerpilih.lebar}</p>
+                                    </div>
+                                    <div>
+                                        <span className="text-xs text-base-content/70">Luas awal</span>
+                                        <p className="font-semibold text-sm">{stokTerpilih.lebar * stokTerpilih.panjang} {stokTerpilih.satuan}</p>
+                                    </div>
+
+                                    <div>
+                                        <span className="text-xs text-base-content/70">Sisa Luas</span>
+                                        <p className="font-semibold text-sm">{stokTerpilih.luas} {stokTerpilih.satuan}</p>
+                                    </div>
+                                    {/* <div>
+                                        <span className="text-xs text-base-content/70">Qty</span>
+                                        <p className="font-semibold text-sm">{stokTerpilih.qty}</p>
+                                    </div> */}
+                                    <div className="col-span-2">
+                                        <span className="text-xs text-base-content/70">Keterangan</span>
+                                        <p className="font-semibold text-sm">{stokTerpilih.keterangan || '-'}</p>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="alert alert-info text-sm">
                                 <i className="fas fa-info-circle"></i>
                                 Setelah diproses, struk akan tercetak dan data berpindah ke halaman Finishing.

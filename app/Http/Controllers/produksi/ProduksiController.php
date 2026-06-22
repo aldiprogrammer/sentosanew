@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\produksi;
 
 use App\Http\Controllers\Controller;
+use App\Models\Bahanbeli;
+use App\Models\Itemstokbahan;
 use App\Models\Produksi;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,7 +18,9 @@ class ProduksiController extends Controller
             ->where('status_produksi', 1)
             ->orderBy('id', 'desc')
             ->get();
-        return Inertia::render('Produksi/Produksi', compact('produksi'));
+        $bahanbeliList = Bahanbeli::with('masterBahan')->get();
+        $itemstokbahans = Itemstokbahan::where('qty', '>', 0)->orderBy('id')->get();
+        return Inertia::render('Produksi/Produksi', compact('produksi', 'bahanbeliList', 'itemstokbahans'));
     }
 
     function dataproduksi(Request $request)
@@ -117,7 +121,7 @@ class ProduksiController extends Controller
         return back()->with('success', 'Status produksi berhasil diupdate');
     }
 
-    function proses($id)
+    function proses(Request $request, $id)
     {
         $pr = Produksi::find($id);
         if ($pr->status_finishing == 1) {
@@ -125,7 +129,40 @@ class ProduksiController extends Controller
         } else {
             $pr->status_finishing = 1;
         }
+        $pr->sisa_putih_panjang = $request->sisa_putih_panjang;
+        $pr->sisa_putih_lebar = $request->sisa_putih_lebar;
+        $pr->sisa_putih_total = $request->sisa_putih_total;
+        $pr->kode_bahanbeli = $request->kode_bahanbeli;
         $pr->update();
+
+        if ($request->kode_bahanbeli) {
+            $stok = Itemstokbahan::where('kode_bahan_beli', $request->kode_bahanbeli)
+                ->where('luas', '>', 0)
+                ->where('qty', '>', 0)
+                ->orderBy('id')
+                ->first();
+
+            if ($stok) {
+                $panjang = (float) $pr->tinggi ?: 0;
+                $lebar = (float) $pr->lebar ?: 0;
+                $qty = (int) $pr->qty ?: 1;
+                $satuan = strtolower($pr->satuan);
+
+                $orderArea = $panjang * $lebar * $qty;
+                if ($satuan === 'cm') {
+                    $orderArea = $orderArea / 10000;
+                }
+
+                $sisaPutih = (float) $request->sisa_putih_total ?: 0;
+                $sisaPutihM2 = $sisaPutih / 10000;
+
+                $pengurangan = $orderArea + $sisaPutihM2;
+
+                $stok->luas = max(0, (float) $stok->luas - $pengurangan);
+                $stok->save();
+            }
+        }
+
         return back()->with('success', 'Finishing berhasil diproses');
     }
 }

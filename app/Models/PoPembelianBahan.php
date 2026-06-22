@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PoPembelianBahan extends Model
 {
-    protected $fillable = ['tgl', 'no_po', 'id_suplayer', 'hal', 'pembayaran', 'diskon', 'ppn', 'sub_total'];
+    protected $fillable = ['tgl', 'no_po', 'id_suplayer', 'hal', 'pembayaran', 'diskon', 'ppn', 'sub_total', 'status'];
 
     public function suplayer()
     {
@@ -16,5 +16,10 @@ class PoPembelianBahan extends Model
     public function items()
     {
         return $this->hasMany(PoPembelianBahanItem::class, 'po_pembelian_bahan_id');
+    }
+
+    public function itemStok()
+    {
+        return $this->hasMany(Itemstokbahan::class, 'po_pembelian_bahan_id');
     }
 }

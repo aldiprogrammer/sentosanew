@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Databahan;
+use App\Models\Bahanbeli;
+use App\Models\Itemstokbahan;
 use App\Models\PoPembelianBahan;
 use App\Models\PoPembelianBahanItem;
 use App\Models\SuplayerPembelianBahan;
@@ -66,16 +67,16 @@ class PoPembelianBahanController extends Controller
 
     public function detail($id)
     {
-        $po = PoPembelianBahan::with('suplayer', 'items.bahan')->findOrFail($id);
+        $po = PoPembelianBahan::with('suplayer', 'items.bahan.masterBahan')->findOrFail($id);
         $totalHarga = PoPembelianBahanItem::where('po_pembelian_bahan_id', $po->id)->sum('total_harga');
         $diskonAmount = $totalHarga * ($po->diskon / 100);
         $ppnAmount = $totalHarga * ($po->ppn / 100);
         $po->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
         $po->update();
 
-        $bahans = Databahan::orderBy('bahan')->get(['id', 'kode', 'bahan', 'satuan']);
+        $bahanbelis = Bahanbeli::with('masterBahan')->orderBy('kode_bahan')->get();
 
-        return Inertia::render('Admin/PoPembelianBahanDetail', compact('po', 'bahans'));
+        return Inertia::render('Admin/PoPembelianBahanDetail', compact('po', 'bahanbelis'));
     }
 
     public function storeItem(Request $request, $id)
@@ -83,7 +84,7 @@ class PoPembelianBahanController extends Controller
         $po = PoPembelianBahan::findOrFail($id);
 
         $data = $request->validate([
-            'id_bahan' => 'nullable|exists:databahans,id',
+            'id_bahan' => 'nullable|exists:bahanbelis,id',
             'panjang' => 'nullable|numeric',
             'lebar' => 'nullable|numeric',
             'luas' => 'nullable|numeric',
@@ -105,7 +106,7 @@ class PoPembelianBahanController extends Controller
     public function updateItem(Request $request, $id)
     {
         $data = $request->validate([
-            'id_bahan' => 'nullable|exists:databahans,id',
+            'id_bahan' => 'nullable|exists:bahanbelis,id',
             'panjang' => 'nullable|numeric',
             'lebar' => 'nullable|numeric',
             'luas' => 'nullable|numeric',
@@ -165,6 +166,56 @@ class PoPembelianBahanController extends Controller
         $po->update();
 
         return redirect()->back()->with('success', 'Header berhasil diupdate');
+    }
+
+    public function updateStok($id)
+    {
+        $po = PoPembelianBahan::with('items.bahan')->findOrFail($id);
+
+        if ($po->status == 1) {
+            return redirect()->back()->with('success', 'Stok sudah diupdate');
+        }
+
+        foreach ($po->items as $item) {
+            $qty = (int) $item->qty ?: 1;
+            for ($i = 0; $i < $qty; $i++) {
+                $kodeLabel = 'LB' . $po->id . '-' . $item->id . '-' . ($i + 1);
+                Itemstokbahan::create([
+                    'po_pembelian_bahan_id' => $po->id,
+                    'po_pembelian_bahan_item_id' => $item->id,
+                    'kode_po' => $po->no_po,
+                    'kode_label' => $kodeLabel,
+                    'kode_bahan_beli' => $item->bahan?->kode_bahan ?? '-',
+                    'panjang' => $item->panjang,
+                    'lebar' => $item->lebar,
+                    'luas' => $item->luas,
+                    'qty' => 1,
+                    'satuan' => $item->satuan,
+                    'keterangan' => $item->keterangan,
+                ]);
+            }
+        }
+
+        $po->status = 1;
+        $po->update();
+
+        return redirect()->back()->with('success', 'Stok berhasil diupdate');
+    }
+
+    public function tarikStok($id)
+    {
+        $po = PoPembelianBahan::findOrFail($id);
+
+        if ($po->status == 0) {
+            return redirect()->back()->with('success', 'Stok sudah ditarik');
+        }
+
+        Itemstokbahan::where('po_pembelian_bahan_id', $po->id)->delete();
+
+        $po->status = 0;
+        $po->update();
+
+        return redirect()->back()->with('success', 'Stok berhasil ditarik');
     }
 
     private function recalculateTotalHarga($poId)

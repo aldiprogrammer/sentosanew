@@ -1,5 +1,5 @@
 import AdminLayout from "@/Layouts/AdminLayout";
-import { Link, router, useForm } from "@inertiajs/react";
+import { Link, router, useForm, usePage } from "@inertiajs/react";
 import React, { useEffect, useRef, useState } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -54,7 +54,11 @@ function SearchableSelect({ options, value, onChange, placeholder }) {
   );
 }
 
-export default function PoPembelianBahanDetail({ po, bahans }) {
+const formatSatuan = (satuan) => {
+  return satuan === 'M2' ? 'Meter' : (satuan || '-');
+};
+
+export default function PoPembelianBahanDetail({ po, bahanbelis }) {
   const { data, setData, post, delete: destroy, put, processing, reset } = useForm({
     id: 0,
     id_bahan: "",
@@ -76,7 +80,7 @@ export default function PoPembelianBahanDetail({ po, bahans }) {
   const modalRef = useRef(null);
   const editModalRef = useRef(null);
 
-  const selectedBahan = bahans.find((b) => b.id == data.id_bahan);
+  const selectedBahan = bahanbelis.find((b) => b.id == data.id_bahan);
 
   const hitungLuas = (panjang, lebar) => {
     const p = parseFloat(panjang) || 0;
@@ -84,11 +88,10 @@ export default function PoPembelianBahanDetail({ po, bahans }) {
     return p * l;
   };
 
-  const hitungTotal = (luas, qty, harga) => {
-    const l = parseFloat(luas) || 0;
+  const hitungTotal = (qty, harga) => {
     const q = parseFloat(qty) || 0;
     const h = parseFloat(harga) || 0;
-    return l * q * h;
+    return q * h;
   };
 
   const totalSemua = po.items.reduce((sum, item) => sum + parseFloat(item.total_harga || 0), 0);
@@ -96,12 +99,14 @@ export default function PoPembelianBahanDetail({ po, bahans }) {
   useEffect(() => {
     const luas = hitungLuas(data.panjang, data.lebar);
     setData("luas", luas);
-    const total = hitungTotal(luas, data.qty, data.harga);
+    const total = hitungTotal(data.qty, data.harga);
     setData("total_harga", total);
   }, [data.panjang, data.lebar, data.qty, data.harga]);
 
   useEffect(() => {
     if (selectedBahan) {
+      setData("panjang", selectedBahan.panjang || "");
+      setData("lebar", selectedBahan.lebar || "");
       setData("satuan", selectedBahan.satuan || "");
     }
   }, [data.id_bahan]);
@@ -227,8 +232,8 @@ export default function PoPembelianBahanDetail({ po, bahans }) {
 
         const rows = po.items.map((item, index) => [
           index + 1,
-          item.bahan?.kode || "-",
-          item.satuan || item.bahan?.satuan || "-",
+          item.bahan?.kode_bahan || item.bahan?.master_bahan?.keterangan || "-",
+          formatSatuan(item.satuan || item.bahan?.satuan),
           item.panjang,
           item.lebar,
           item.luas,
@@ -315,6 +320,74 @@ export default function PoPembelianBahanDetail({ po, bahans }) {
     };
   };
 
+  const cetakLabel = () => {
+    try {
+      const doc = new jsPDF('p', 'mm', 'a4');
+      const pw = doc.internal.pageSize.getWidth();
+      const ph = doc.internal.pageSize.getHeight();
+
+      const labelW = 70;
+      const labelH = 35;
+      const marginX = 8;
+      const marginY = 8;
+      const cols = Math.floor((pw - marginX * 2) / labelW);
+      const gapX = (pw - marginX * 2 - cols * labelW) / (cols - 1 || 1);
+
+      let labelIndex = 0;
+
+      po.items.forEach((item) => {
+        const qty = parseInt(item.qty) || 1;
+        const kode = item.bahan?.kode_bahan || '-';
+        const keterangan = item.bahan?.keterangan || item.bahan?.master_bahan?.keterangan || '-';
+
+        for (let i = 0; i < qty; i++) {
+          const col = labelIndex % cols;
+          const row = Math.floor(labelIndex / cols);
+          const x = marginX + col * (labelW + gapX);
+          const y = marginY + row * (labelH + 4);
+          const kodeLabel = 'LB' + po.id + '-' + item.id + '-' + (i + 1);
+
+          if (y + labelH > ph) {
+            doc.addPage();
+            labelIndex = 0;
+            continue;
+          }
+
+          doc.setDrawColor(0, 0, 0);
+          doc.setFillColor(255, 255, 255);
+          doc.rect(x, y, labelW, labelH, 'FD');
+
+          doc.setFontSize(7);
+          doc.setFont('Helvetica', 'normal');
+          doc.setTextColor(100);
+          doc.text('PO: ' + po.no_po + ' | ' + kodeLabel, x + 3, y + 6);
+          doc.setTextColor(0);
+
+          doc.setFontSize(10);
+          doc.setFont('Helvetica', 'bold');
+          doc.text(kode, x + 3, y + 14);
+
+          doc.setFontSize(8);
+          doc.setFont('Helvetica', 'normal');
+          const lines = doc.splitTextToSize(keterangan, labelW - 6);
+          doc.text(lines, x + 3, y + 22);
+
+          doc.setFontSize(7);
+          doc.setTextColor(100);
+          doc.text('#' + (i + 1) + '/' + qty, x + labelW - 12, y + labelH - 4);
+          doc.setTextColor(0);
+
+          labelIndex++;
+        }
+      });
+
+      doc.save('label_bahan_' + po.no_po + '.pdf');
+    } catch (error) {
+      console.error('Gagal cetak label:', error);
+      alert('Gagal mencetak label: ' + error.message);
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="grid grid-cols-1 gap-4">
@@ -326,6 +399,18 @@ export default function PoPembelianBahanDetail({ po, bahans }) {
                 <button className="btn btn-primary" onClick={cetakPDF}>
                   <i className="fas fa-file-pdf"></i> Cetak PDF
                 </button>
+                <button className="btn btn-info" onClick={cetakLabel}>
+                  <i className="fas fa-tag"></i> Cetak Label
+                </button>
+                {po.status == 1 ? (
+                  <button className="btn btn-warning" onClick={() => router.put(route('tarik-stok.po-pembelian-bahan', po.id), { preserveScroll: true })}>
+                    <i className="fas fa-undo"></i> Tarik Stok
+                  </button>
+                ) : (
+                  <button className="btn btn-success" onClick={() => router.put(route('update-stok.po-pembelian-bahan', po.id), { preserveScroll: true })}>
+                    <i className="fas fa-box"></i> Update Stok
+                  </button>
+                )}
                 <Link href={route("po-pembelian-bahan")} className="btn btn-sm btn-ghost">
                   <i className="fas fa-arrow-left"></i> Kembali
                 </Link>
@@ -389,8 +474,8 @@ export default function PoPembelianBahanDetail({ po, bahans }) {
                     po.items.map((item, index) => (
                       <tr key={item.id} onClick={() => openModalEdit(item)} className="cursor-pointer hover:bg-base-200">
                         <td>{index + 1}</td>
-                        <td>{item.bahan?.kode || "-"}</td>
-                        <td>{item.satuan || item.bahan?.satuan || "-"}</td>
+                        <td>{item.bahan?.kode_bahan || item.bahan?.master_bahan?.keterangan || "-"}</td>
+                        <td>{formatSatuan(item.satuan || item.bahan?.satuan)}</td>
                         <td>{item.panjang}</td>
                         <td>{item.lebar}</td>
                         <td>{item.luas}</td>
@@ -499,15 +584,15 @@ export default function PoPembelianBahanDetail({ po, bahans }) {
                 <label className="form-control">
                   <div className="label"><span className="label-text">Bahan</span></div>
                   <SearchableSelect
-                    options={bahans.map(b => ({ value: b.id, label: `${b.kode || '-'} - ${b.bahan || '-'}` }))}
+                    options={bahanbelis.map(b => ({ value: b.id, label: `${b.kode_bahan || '-'} - ${b.keterangan || '-'}` }))}
                     value={data.id_bahan}
                     onChange={(val) => setData("id_bahan", val)}
-                    placeholder="Pilih Bahan"
+                    placeholder="Pilih Bahan Beli"
                   />
                 </label>
                 <label className="form-control mt-2">
                   <div className="label"><span className="label-text">Satuan</span></div>
-                  <input type="text" value={selectedBahan?.satuan || ""} className="input input-bordered w-full bg-base-200" readOnly />
+                  <input type="text" value={formatSatuan(selectedBahan?.satuan)} className="input input-bordered w-full bg-base-200" readOnly />
                 </label>
                 <label className="form-control mt-2">
                   <div className="label"><span className="label-text">Keterangan</span></div>
@@ -561,15 +646,15 @@ export default function PoPembelianBahanDetail({ po, bahans }) {
                 <label className="form-control">
                   <div className="label"><span className="label-text">Bahan</span></div>
                   <SearchableSelect
-                    options={bahans.map(b => ({ value: b.id, label: `${b.kode || '-'} - ${b.bahan || '-'}` }))}
+                    options={bahanbelis.map(b => ({ value: b.id, label: `${b.kode_bahan || '-'} - ${b.keterangan || '-'}` }))}
                     value={data.id_bahan}
                     onChange={(val) => setData("id_bahan", val)}
-                    placeholder="Pilih Bahan"
+                    placeholder="Pilih Bahan Beli"
                   />
                 </label>
                 <label className="form-control mt-2">
                   <div className="label"><span className="label-text">Satuan</span></div>
-                  <input type="text" value={selectedBahan?.satuan || ""} className="input input-bordered w-full bg-base-200" readOnly />
+                  <input type="text" value={formatSatuan(selectedBahan?.satuan)} className="input input-bordered w-full bg-base-200" readOnly />
                 </label>
                 <label className="form-control mt-2">
                   <div className="label"><span className="label-text">Keterangan</span></div>
