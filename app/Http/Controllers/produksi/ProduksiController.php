@@ -142,23 +142,8 @@ class ProduksiController extends Controller
                 ->orderBy('id')
                 ->first();
 
-            if ($stok) {
-                $panjang = (float) $pr->tinggi ?: 0;
-                $lebar = (float) $pr->lebar ?: 0;
-                $qty = (int) $pr->qty ?: 1;
-                $satuan = strtolower($pr->satuan);
-
-                $orderArea = $panjang * $lebar * $qty;
-                if ($satuan === 'cm') {
-                    $orderArea = $orderArea / 10000;
-                }
-
-                $sisaPutih = (float) $request->sisa_putih_total ?: 0;
-                $sisaPutihM2 = $sisaPutih / 10000;
-
-                $pengurangan = $orderArea + $sisaPutihM2;
-
-                $stok->luas = max(0, (float) $stok->luas - $pengurangan);
+            if ($stok && $request->total_all) {
+                $stok->luas = max(0, (float) $stok->luas - (float) $request->total_all);
                 $stok->save();
             }
         }

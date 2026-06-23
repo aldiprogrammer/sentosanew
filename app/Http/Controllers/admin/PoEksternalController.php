@@ -10,6 +10,7 @@ use App\Models\ListPoEksternal;
 use App\Models\PoEksternal;
 use App\Models\Produksi;
 use App\Models\Suplayer;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -183,7 +184,7 @@ class PoEksternalController extends Controller
 
     public function detail($id)
     {
-        $po = PoEksternal::with('suplayer', 'items.bahan')->findOrFail($id);
+        $po = PoEksternal::with('suplayer', 'distributor', 'items.bahan')->findOrFail($id);
 
         $totalHarga = ListPoEksternal::where('po_eksternal_id', $po->id)->sum('total');
         $diskonAmount = $totalHarga * ($po->diskon / 100);
@@ -205,13 +206,40 @@ class PoEksternalController extends Controller
                 'cara_perhitungan',
             ]);
 
-        $invoices = Produksi::with('bahan')
+        $invoices = Produksi::with('bahan', 'pinising', 'mataAyam')
             ->whereHas('bahan', fn ($q) => $q->whereRaw('LOWER(jenis) = ?', ['eksternal']))
             ->whereNotNull('no_invoice')
             ->orderBy('no_invoice')
-            ->get(['id', 'no_invoice', 'id_bahan', 'kode_spk', 'lebar', 'tinggi', 'qty', 'harga_bahan', 'satuan']);
+            ->get(['id', 'no_invoice', 'id_bahan', 'kode_spk', 'lebar', 'tinggi', 'qty', 'harga_bahan', 'satuan', 'catatan', 'sisa_putih_panjang', 'sisa_putih_lebar', 'sisa_putih_total']);
 
         return Inertia::render('Admin/PoEksternalDetail', compact('po', 'bahans', 'invoices'));
+    }
+
+    public function pdf($id)
+    {
+        $po = PoEksternal::with('suplayer', 'distributor', 'items.bahan')->findOrFail($id);
+
+        $totalHarga = ListPoEksternal::where('po_eksternal_id', $po->id)->sum('total');
+        $diskonAmount = $totalHarga * ((float) $po->diskon / 100);
+        $ppnAmount = $totalHarga * ((float) $po->ppn / 100);
+        $po->total_harga = $totalHarga;
+        $po->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
+
+        $produksiByInvoice = Produksi::with('bahan', 'pinising', 'mataAyam')
+            ->whereIn('no_invoice', $po->items->pluck('invoice')->filter()->values())
+            ->get()
+            ->keyBy('no_invoice');
+
+        $pdf = Pdf::loadView('pdf.po-eksternal', [
+            'po' => $po,
+            'produksiByInvoice' => $produksiByInvoice,
+            'totalHarga' => $totalHarga,
+            'diskonAmount' => $diskonAmount,
+            'ppnAmount' => $ppnAmount,
+            'grandTotal' => $po->sub_total,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream('po_eksternal_'.$po->no_po.'.pdf');
     }
 
     public function storeItem(Request $request, $id)

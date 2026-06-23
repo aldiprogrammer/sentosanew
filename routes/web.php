@@ -149,6 +149,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/po-eksternal/{id}', [PoEksternalController::class, 'delete'])->name('delete.po-eksternal');
     Route::get('/po-eksternal/cari-invoice', [PoEksternalController::class, 'cariInvoice']);
     Route::get('/po-eksternal/{id}/detail', [PoEksternalController::class, 'detail'])->name('detail.po-eksternal');
+    Route::get('/po-eksternal/{id}/detail/pdf', [PoEksternalController::class, 'pdf'])->name('pdf.po-eksternal');
     Route::post('/po-eksternal/{id}/item', [PoEksternalController::class, 'storeItem'])->name('store-item.po-eksternal');
     Route::put('/po-eksternal/item/{id}', [PoEksternalController::class, 'updateItem'])->name('update-item.po-eksternal');
     Route::delete('/po-eksternal/item/{id}', [PoEksternalController::class, 'deleteItem'])->name('delete-item.po-eksternal');

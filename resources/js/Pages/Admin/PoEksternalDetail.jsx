@@ -1,9 +1,6 @@
 import AdminLayout from "@/Layouts/AdminLayout";
-import { Link, router, useForm } from "@inertiajs/react";
-import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import { Link, useForm } from "@inertiajs/react";
+import React, { useEffect, useRef } from "react";
 
 export default function PoEksternalDetail({ po, bahans, invoices }) {
   const getHargaRows = (bahan) => bahan?.harga_bahan || bahan?.hargaBahan || [];
@@ -194,191 +191,10 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
     }
   };
 
-  const cariInvoice = async (invoice) => {
-    if (!invoice) return;
-    try {
-      const res = await axios.get("/po-eksternal/cari-invoice", { params: { invoice } });
-      const d = res.data.data;
-      if (d) {
-        setData("id_bahan", d.id_bahan);
-        setData("spk", d.kode_spk);
-        setData("lebar", d.lebar);
-        setData("tinggi", d.tinggi);
-        setData("harga", hitungHargaPo(d.id_bahan, d.qty));
-        setData("qty", d.qty);
-        setData("satuan", satuanBahanById(d.id_bahan));
-        setData("satuan_ukuran", d.satuan || "");
-      }
-    } catch { }
-  };
-
   const formatRp = (val) => {
     const num = parseFloat(val);
     if (isNaN(num)) return "-";
     return "Rp " + num.toLocaleString("id-ID");
-  };
-
-  const cetakPDF = () => {
-    const img = new Image();
-    img.src = "/logonew.png";
-    img.onload = () => {
-      try {
-        const doc = new jsPDF();
-        const pw = doc.internal.pageSize.getWidth();
-
-        // Header
-        doc.setFillColor(22, 163, 74);
-        doc.rect(0, 0, pw, 52, "F");
-
-        doc.addImage(img, "PNG", pw / 2 - 25, 4, 50, 20);
-
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(20);
-        doc.setFont("Helvetica", "bold");
-        doc.text("PURCHASE ORDER", pw / 2, 34, { align: "center" });
-        doc.setFontSize(8);
-        doc.setFont("Helvetica", "normal");
-        doc.text("JL. LAKSANA NO.75/73 A MEDAN", pw / 2, 42, { align: "center" });
-        doc.text("Telp: 061-7359007", pw / 2, 47, { align: "center" });
-        doc.setTextColor(0, 0, 0);
-
-        // Info boxes
-        const boxH = 38;
-        const colW = (pw - 28) / 2;
-
-        // Left box - PO Info
-        doc.setFillColor(245, 245, 245);
-        doc.rect(14, 58, colW, boxH, "F");
-        doc.setDrawColor(200, 200, 200);
-        doc.rect(14, 58, colW, boxH, "S");
-        doc.setFontSize(9);
-        doc.setFont("Helvetica", "bold");
-        doc.text("INFORMASI PO", 18, 66);
-        doc.setFont("Helvetica", "normal");
-        doc.setFontSize(9);
-        doc.text("No. PO", 18, 75);
-        doc.text(":  " + po.no_po, 50, 75);
-        doc.text("Tanggal", 18, 83);
-        doc.text(":  " + po.tgl, 50, 83);
-        doc.text("Hal", 18, 91);
-        doc.text(":  " + (po.hal || "-"), 50, 91);
-
-        // Right box - Supplier Info
-        doc.setFillColor(245, 245, 245);
-        doc.rect(14 + colW + 2, 58, colW - 2, boxH, "F");
-        doc.setDrawColor(200, 200, 200);
-        doc.rect(14 + colW + 2, 58, colW - 2, boxH, "S");
-        doc.setFont("Helvetica", "bold");
-        doc.text("SUPPLIER", 14 + colW + 4, 66);
-        doc.setFont("Helvetica", "normal");
-        doc.text("Nama", 14 + colW + 4, 75);
-        doc.text(":  " + (po.suplayer?.nama_suplayer || "-"), 14 + colW + 36, 75);
-        doc.text("Mata Uang", 14 + colW + 4, 83);
-        doc.text(":  " + (po.mata_uang || "-"), 14 + colW + 36, 83);
-        doc.text("Jatuh Tempo", 14 + colW + 4, 91);
-        doc.text(":  " + (po.batas_bayar || "-"), 14 + colW + 36, 91);
-        doc.text("Pembayaran", 14 + colW + 4, 99);
-        doc.text(":  " + (po.pembayaran || "-"), 14 + colW + 36, 99);
-
-        const th = parseFloat(po.total_harga || 0);
-        const d = parseFloat(po.diskon || 0);
-        const p = parseFloat(po.ppn || 0);
-        const diskonAmount = th * (d / 100);
-        const ppnAmount = th * (p / 100);
-        const subTotal = th - diskonAmount + ppnAmount;
-
-        const rows = po.items.map((item, index) => {
-          const sat = satuanProduksiByInvoice(item.invoice)
-          return [
-            index + 1,
-            item.invoice || "-",
-            item.bahan?.bahan || "-",
-            item.spk || "-",
-            item.lebar + (sat ? " " + sat : ""),
-            item.tinggi + (sat ? " " + sat : ""),
-            item.qty + " " + item.bahan?.satuan,
-            parseFloat(item.harga || 0).toLocaleString("id-ID"),
-            parseFloat(item.total || 0).toLocaleString("id-ID"),
-            item.keterangan || "-",
-          ]
-        });
-
-        autoTable(doc, {
-          startY: 100,
-          head: [["No", "Invoice", "Bahan", "SPK", "L", "T", "Qty", "Harga", "Total", "Ktr"]],
-          body: rows,
-          styles: { fontSize: 7, cellPadding: 2 },
-          headStyles: { fillColor: [22, 163, 74], textColor: [255, 255, 255], fontSize: 7, fontStyle: "bold" },
-          alternateRowStyles: { fillColor: [245, 245, 245] },
-          theme: "grid",
-          columnStyles: {
-            0: { cellWidth: 8, halign: "center" },
-            2: { cellWidth: 50 },
-            4: { halign: "center" },
-            5: { halign: "center" },
-            6: { halign: "center" },
-            7: { halign: "center" },
-            8: { halign: "right" },
-            9: { halign: "right" },
-          },
-        });
-
-        const fy = doc.lastAutoTable.finalY + 8;
-
-        // Summary section (full width)
-        const sumLeft = 14;
-        const sumRight = pw - 14;
-        const sumW = sumRight - sumLeft;
-
-        doc.setDrawColor(220, 220, 220);
-        doc.setFillColor(248, 248, 248);
-        doc.rect(sumLeft, fy, sumW, 34, "FD");
-
-        doc.setFontSize(9);
-        doc.setFont("Helvetica", "normal");
-        doc.text("Total Harga", sumLeft + 6, fy + 8);
-        doc.text("Rp " + th.toLocaleString("id-ID"), sumRight - 6, fy + 8, { align: "right" });
-
-        doc.text("Diskon (" + d + "%)", sumLeft + 6, fy + 15);
-        doc.text("- Rp " + diskonAmount.toLocaleString("id-ID"), sumRight - 6, fy + 15, { align: "right" });
-
-        doc.text("PPN (" + p + "%)", sumLeft + 6, fy + 22);
-        doc.text("+ Rp " + ppnAmount.toLocaleString("id-ID"), sumRight - 6, fy + 22, { align: "right" });
-
-        doc.setDrawColor(22, 163, 74);
-        doc.setFillColor(22, 163, 74);
-        doc.rect(sumLeft, fy + 25, sumW, 9, "F");
-        doc.setTextColor(255, 255, 255);
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(10);
-        doc.text("SUB TOTAL", sumLeft + 6, fy + 32);
-        doc.text("Rp " + subTotal.toLocaleString("id-ID"), sumRight - 6, fy + 32, { align: "right" });
-        doc.setTextColor(0, 0, 0);
-
-        // Signatures - 3 columns centered
-        const sigY = fy + 50;
-        const sigColW = (pw - 28) / 3;
-        const centers = [14 + sigColW / 2, 14 + sigColW * 1.5, 14 + sigColW * 2.5]
-
-        doc.setDrawColor(0, 0, 0);
-        doc.setFont("Helvetica", "normal");
-        doc.setFontSize(9);
-
-        const sigLabels = ["Mengetahui,", "Penerima,", "Hormat Kami,"]
-        sigLabels.forEach((label, i) => {
-          doc.text(label, centers[i], sigY, { align: "center" })
-          doc.line(centers[i] - 30, sigY + 30, centers[i] + 30, sigY + 30)
-          doc.setFontSize(8)
-          doc.text("( _____________________ )", centers[i], sigY + 37, { align: "center" })
-          doc.setFontSize(9)
-        })
-
-        doc.save("po_eksternal_" + po.no_po + ".pdf");
-      } catch (error) {
-        console.error("Gagal export PDF:", error);
-        alert("Gagal mengexport PDF: " + error.message);
-      }
-    };
   };
 
   return (
@@ -389,9 +205,9 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
               <h2 className="card-title">Detail PO Eksternal</h2>
               <div className="flex gap-2">
-                <button className="btn btn-primary" onClick={cetakPDF}>
+                <a className="btn btn-primary" href={`/po-eksternal/${po.id}/detail/pdf`} target="_blank" rel="noreferrer">
                   <i className="fas fa-file-pdf"></i> Cetak PDF
-                </button>
+                </a>
                 <Link href="/po-eksternal" className="btn btn-sm btn-ghost">
                   <i className="fas fa-arrow-left"></i> Kembali
                 </Link>

@@ -14,11 +14,29 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
 
     const emptyText = '-'
 
+    const hitungLuasM2 = (tinggi, lebar, satuan) => {
+        const t = parseFloat(tinggi) || 0
+        const l = parseFloat(lebar) || 0
+        return (satuan || '').toLowerCase() === 'cm'
+            ? (t / 100) * (l / 100)
+            : t * l
+    }
+
     const totalSisaPutih = useMemo(() => {
         const p = parseFloat(sisaPutihPanjang) || 0
         const l = parseFloat(sisaPutihLebar) || 0
-        return p * l
+        return p * 2 + l * 2
     }, [sisaPutihPanjang, sisaPutihLebar])
+
+    const totalLuasM2 = useMemo(() => {
+        if (!selected) return 0
+        const qty = parseFloat(selected.qty) || 1
+        return hitungLuasM2(selected.tinggi, selected.lebar, selected.satuan) * qty
+    }, [selected])
+
+    const totalAll = useMemo(() => {
+        return totalLuasM2 + totalSisaPutih / 100
+    }, [totalLuasM2, totalSisaPutih])
 
     const bahanbeliOptions = useMemo(() => {
         if (!selected) return []
@@ -26,9 +44,9 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
     }, [selected, bahanbeliList])
 
     const stokTerpilih = useMemo(() => {
-        if (!selectedBahanbeli) return null
+        if (!selectedBahanbeli || !itemstokbahans) return null
         return itemstokbahans
-            ?.filter((s) => s.kode_bahan_beli === selectedBahanbeli)
+            .filter((s) => s.kode_bahan_beli === selectedBahanbeli)
             .find((s) => parseFloat(s.luas) > 0 && parseInt(s.qty) > 0) || null
     }, [selectedBahanbeli, itemstokbahans])
 
@@ -81,9 +99,9 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
 
     const openModal = (item) => {
         setSelected(item)
-        setSisaPutihPanjang('')
-        setSisaPutihLebar('')
-        setSelectedBahanbeli('')
+        setSisaPutihPanjang(item.tinggi ?? '')
+        setSisaPutihLebar(item.lebar ?? '')
+        setSelectedBahanbeli(item.kode_bahanbeli ?? '')
         modalRef.current?.showModal()
     }
 
@@ -99,6 +117,7 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
             sisa_putih_lebar: sisaPutihLebar,
             sisa_putih_total: String(totalSisaPutih),
             kode_bahanbeli: selectedBahanbeli,
+            total_all: totalAll.toFixed(2),
         }, {
             preserveScroll: true,
             onSuccess: () => {
@@ -168,6 +187,7 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
                                                                             <th className="py-3">Customer</th>
                                                                             <th className="py-3 text-center">H</th>
                                                                             <th className="py-3 text-center">W</th>
+                                                                            <th className="py-3 text-center">Luas</th>
                                                                             <th className="py-3 text-center">QTY</th>
                                                                             <th className="py-3 text-center">Sisi</th>
                                                                             <th className="py-3 text-center">Pengataran</th>
@@ -183,6 +203,12 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
                                                                                 <td className="font-medium text-[10px]">{item.customer?.nama}</td>
                                                                                 <td className="text-[10px] text-center tabular-nums">{item.tinggi} <span className="text-[10px] text-base-content/50">{item.satuan}</span></td>
                                                                                 <td className="text-[10px] text-center tabular-nums">{item.lebar} <span className="text-[10px] text-base-content/50">{item.satuan}</span></td>
+                                                                                <td className="text-[10px] text-center tabular-nums">
+                                                                                    {(item.satuan || '').toLowerCase() === 'cm'
+                                                                                        ? ((parseFloat(item.tinggi) / 100) * (parseFloat(item.lebar) / 100)).toFixed(2)
+                                                                                        : (parseFloat(item.tinggi) * parseFloat(item.lebar)).toFixed(2)
+                                                                                    } m²
+                                                                                </td>
                                                                                 <td className="text-[10px] text-center font-semibold tabular-nums">{item.qty}</td>
                                                                                 <td className="text-[10px] text-center">{item.sisi}</td>
                                                                                 <td className="text-[10px] text-center font-semibold tabular-nums">{item.metode_pengantaran}</td>
@@ -233,6 +259,13 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
                                 <span>{selected.bahan?.kategori_cetak}</span>
                             </div>
 
+                            <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
+                                <span className="text-sm text-base-content/70">Luas ({selected.satuan})</span>
+                                <span className="font-semibold text-sm">
+                                    {selected.tinggi} × {selected.lebar}{selected.qty > 1 ? ` × ${selected.qty} pcs` : ''} = {totalLuasM2.toFixed(2)} m²
+                                </span>
+                            </div>
+
                             <div className="divider text-xs text-base-content/50">Sisa Putih</div>
                             <div className="grid grid-cols-2 gap-2">
                                 <label className="form-control">
@@ -258,7 +291,11 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
                             </div>
                             <div className="flex justify-between items-center p-2 bg-base-200 rounded-lg">
                                 <span className="text-xs text-base-content/70">Total Sisa Putih</span>
-                                <span className="font-semibold text-sm">{totalSisaPutih}</span>
+                                <span className="font-semibold text-sm"> {totalSisaPutih || 0} cm²</span>
+                            </div>
+                            <div className="flex justify-between items-center p-2 bg-base-200 rounded-lg">
+                                <span className="text-xs text-base-content/70">Total Luas + Sisa Putih (m²)</span>
+                                <span className="font-semibold text-sm">{totalAll.toFixed(2)} m²</span>
                             </div>
                             <label className="form-control">
                                 <span className="label-text text-xs">Kode Bahan Beli</span>
