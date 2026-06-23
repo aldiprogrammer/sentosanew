@@ -10,6 +10,7 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
     const [sisaPutihPanjang, setSisaPutihPanjang] = useState('')
     const [sisaPutihLebar, setSisaPutihLebar] = useState('')
     const [selectedBahanbeli, setSelectedBahanbeli] = useState('')
+    const [selectedItemStok, setSelectedItemStok] = useState('')
     const modalRef = useRef(null)
 
     const emptyText = '-'
@@ -25,8 +26,9 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
     const totalSisaPutih = useMemo(() => {
         const p = parseFloat(sisaPutihPanjang) || 0
         const l = parseFloat(sisaPutihLebar) || 0
-        return p * 2 + l * 2
-    }, [sisaPutihPanjang, sisaPutihLebar])
+        const luas = p * l
+        return (selected?.satuan || '').toLowerCase() === 'cm' ? luas / 10000 : luas
+    }, [sisaPutihPanjang, sisaPutihLebar, selected?.satuan])
 
     const totalLuasM2 = useMemo(() => {
         if (!selected) return 0
@@ -35,7 +37,7 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
     }, [selected])
 
     const totalAll = useMemo(() => {
-        return totalLuasM2 + totalSisaPutih / 100
+        return totalLuasM2 + totalSisaPutih
     }, [totalLuasM2, totalSisaPutih])
 
     const bahanbeliOptions = useMemo(() => {
@@ -43,12 +45,20 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
         return bahanbeliList?.filter((b) => b.id_master_bahan === selected.bahan?.kode) || []
     }, [selected, bahanbeliList])
 
-    const stokTerpilih = useMemo(() => {
-        if (!selectedBahanbeli || !itemstokbahans) return null
-        return itemstokbahans
-            .filter((s) => s.kode_bahan_beli === selectedBahanbeli)
-            .find((s) => parseFloat(s.luas) > 0 && parseInt(s.qty) > 0) || null
+    const itemStokOptions = useMemo(() => {
+        if (!selectedBahanbeli || !itemstokbahans) return []
+        return itemstokbahans.filter((s) => s.kode_bahan_beli === selectedBahanbeli && parseFloat(s.luas) > 0 && parseInt(s.qty) > 0)
     }, [selectedBahanbeli, itemstokbahans])
+
+    const stokTerpilih = useMemo(() => {
+        if (!selectedItemStok || !itemstokbahans) return null
+        return itemstokbahans.find((s) => s.id === selectedItemStok) || null
+    }, [selectedItemStok, itemstokbahans])
+
+    const isSisaKurang = useMemo(() => {
+        if (!stokTerpilih) return false
+        return parseFloat(stokTerpilih.luas) < totalAll
+    }, [stokTerpilih, totalAll])
 
     const reviewReceipt = (item) => {
         const w = window.open('', '_blank', 'width=420,height=640')
@@ -102,6 +112,7 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
         setSisaPutihPanjang(item.tinggi ?? '')
         setSisaPutihLebar(item.lebar ?? '')
         setSelectedBahanbeli(item.kode_bahanbeli ?? '')
+        setSelectedItemStok('')
         modalRef.current?.showModal()
     }
 
@@ -117,6 +128,7 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
             sisa_putih_lebar: sisaPutihLebar,
             sisa_putih_total: String(totalSisaPutih),
             kode_bahanbeli: selectedBahanbeli,
+            id_item_stok: stokTerpilih?.id || null,
             total_all: totalAll.toFixed(2),
         }, {
             preserveScroll: true,
@@ -269,7 +281,7 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
                             <div className="divider text-xs text-base-content/50">Sisa Putih</div>
                             <div className="grid grid-cols-2 gap-2">
                                 <label className="form-control">
-                                    <span className="label-text text-xs">Panjang</span>
+                                    <span className="label-text text-xs">Panjang ({selected.satuan})</span>
                                     <input
                                         type="number"
                                         value={sisaPutihPanjang}
@@ -279,7 +291,7 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
                                     />
                                 </label>
                                 <label className="form-control">
-                                    <span className="label-text text-xs">Lebar</span>
+                                    <span className="label-text text-xs">Lebar ({selected.satuan})</span>
                                     <input
                                         type="number"
                                         value={sisaPutihLebar}
@@ -289,29 +301,48 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
                                     />
                                 </label>
                             </div>
-                            <div className="flex justify-between items-center p-2 bg-base-200 rounded-lg">
+                            {/* <div className="flex justify-between items-center p-2 bg-base-200 rounded-lg">
                                 <span className="text-xs text-base-content/70">Total Sisa Putih</span>
                                 <span className="font-semibold text-sm"> {totalSisaPutih || 0} cm²</span>
-                            </div>
+                            </div> */}
                             <div className="flex justify-between items-center p-2 bg-base-200 rounded-lg">
                                 <span className="text-xs text-base-content/70">Total Luas + Sisa Putih (m²)</span>
                                 <span className="font-semibold text-sm">{totalAll.toFixed(2)} m²</span>
                             </div>
-                            <label className="form-control">
-                                <span className="label-text text-xs">Kode Bahan Beli</span>
-                                <select
-                                    value={selectedBahanbeli}
-                                    onChange={(e) => setSelectedBahanbeli(e.target.value)}
-                                    className="select select-bordered select-sm"
-                                >
-                                    <option value="">Pilih Bahan Beli</option>
-                                    {bahanbeliOptions.map((bb) => (
-                                        <option key={bb.kode_bahan} value={bb.kode_bahan}>
-                                            {bb.kode_bahan} - {bb.keterangan}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
+                            <div className="grid grid-cols-2 gap-2">
+                                <label className="form-control">
+                                    <span className="label-text text-xs">Kode Bahan pakai</span>
+                                    <select
+                                        value={selectedBahanbeli}
+                                        onChange={(e) => { setSelectedBahanbeli(e.target.value); setSelectedItemStok('') }}
+                                        className="select select-bordered select-sm text-xs"
+                                    >
+                                        <option value="">Pilih Bahan Pakai</option>
+                                        {bahanbeliOptions.map((bb) => (
+                                            <option key={bb.kode_bahan} value={bb.kode_bahan}>
+                                                {bb.kode_bahan} - {bb.keterangan}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+                                {selectedBahanbeli && itemStokOptions.length > 0 && (
+                                    <label className="form-control">
+                                        <span className="label-text text-xs">Pilih Lebel</span>
+                                        <select
+                                            value={selectedItemStok}
+                                            onChange={(e) => setSelectedItemStok(Number(e.target.value))}
+                                            className="select select-bordered select-sm text-xs"
+                                        >
+                                            <option value="">Pilih Label</option>
+                                            {itemStokOptions.map((s) => (
+                                                <option key={s.id} value={s.id}>
+                                                    {s.kode_label || s.keterangan || `Stok #${s.id}`} - Sisa: {s.luas} {s.satuan}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                )}
+                            </div>
 
                             {stokTerpilih && (
                                 <div className="grid grid-cols-2 gap-2 p-2 bg-base-200 rounded-lg">
@@ -350,15 +381,21 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
                         </div>
                     )}
                     <div className="modal-action flex-col gap-2">
+                        {isSisaKurang && stokTerpilih && (
+                            <div className="alert alert-warning text-xs">
+                                <i className="fas fa-exclamation-triangle"></i>
+                                Sisa luas ({parseFloat(stokTerpilih.luas).toFixed(2)}) tidak mencukupi untuk total ({totalAll.toFixed(2)})
+                            </div>
+                        )}
                         <div className="flex gap-2 w-full">
-                            <button className="btn btn-ghost flex-1" onClick={() => { reviewReceipt(selected); closeModal() }}>
+                            <button className="btn btn-ghost flex-1" disabled={isSisaKurang} onClick={() => { reviewReceipt(selected); closeModal() }}>
                                 <i className="fas fa-eye"></i> Review Struk
                             </button>
-                            <button className="btn btn-outline flex-1" onClick={() => { printReceipt(selected); closeModal() }}>
+                            <button className="btn btn-outline flex-1" disabled={isSisaKurang} onClick={() => { printReceipt(selected); closeModal() }}>
                                 <i className="fas fa-print"></i> Cetak Struk
                             </button>
                         </div>
-                        <button className="btn btn-primary w-full" onClick={handleProses}>
+                        <button className="btn btn-primary w-full" disabled={isSisaKurang} onClick={handleProses}>
                             <i className="fas fa-check"></i> Proses & Cetak Struk
                         </button>
                     </div>

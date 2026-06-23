@@ -135,12 +135,8 @@ class ProduksiController extends Controller
         $pr->kode_bahanbeli = $request->kode_bahanbeli;
         $pr->update();
 
-        if ($request->kode_bahanbeli) {
-            $stok = Itemstokbahan::where('kode_bahan_beli', $request->kode_bahanbeli)
-                ->where('luas', '>', 0)
-                ->where('qty', '>', 0)
-                ->orderBy('id')
-                ->first();
+        if ($request->id_item_stok) {
+            $stok = Itemstokbahan::find($request->id_item_stok);
 
             if ($stok && $request->total_all) {
                 $stok->luas = max(0, (float) $stok->luas - (float) $request->total_all);
