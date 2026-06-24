@@ -10,6 +10,6 @@ class Bahanpakai extends Model
 
     public function masterBahan()
     {
-        return $this->belongsTo(Materbahan::class, 'id_master_bahan', 'kode_bahan_pakai');
+        return $this->belongsTo(Materbahan::class, 'id_master_bahan', 'kode_bahan_jual');
     }
 }

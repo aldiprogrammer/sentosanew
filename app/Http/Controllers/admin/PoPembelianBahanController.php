@@ -185,7 +185,7 @@ class PoPembelianBahanController extends Controller
                     'po_pembelian_bahan_item_id' => $item->id,
                     'kode_po' => $po->no_po,
                     'kode_label' => $kodeLabel,
-                    'kode_bahan_pakai' => $item->bahan?->kode_bahan ?? '-',
+                    'kode_bahan_jual' => $item->bahan?->kode_bahan ?? '-',
                     'panjang' => $item->panjang,
                     'lebar' => $item->lebar,
                     'luas' => $item->luas,

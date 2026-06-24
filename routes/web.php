@@ -25,6 +25,8 @@ use App\Http\Controllers\produksi\LogistikController;
 use App\Http\Controllers\produksi\ProduksiController as ProduksiProduksiController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -134,6 +136,16 @@ Route::middleware('auth')->group(function () {
     Route::put('/data-desain/proses-pembayaran', [DesainController::class, 'prosesPembayaran'])->name('proses.pembayaran.desain');
     Route::get('/produksi/produksi', [ProduksiProduksiController::class, 'index'])->name('produksi.produksi');
     Route::put('/produksi/produksi/{id}/proses', [ProduksiProduksiController::class, 'proses'])->name('produksi.produksi');
+
+    Route::post('/verify-password', function (Request $request) {
+        $request->validate(['password' => 'required|string']);
+
+        if (! Hash::check($request->password, auth()->user()->password)) {
+            return back()->withErrors(['password' => 'Password salah']);
+        }
+
+        return back();
+    })->name('verify.password');
 
     Route::get('/produksi/finishing', [FinishingController::class, 'index'])->name('finishing.finishing');
     Route::put('/finishing/finishing/{id}/proses', [FinishingController::class, 'proses'])->name('finishing.finishing');

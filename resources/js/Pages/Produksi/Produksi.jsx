@@ -1,7 +1,8 @@
 import AdminLayout from '@/Layouts/AdminLayout'
 import { router } from '@inertiajs/react'
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState, useCallback } from 'react'
 import { buildFinishingReceiptHtml } from './StrukFinishingTemplate'
+import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
 
 export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
     const [selected, setSelected] = useState(null)
@@ -11,6 +12,8 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
     const [sisaPutihLebar, setSisaPutihLebar] = useState('')
     const [selectedBahanpakai, setSelectedBahanpakai] = useState('')
     const [selectedItemStok, setSelectedItemStok] = useState('')
+    const [showPasswordModal, setShowPasswordModal] = useState(false)
+    const [pendingAction, setPendingAction] = useState(null)
     const modalRef = useRef(null)
 
     const emptyText = '-'
@@ -47,7 +50,7 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
 
     const itemStokOptions = useMemo(() => {
         if (!selectedBahanpakai || !itemstokbahans) return []
-        return itemstokbahans.filter((s) => s.kode_bahan_pakai === selectedBahanpakai && parseFloat(s.luas) > 0 && parseInt(s.qty) > 0)
+        return itemstokbahans.filter((s) => s.kode_bahan_jual === selectedBahanpakai && parseFloat(s.luas) > 0 && parseInt(s.qty) > 0)
     }, [selectedBahanpakai, itemstokbahans])
 
     const stokTerpilih = useMemo(() => {
@@ -138,6 +141,36 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
             },
         })
     }
+
+    const requestPassword = useCallback((action) => {
+        setPendingAction(action)
+        setShowPasswordModal(true)
+    }, [])
+
+    const handlePasswordConfirmed = useCallback(() => {
+        setShowPasswordModal(false)
+        if (!selected) return
+
+        switch (pendingAction) {
+            case 'review':
+                reviewReceipt(selected)
+                closeModal()
+                break
+            case 'cetak':
+                printReceipt(selected)
+                closeModal()
+                break
+            case 'proses':
+                handleProses()
+                break
+        }
+        setPendingAction(null)
+    }, [pendingAction, selected])
+
+    const handlePasswordCancel = useCallback(() => {
+        setShowPasswordModal(false)
+        setPendingAction(null)
+    }, [])
 
     return (
         <>
@@ -388,14 +421,14 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
                             </div>
                         )}
                         <div className="flex gap-2 w-full">
-                            <button className="btn btn-ghost flex-1" disabled={isSisaKurang} onClick={() => { reviewReceipt(selected); closeModal() }}>
+                            <button className="btn btn-ghost flex-1" disabled={isSisaKurang} onClick={() => requestPassword('review')}>
                                 <i className="fas fa-eye"></i> Review Struk
                             </button>
-                            <button className="btn btn-outline flex-1" disabled={isSisaKurang} onClick={() => { printReceipt(selected); closeModal() }}>
+                            <button className="btn btn-outline flex-1" disabled={isSisaKurang} onClick={() => requestPassword('cetak')}>
                                 <i className="fas fa-print"></i> Cetak Struk
                             </button>
                         </div>
-                        <button className="btn btn-primary w-full" disabled={isSisaKurang} onClick={handleProses}>
+                        <button className="btn btn-primary w-full" disabled={isSisaKurang} onClick={() => requestPassword('proses')}>
                             <i className="fas fa-check"></i> Proses & Cetak Struk
                         </button>
                     </div>
@@ -404,6 +437,12 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
                     <button onClick={closeModal}>close</button>
                 </form>
             </dialog>
+
+            <KonfirmasiPassword
+                show={showPasswordModal}
+                onConfirmed={handlePasswordConfirmed}
+                onClose={handlePasswordCancel}
+            />
         </>
     )
 }

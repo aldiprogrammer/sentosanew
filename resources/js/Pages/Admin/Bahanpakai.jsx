@@ -159,7 +159,7 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
                       <div className="grid grid-cols-1 gap-3">
                         <label className="form-control">
                           <div className="label">
-                            <span className="label-text">Kode Bahan Pakai</span>
+                            <span className="label-text">Kode Bahan Jual</span>
                           </div>
                           <select
                             value={data.id_master_bahan}
@@ -169,8 +169,8 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
                           >
                             <option value="">-- Pilih Bahan Pakai --</option>
                             {masterBahan.map((item) => (
-                              <option key={item.kode_bahan_pakai} value={item.kode_bahan_pakai}>
-                                {item.kode_bahan_pakai}
+                              <option key={item.kode_bahan_jual} value={item.kode_bahan_jual}>
+                                {item.kode_bahan_jual}
                               </option>
                             ))}
                           </select>
@@ -289,7 +289,7 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
                       <div className="grid grid-cols-1 gap-3">
                         <label className="form-control">
                           <div className="label">
-                            <span className="label-text">Kode Bahan Pakai</span>
+                            <span className="label-text">Kode Bahan Jual</span>
                           </div>
 
                           <select
@@ -300,7 +300,7 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
                           >
                             <option value="">-- Pilih Bahan Pakai --</option>
                             {masterBahan.map((item) => (
-                              <option key={item.kode_bahan_pakai} value={item.kode_bahan_pakai}>
+                              <option key={item.kode_bahan_jual} value={item.kode_bahan_jual}>
                                 {item.keterangan}
                               </option>
                             ))}
@@ -435,7 +435,7 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
                       className="cursor-pointer hover:bg-base-200"
                     >
                       <td>{index + 1}</td>
-                      <td>{item.master_bahan?.kode_bahan_pakai || '-'}</td>
+                      <td>{item.master_bahan?.kode_bahan_jual || '-'}</td>
                       <td>{item.kode_bahan}</td>
 
                       <td>{item.keterangan}</td>

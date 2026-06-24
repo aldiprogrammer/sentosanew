@@ -1,12 +1,15 @@
 import AdminLayout from '@/Layouts/AdminLayout'
 import { router } from '@inertiajs/react'
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState, useCallback } from 'react'
+import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
 
 export default function Logistik({ produksi, kurir }) {
     const [selected, setSelected] = useState(null)
     const [selectedKurir, setSelectedKurir] = useState('')
     const [filterKategori, setFilterKategori] = useState('')
     const [filterJenisBahan, setFilterJenisBahan] = useState('')
+    const [showPasswordModal, setShowPasswordModal] = useState(false)
+    const [pendingAction, setPendingAction] = useState(null)
     const modalRef = useRef(null)
 
     const kategoriList = ['INDOOR', 'INDOOR 2', 'OUTDOOR', 'OUTDOOR 2', 'DISPLAY', 'OFFSET', 'DLL']
@@ -163,6 +166,29 @@ table.items tr:nth-child(even) { background: #f9f9f9; }
         })
     }
 
+    const requestPassword = useCallback((action) => {
+        setPendingAction(action)
+        setShowPasswordModal(true)
+    }, [])
+
+    const handlePasswordConfirmed = useCallback(() => {
+        setShowPasswordModal(false)
+        switch (pendingAction) {
+            case 'cetak_surat':
+                cetakSuratJalan(selected)
+                break
+            case 'selesai':
+                handleProses()
+                break
+        }
+        setPendingAction(null)
+    }, [pendingAction, selected])
+
+    const handlePasswordCancel = useCallback(() => {
+        setShowPasswordModal(false)
+        setPendingAction(null)
+    }, [])
+
     return (
         <>
             <AdminLayout>
@@ -302,10 +328,10 @@ table.items tr:nth-child(even) { background: #f9f9f9; }
                     </div>
                     <div className="modal-action flex-wrap gap-2">
                         <button className="btn btn-ghost" onClick={closeModal}>Batal</button>
-                        <button className="btn btn-secondary" onClick={() => cetakSuratJalan(selected)}>
+                        <button className="btn btn-secondary" onClick={() => requestPassword('cetak_surat')}>
                             <i className="fas fa-truck"></i> Cetak Surat Jalan
                         </button>
-                        <button className="btn btn-primary" onClick={handleProses}>
+                        <button className="btn btn-primary" onClick={() => requestPassword('selesai')}>
                             <i className="fas fa-check"></i> Selesai Logistik
                         </button>
                     </div>
@@ -314,6 +340,12 @@ table.items tr:nth-child(even) { background: #f9f9f9; }
                     <button onClick={closeModal}>close</button>
                 </form>
             </dialog>
+
+            <KonfirmasiPassword
+                show={showPasswordModal}
+                onConfirmed={handlePasswordConfirmed}
+                onClose={handlePasswordCancel}
+            />
         </>
     )
 }

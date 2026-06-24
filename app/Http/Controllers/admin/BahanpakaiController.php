@@ -13,7 +13,7 @@ class BahanpakaiController extends Controller
     public function index()
     {
         $bahanpakai = Bahanpakai::with('masterBahan')->orderBy('id', 'desc')->get();
-        $masterBahan = Materbahan::orderBy('kode_bahan_pakai')->get();
+        $masterBahan = Materbahan::orderBy('kode_bahan_jual')->get();
         $cek = Bahanpakai::first();
         if ($cek == false) {
             $kode = 'BB-' . '00001';

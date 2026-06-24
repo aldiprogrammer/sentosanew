@@ -1,11 +1,14 @@
 import AdminLayout from '@/Layouts/AdminLayout'
 import { router } from '@inertiajs/react'
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState, useCallback } from 'react'
+import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
 
 export default function Finishing({ produksi }) {
     const [selected, setSelected] = useState(null)
     const [filterKategori, setFilterKategori] = useState('')
     const [filterJenisBahan, setFilterJenisBahan] = useState('')
+    const [showPasswordModal, setShowPasswordModal] = useState(false)
+    const [pendingAction, setPendingAction] = useState(null)
     const modalRef = useRef(null)
 
     const kategoriList = ['INDOOR', 'INDOOR 2', 'OUTDOOR', 'OUTDOOR 2', 'DISPLAY', 'OFFSET', 'DLL']
@@ -55,6 +58,26 @@ export default function Finishing({ produksi }) {
             },
         })
     }
+
+    const requestPassword = useCallback((action) => {
+        setPendingAction(action)
+        setShowPasswordModal(true)
+    }, [])
+
+    const handlePasswordConfirmed = useCallback(() => {
+        setShowPasswordModal(false)
+        switch (pendingAction) {
+            case 'selesai':
+                handleProses()
+                break
+        }
+        setPendingAction(null)
+    }, [pendingAction])
+
+    const handlePasswordCancel = useCallback(() => {
+        setShowPasswordModal(false)
+        setPendingAction(null)
+    }, [])
 
     return (
         <>
@@ -188,7 +211,7 @@ export default function Finishing({ produksi }) {
                     )}
                     <div className="modal-action">
                         <button className="btn btn-ghost" onClick={closeModal}>Batal</button>
-                        <button className="btn btn-primary w-full" onClick={handleProses}>
+                        <button className="btn btn-primary w-full" onClick={() => requestPassword('selesai')}>
                             <i className="fas fa-check"></i> Selesai Finishing
                         </button>
                     </div>
@@ -197,6 +220,12 @@ export default function Finishing({ produksi }) {
                     <button onClick={closeModal}>close</button>
                 </form>
             </dialog>
+
+            <KonfirmasiPassword
+                show={showPasswordModal}
+                onConfirmed={handlePasswordConfirmed}
+                onClose={handlePasswordCancel}
+            />
         </>
     )
 }
