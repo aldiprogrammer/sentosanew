@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 24, 2026 at 06:25 AM
+-- Generation Time: Jun 24, 2026 at 09:49 AM
 -- Server version: 8.0.30
--- PHP Version: 8.3.30
+-- PHP Version: 8.3.14
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -45,10 +45,196 @@ CREATE TABLE `bahanpakais` (
 --
 
 INSERT INTO `bahanpakais` (`id`, `id_master_bahan`, `kode_bahan`, `keterangan`, `panjang`, `lebar`, `total`, `satuan`, `created_at`, `updated_at`) VALUES
-(2, 'OSTD', 'OSTD1', 'MMT 280 Gsm  Uk. 3.2 x 70 M', '3.2', '70', '224', 'M2', '2026-06-21 21:36:45', '2026-06-21 21:36:45'),
-(3, 'OSTD', 'OSTD2', 'MMT 280 Gsm Uk. 2.8 x 70 M', '2.8', '70', '196', 'M2', '2026-06-21 21:43:45', '2026-06-21 21:43:45'),
-(4, 'OSTD', 'OSTD3', 'MMT 280 Gsm Uk. 2.6 x 70 M', '2.6', '70', '182', 'M2', '2026-06-21 21:45:56', '2026-06-21 21:45:56'),
-(6, 'OSTD', 'OSTD4', 'MMT 280 Gsm Uk. 2.2 x 70 M', '2.2', '70', '154', 'M2', '2026-06-21 23:33:18', '2026-06-21 23:33:18');
+(9, 'OSTD', 'OSTD1', 'MMT 280 Gsm  Uk. 3.2 x 70 M', '3,2', '70', '224', 'M2', NULL, NULL),
+(10, 'OSTD', 'OSTD2', 'MMT 280 Gsm Uk. 2.8 x 70 M', '2,8', '70', '196', 'M2', NULL, NULL),
+(11, 'OSTD', 'OSTD3', 'MMT 280 Gsm Uk. 2.6 x 70 M', '2,6', '70', '182', 'M2', NULL, NULL),
+(12, 'OSTD', 'OSTD4', 'MMT 280 Gsm Uk. 2.2 x 70 M', '2,2', '70', '154', 'M2', NULL, NULL),
+(13, '', 'OTAP1', 'MMT 340 AP Gsm Uk. 3.2 x 70 M', '3,2', '70', '224', 'M2', NULL, NULL),
+(14, '', 'OTAP2', 'MMT 340 AP Gsm Uk. 2.2 x 70 M', '2,2', '70', '154', 'M2', NULL, NULL),
+(15, '', 'OTBO1', 'MMT 340 BO Gsm Uk. 3.2 x 70 M', '3,2', '70', '224', 'M2', NULL, NULL),
+(16, '', 'OTBO2', 'MMT 340 BO Gsm Uk. 2.2 x 70 M', '2,2', '70', '154', 'M2', NULL, NULL),
+(17, '', 'OTBO3', 'MMT 340 BO Gsm Uk. 1.6 x 70 M', '1,6', '70', '112', 'M2', NULL, NULL),
+(18, '', 'OTBO4', 'MMT 340 BO Gsm Uk. 1.1 x 70 M', '1,1', '70', '77', 'M2', NULL, NULL),
+(19, '', 'OBS1', 'MMT Backlite China  Uk. 3.2 x 50 M', '3,2', '50', '160', 'M2', NULL, NULL),
+(20, '', 'OBS2', 'MMT Backlite China  Uk. 2.2 x 50 M', '2,2', '50', '110', 'M2', NULL, NULL),
+(21, '', 'OBS3', 'MMT Backlite China  Uk. 1.6 x 50 M', '1,6', '50', '80', 'M2', NULL, NULL),
+(22, '', 'OBS4', 'MMT Backlite China  Uk. 1.1 x 50 M', '1,1', '50', '55', 'M2', NULL, NULL),
+(23, '', 'OBSJ1', 'MMT Backlite Singelside Jerman Uk. 3.2 x 50 M', '3,2', '50', '160', 'M2', NULL, NULL),
+(24, '', 'OBSJ2', 'MMT Backlite Singelside Jerman Uk. 2.2 x 50 M', '2,2', '50', '110', 'M2', NULL, NULL),
+(25, '', 'OBSK1', 'MMT Backlite Singelside Korea Uk. 3.2 x 50 M', '3,2', '50', '160', 'M2', NULL, NULL),
+(26, '', 'OBSK2', 'MMT Backlite Singelside Korea Uk.2.2 x 50 M', '2,2', '50', '110', 'M2', NULL, NULL),
+(27, '', 'OJR1', 'MMT Jerman Uk. 3.2 x 50 M', '3,2', '50', '160', 'M2', NULL, NULL),
+(28, '', 'OJR2', 'MMT Jerman Uk. 2.2 x 50 M', '2,2', '50', '110', 'M2', NULL, NULL),
+(29, '', 'OKOC1', 'MMT Korea Dove 440 GSM Uk. 3.2 x 50 M', '3,2', '50', '160', 'M2', NULL, NULL),
+(30, '', 'OKOC2', 'MMT Korea Dove 440 GSM Uk. 2.2 x 50 M', '2,2', '50', '110', 'M2', NULL, NULL),
+(31, '', 'OKOC3', 'MMT Korea Dove 440 GSM Uk. 1.6 x 50 M', '1,6', '50', '80', 'M2', NULL, NULL),
+(32, '', 'OKOC4', 'MMT Korea Dove 440 GSM Uk. 1.1 x 50 M', '1,1', '50', '55', 'M2', NULL, NULL),
+(33, '', 'O4401', 'MMT 440 Glossy Uk. 3.2 x 50 M', '3,2', '50', '160', 'M2', NULL, NULL),
+(34, '', 'O4402', 'MMT 440 Glossy Uk. 2.2 x 50 M', '2,2', '50', '110', 'M2', NULL, NULL),
+(35, '', 'O4403', 'MMT 440 Glossy Uk. 1.6 x 50 M', '1,6', '50', '80', 'M2', NULL, NULL),
+(36, '', 'O4404', 'MMT 440 Glossy Uk. 1.1 x 50 M', '1,1', '50', '55', 'M2', NULL, NULL),
+(37, '', 'OKST1', 'Kain Satin Uk. 0.91 x 100 M', '0,91', '100', '91', 'M2', NULL, NULL),
+(38, '', 'OKST2', 'Kain Satin Uk. 1.06  x 100 M', '1,06', '100', '106', 'M2', NULL, NULL),
+(39, '', 'OKST3', 'Kain Satin Uk. 1.26 x 100 M', '1,26', '100', '126', 'M2', NULL, NULL),
+(40, '', 'OKST4', 'Kain Satin Uk. 1.55 x 100 M', '1,55', '100', '155', 'M2', NULL, NULL),
+(41, '', 'OKST5', 'Kain Satin Uk. 1.81 x 100 M', '1,81', '100', '181', 'M2', NULL, NULL),
+(42, '', 'OSAR1', 'Sticker Ap Ritrama Uk. 1.06 x 50 M', '1,06', '50', '53', 'M2', NULL, NULL),
+(43, '', 'OSAR2', 'Sticker Ap Ritrama Uk. 1.26 x 50 M', '1,26', '50', '63', 'M2', NULL, NULL),
+(44, '', 'OSAR3', 'Sticker Ap Ritrama Uk. 1.55 x 50 M', '1,55', '50', '77,5', 'M2', NULL, NULL),
+(45, '', 'OSAR MATT1', 'Sticker Ap Ritrama Matt Uk. 1.06 x 50 M', '1,06', '50', '53', 'M2', NULL, NULL),
+(46, '', 'OSAR MATT2', 'Sticker Ap Ritrama Matt Uk. 1.26 x 50 M', '1,26', '50', '63', 'M2', NULL, NULL),
+(47, '', 'OSAR MATT3', 'Sticker Ap Ritrama Matt Uk. 1.55 x 50 M', '1,55', '50', '77,5', 'M2', NULL, NULL),
+(48, '', 'OSBL-IN', 'Outdoor Sticker Backlite ', '1,55', '50', '77,5', 'M2', NULL, NULL),
+(49, '', 'OSBO1', 'Sticker Black Out Uk. 1.06 x 50 M', '1,06', '50', '53', 'M2', NULL, NULL),
+(50, '', 'OSBO2', 'Sticker Black Out Uk. 1.26 x 50 M', '1,26', '50', '63', 'M2', NULL, NULL),
+(51, '', 'OSBO3', 'Sticker Black Out Uk. 1.55 x 50 M', '1,55', '50', '77,5', 'M2', NULL, NULL),
+(52, '', 'OSTP1', 'Sticker Transparant Uk. 1.06 x 50 M', '1,06', '50', '53', 'M2', NULL, NULL),
+(53, '', 'OSTP2', 'Sticker Transparant Uk. 1.26 x 50 M', '1,26', '50', '63', 'M2', NULL, NULL),
+(54, '', 'OSTP3', 'Sticker Transparant Uk. 1.55 x 50 M', '1,55', '50', '77,5', 'M2', NULL, NULL),
+(55, '', 'OWV1', 'Sticker Oneway Vision Uk. 1.06 x 50 M', '1,06', '50', '53', 'M2', NULL, NULL),
+(56, '', 'OWV2', 'Sticker Oneway Vision Uk. 1.26 x 50 M', '1,26', '50', '63', 'M2', NULL, NULL),
+(57, '', 'OWV3', 'Sticker Oneway Vision Uk. 1.55 x 50 M', '1,55', '50', '77,5', 'M2', NULL, NULL),
+(58, '', 'SS1', 'Sticker Sandblust Uk. 1.27 x 50 M', '1,27', '50', '63,5', 'M2', NULL, NULL),
+(59, '', 'DALT1', 'Dye Albatros Uk. 0.63 x 30 M', '0,63', '30', '18,9', 'M2', NULL, NULL),
+(60, '', 'DALT2', 'Dye Albatros Uk. 0.91 x 30 M', '0,91', '30', '27,3', 'M2', NULL, NULL),
+(61, '', 'DALT3', 'Dye Albatros Uk. 1.27 x 30 M', '1,27', '30', '38,1', 'M2', NULL, NULL),
+(62, '', 'DALT4', 'Dye Albatros Uk. 1.55 x 30 M', '1,55', '30', '46,5', 'M2', NULL, NULL),
+(63, '', 'DPP1', 'Dye Photopaper Uk. 1.27 x 30 M', '1,27', '30', '38,1', 'M2', NULL, NULL),
+(64, '', 'DSV1', 'Dye Sticker Vynil Uk. 0.91 x 30 M', '0,91', '30', '27,3', 'M2', NULL, NULL),
+(65, '', 'DSV2', 'Dye Sticker Vynil Uk. 1.27 x 30 M', '1,27', '30', '38,1', 'M2', NULL, NULL),
+(66, '', 'DSV3', 'Dye Sticker Vynil Uk. 1.55 x 30 M', '1,55', '30', '46,5', 'M2', NULL, NULL),
+(67, '', 'DSTP1', 'Dye Sticker Transparant Uk. 0.91 x 50 M', '0,91', '50', '45,5', 'M2', NULL, NULL),
+(68, '', 'DSTP2', 'Dye Sticker Transparant Uk. 1.27 x 50 M', '1,27', '50', '63,5', 'M2', NULL, NULL),
+(69, '', 'DSTP3', 'Dye Sticker Transparant Uk. 1.55 x 50 M', '1,55', '50', '77,5', 'M2', NULL, NULL),
+(70, '', 'DD1', 'Dye Duratrans Uk. 1.27 x 50 M', '1,27', '50', '63,5', 'M2', NULL, NULL),
+(71, '', 'LMG1', 'Lamit Glossy Uk. 0.63 x 50 M', '0,63', '50', '31,5', 'M2', NULL, NULL),
+(72, '', 'LMG2', 'Lamit Glossy Uk. 0.91 x 50 M', '0,91', '50', '45,5', 'M2', NULL, NULL),
+(73, '', 'LMG3', 'Lamit Glossy Uk. 1.27 x 50 M', '1,27', '50', '63,5', 'M2', NULL, NULL),
+(74, '', 'LMG4', 'Lamit Glossy Uk. 1.55 x 50 M', '1,55', '50', '77,5', 'M2', NULL, NULL),
+(75, '', 'LMD1', 'Lamit Dove Uk. 0.63 x 50 M', '0,63', '50', '31,5', 'M2', NULL, NULL),
+(76, '', 'LMD2', 'Lamit Dove Uk. 0.91 x 50 M', '0,91', '50', '45,5', 'M2', NULL, NULL),
+(77, '', 'LMD3', 'Lamit Dove Uk. 1.27 x 50 M', '1,27', '50', '63,5', 'M2', NULL, NULL),
+(78, '', 'LMD4', 'Lamit Dove Uk. 1.55 x 50 M', '1,55', '50', '77,5', 'M2', NULL, NULL),
+(79, '', 'LMF1', 'Lamit Floor  Uk. 1.27 x 50 M', '1,27', '50', '63,5', 'M2', NULL, NULL),
+(80, '', 'TP1', 'Transparant Tape Uk. 0.63 x 100 M', '0,63', '100', '63', 'M2', NULL, NULL),
+(81, '', 'CSO1', 'Cutting Sticker oracel Uk. 1.26 x 1 M', '1,26', '1', '1,26', 'M2', NULL, NULL),
+(82, '', 'CSO2', 'Cutting Sticker oracel 2 warna Uk. 1.26 x 1 M', '1,26', '1', '1,26', 'M2', NULL, NULL),
+(83, '', 'CSO3', 'Cutting Sticker oracel 3 warna Uk. 1.26 x 1 M', '1,26', '1', '1,26', 'M2', NULL, NULL),
+(84, '', 'CSSO1', 'Cutting Sticker Scolight 1 warna Uk. 0.6 x 1 M', '0,6', '1', '0,6', 'M2', NULL, NULL),
+(85, '', 'CSSO2', 'Cutting Sticker Scolight 2 warna  Uk. 0.6 x 1 M', '0,6', '1', '0,6', 'M2', NULL, NULL),
+(86, '', 'CSSO3', 'Cutting Sticker Scolight 3 warna  Uk. 0.6 x 1 M', '0,6', '1', '0,6', 'M2', NULL, NULL),
+(87, '', 'LUV1', 'Luster Uk. 1.27 x 50 M', '1,27', '50', '63,5', 'M2', NULL, NULL),
+(88, '', 'SHUV1', 'Sticker Hologram Uk. 1.27 x 50 M', '1,27', '50', '63,5', 'M2', NULL, NULL),
+(89, '', 'FB', 'Foamboard uk. 244 x 122 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(90, '', 'INF', 'Infraboard uk. 244 x 122 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(91, '', 'PVC', 'PVC uk. 244 x 122 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(92, '', 'KMB', 'Kaki Mini Banner uk. 25 x 40 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(93, '', 'KXB', 'Kaki X-banner uk. 60 x 160 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(94, '', 'KYB1', 'Kaki Y-Banner uk. 60 x 160 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(95, '', 'KYB2', 'Kaki Y-Banner uk. 80 x 180 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(96, '', 'KRB1', 'Kaki R-Banner uk. 60 x 160 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(97, '', 'KRB2', 'Kaki R-Banner uk. 80 x 200 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(98, '', 'KRB3', 'Kaki R-Banner uk. 85 x 200 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(99, '', 'KD1', 'Kaki Door Frame uk. 60 x 160 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(100, '', 'KD2', 'Kaki Door Frame uk. 80 x 180 cm ', '1', '1', '1', 'PCS', NULL, NULL),
+(101, '', 'KF', 'Kaki Flag Banner uk 3M', '1', '1', '1', 'PCS', NULL, NULL),
+(102, '', 'KTP1', 'Kaki Tripod Banner 1 sisi', '1', '1', '1', 'PCS', NULL, NULL),
+(103, '', 'KTP2', 'Kaki Tripod Banner 2 sisi', '1', '1', '1', 'PCS', NULL, NULL),
+(104, '', 'KEDSEK', 'Kaki Event Desk', '1', '1', '1', 'PCS', NULL, NULL),
+(105, '', 'KPOPT', 'Kaki Pop Up Table', '1', '1', '1', 'PCS', NULL, NULL),
+(106, '', 'KSPW6', 'Kaki Spin Wheel 60 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(107, '', 'KSPW8', 'Kaki Spin Wheel 80 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(108, '', 'LMKD1', 'Laminating Bahan Kertas Dove Uk. 32 x 47 cm 1 sisi', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(109, '', 'LMKD2', 'Laminating Bahan Kertas Dove Uk. 32 x 47 cm 2 sisi', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(110, '', 'LMKG1', 'Laminating Bahan Kertas Glossy Uk. 32 x 47 cm 1 sisi', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(111, '', 'LMKG2', 'Laminating Bahan Kertas Glossy Uk. 32 x 47 cm 2 sisi', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(112, '', 'LSK1', 'Laser Sticker Kertas Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(113, '', 'LSK2', 'Laser Sticker Kertas Uk. 33 x 48.8 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(114, '', 'LSTP', 'Laser Sticker Transparant Uk. 33 x 48.8 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(115, '', 'LSV', 'Laser Sticker Vynil Uk. 33 x 48.8 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(116, '', 'LSVM', 'Laser Sticker Vynil Matt Uk. 33 x 48.8 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(117, '', 'LSS', 'Laser Sticker Silver Uk. 33 x 48.8 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(118, '', 'LSG', 'Laser Sticker Gold Uk. 33 x 48.8 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(119, '', 'LSCP', 'Laser Sticker Craft Paper Uk. 33 x 48.8 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(120, '', 'LTIK190', 'Laser Kertas TIK 190 1 Sisi  Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(121, '', 'LTIK190TB', 'Laser Kertas TIK 190 2 Sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(122, '', 'LTIK210', 'Laser Kertas TIK 210 1 Sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(123, '', 'LTIK210TB', 'Laser Kertas TIK 210 UK 2 SISI Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(124, '', 'LTIK230', 'Laser Kertas TIK 230 1 Sisi  Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(125, '', 'LTIK230TB', 'Laser Kertas TIK 230 2 Sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(126, '', 'LTIK260', 'Laser Kertas TIK 260 1 Sisi  Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(127, '', 'LTIK260TB', 'Laser Kertas TIK 260 2 Sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(128, '', 'LTIK310', 'Laser Kertas TIK 310 1 Sisi  Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(129, '', 'LTIK310TB', 'Laser Kertas TIK 310 2 Sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(130, '', 'LHVS80', 'Laser Kertas HVS 80 1 Sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(131, '', 'LHVS80TB', 'Laser Kertas HVS 80 2 Sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(132, '', 'LHVS100', 'Laser Kertas HVS 100 1 Sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(133, '', 'LHVS100TB', 'Laser Kertas HVS 100 2 Sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(134, '', 'LIVO', 'Laser Kertas Ivory 270 1 Sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(135, '', 'LIVOTB', 'Laser Kertas Ivory 270 2 Sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(136, '', 'LBW', 'Laser Kertas Blue White 250 1 Sisi  Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(137, '', 'LBWTB', 'Laser Kertas Blue White 250 2 sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(138, '', 'LBC', 'Laser Kertas Brief Card 200 1 Sisi  Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(139, '', 'LBCTB', 'Laser Kertas Brief Card 200 2 sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(140, '', 'LC', 'Laser Kertas Concord 1 Sisi  Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(141, '', 'LCTB', 'Laser Kertas Concord 2 sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(142, '', 'LCP', 'Laser Kertas Craft Paper 310 1 Sisi  Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(143, '', 'LCPTB', 'Laser Kertas Craft Paper 310 2 sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(144, '', 'LKS120', 'Laser Kertas Konstruk 120 1 Sisi  Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(145, '', 'LKS120TB', 'Laser Kertas Konstruk 120 2 Sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(146, '', 'LKS150', 'Laser Kertas Konstruk 150 1 Sisi  Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(147, '', 'LKS150TB', 'Laser Kertas Konstruk 150 2 Sisi Uk. 33 x 47 cm', '1', '1', '1', 'LEMBAR', NULL, NULL),
+(148, '', 'TKYOPW', 'Tinta Konika Yellow Outdoor PW', '1', '5', '5', 'LITER', NULL, NULL),
+(149, '', 'TKMOPW', 'Tinta Konika Magenta Outdoor PW', '1', '5', '5', 'LITER', NULL, NULL),
+(150, '', 'TKCOPW', 'Tinta Konika Cyan Outdoor PW', '1', '5', '5', 'LITER', NULL, NULL),
+(151, '', 'TKBOPW', 'Tinta Konika Black Outdoor PW', '1', '5', '5', 'LITER', NULL, NULL),
+(152, '', 'TKYOPI', 'Tinta Konika Yellow Outdoor Pixentra', '1', '5', '5', 'LITER', NULL, NULL),
+(153, '', 'TKMOPI', 'Tinta Konika Magenta Outdoor Pixentra', '1', '5', '5', 'LITER', NULL, NULL),
+(154, '', 'TKCOPI', 'Tinta Konika Cyan Outdoor Pixentra', '1', '5', '5', 'LITER', NULL, NULL),
+(155, '', 'TKBOPI', 'Tinta Konika Black Outdoor Pixentra', '1', '5', '5', 'LITER', NULL, NULL),
+(156, '', 'SFOPI', 'Solvent Flash Outdoor Pixentra', '1', '5', '5', 'LITER', NULL, NULL),
+(157, '', 'TDYPI', 'Tinta Dye Yellow Pixentra', '1', '1', '1', 'LITER', NULL, NULL),
+(158, '', 'TDMPI', 'Tinta Dye Magenta Pixentra', '1', '1', '1', 'LITER', NULL, NULL),
+(159, '', 'TDCPI', 'Tinta Dye Cyan Pixentra', '1', '1', '1', 'LITER', NULL, NULL),
+(160, '', 'TDBPI', 'Tinta Dye Black Pixentra', '1', '1', '1', 'LITER', NULL, NULL),
+(161, '', 'SFTDPI', 'Solvent Flash Tinta Dye Pixentra', '1', '1', '1', 'LITER', NULL, NULL),
+(162, '', 'TUVYPI', 'Tinta UV Yellow Pixentra', '1', '1', '1', 'LITER', NULL, NULL),
+(163, '', 'TUVMPI', 'Tinta UV Magenta Pixentra', '1', '1', '1', 'LITER', NULL, NULL),
+(164, '', 'TUVCPI', 'Tinta UV Cyan Pixentra', '1', '1', '1', 'LITER', NULL, NULL),
+(165, '', 'TUVBPI', 'Tinta UV Black Pixentra', '1', '1', '1', 'LITER', NULL, NULL),
+(166, '', 'SFUVPI', 'Solvent Flash UV Pixentra', '1', '1', '1', 'LITER', NULL, NULL),
+(167, '', 'STPB1', 'Stempel Bulat 17 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(168, '', 'STPB2', 'Stempel Bulat 25 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(169, '', 'STPB3', 'Stempel Bulat 35 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(170, '', 'STPB4', 'Stempel Bulat 40 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(171, '', 'STPB5', 'Stempel Petak 26 x 26 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(172, '', 'STPB6', 'Stempel Petak 35 x 35 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(173, '', 'STPB7', 'Stempel Persegi 13 x 40 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(174, '', 'STPB8', 'Stempel 35 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(175, '', 'STPB9', 'Stempel 35 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(176, '', 'STPB10', 'Stempel Bulat 45 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(177, '', 'STPB11', 'Stempel Oval 30 x 45 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(178, '', 'STPB12', 'Stempel Bulat 51 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(179, '', 'STPB13', 'Stempel Oval 35 x 50 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(180, '', 'STPB14', 'Stempel Persegi 13 x 40 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(181, '', 'STPB15', 'Stempel Persegi 13 x 55 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(182, '', 'STPB16', 'Stempel Persegi 13 x 70 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(183, '', 'STPB17', 'Stempel Persegi 17 x 43 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(184, '', 'STPB18', 'Stempel Persegi 17 x 55 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(185, '', 'STPB19', 'Stempel Persegi 17 x 67 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(186, '', 'STPB20', 'Stempel Persegi 22 x 43 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(187, '', 'STPB21', 'Stempel Persegi 22 x 55 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(188, '', 'STPB22', 'Stempel Persegi 22 x 67 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(189, '', 'STPB23', 'Stempel Persegi 22 x 78 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(190, '', 'STPB24', 'Stempel Persegi 27 x 43 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(191, '', 'STPB25', 'Stempel Persegi 27 x 55 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(192, '', 'STPB26', 'Stempel Persegi 27 x 67 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(193, '', 'STPB27', 'Stempel Persegi 27 x 78 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(194, '', 'STPB28', 'Stempel Persegi 32 x 55 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(195, '', 'STPB29', 'Stempel Persegi 32 x 67 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(196, '', 'STPB30', 'Stempel Persegi 32 x 78 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(197, '', 'STPB31', 'Stempel Persegi 43 x 55 cm', '1', '1', '1', 'PCS', NULL, NULL),
+(198, '', 'STPB32', 'Stempel Persegi 43 x 67 cm', '1', '1', '1', 'PCS', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -2357,7 +2543,7 @@ INSERT INTO `hargabahans` (`id`, `kode_bahan`, `sisi`, `qty_min`, `qty_max`, `ha
 
 CREATE TABLE `itemstokbahans` (
   `id` bigint UNSIGNED NOT NULL,
-  `kode_bahan_pakai` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `kode_bahan_jual` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `luas` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `qty` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -2376,11 +2562,11 @@ CREATE TABLE `itemstokbahans` (
 -- Dumping data for table `itemstokbahans`
 --
 
-INSERT INTO `itemstokbahans` (`id`, `kode_bahan_pakai`, `luas`, `qty`, `created_at`, `updated_at`, `po_pembelian_bahan_id`, `po_pembelian_bahan_item_id`, `kode_po`, `panjang`, `lebar`, `satuan`, `keterangan`, `kode_label`) VALUES
+INSERT INTO `itemstokbahans` (`id`, `kode_bahan_jual`, `luas`, `qty`, `created_at`, `updated_at`, `po_pembelian_bahan_id`, `po_pembelian_bahan_item_id`, `kode_po`, `panjang`, `lebar`, `satuan`, `keterangan`, `kode_label`) VALUES
 (10, 'OSTD2', '196', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 2, 'PB-2606-0001', '2.8', '70', 'M2', 'MMT 280 GSM UK 2.8 x 70', 'LB-OSTD2-001'),
 (11, 'OSTD2', '196', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 2, 'PB-2606-0001', '2.8', '70', 'M2', 'MMT 280 GSM UK 2.8 x 70', 'LB-OSTD2-002'),
 (12, 'OSTD1', '0', '1', '2026-06-22 00:34:27', '2026-06-23 08:26:13', 4, 3, 'PB-2606-0001', '3.2', '70', 'M2', 'MMT 20 GSM uk 3.2 x 70', 'LB-OSTD1-001'),
-(13, 'OSTD1', '224', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 3, 'PB-2606-0001', '3.2', '70', 'M2', 'MMT 20 GSM uk 3.2 x 70', 'LB-OSTD1-002'),
+(13, 'OSTD1', '211.6', '1', '2026-06-22 00:34:27', '2026-06-24 01:10:48', 4, 3, 'PB-2606-0001', '3.2', '70', 'M2', 'MMT 20 GSM uk 3.2 x 70', 'LB-OSTD1-002'),
 (14, 'OSTD3', '182', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 4, 'PB-2606-0001', '2.6', '70', 'M2', 'lorem ipsum danger', 'LB4-4-1'),
 (15, 'OSTD3', '182', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 4, 'PB-2606-0001', '2.6', '70', 'M2', 'lorem ipsum danger', 'LB4-4-2'),
 (16, 'OSTD3', '182', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 4, 'PB-2606-0001', '2.6', '70', 'M2', 'lorem ipsum danger', 'LB4-4-3'),
@@ -2563,7 +2749,8 @@ INSERT INTO `mata_ayams` (`id`, `kode_spk`, `atas`, `bawah`, `kiri`, `kanan`, `c
 (18, 'SPK-2606173375', 0, 0, 0, 0, '2026-06-16 20:08:14', '2026-06-16 20:08:14'),
 (28, 'SPK-2606226061', 1, 1, 1, 1, '2026-06-22 00:40:57', '2026-06-22 00:40:57'),
 (30, 'SPK-2606231195', 1, 1, 1, 1, '2026-06-23 06:32:43', '2026-06-23 06:33:43'),
-(31, 'SPK-2606239567', 0, 0, 0, 0, '2026-06-23 08:22:51', '2026-06-23 08:22:51');
+(31, 'SPK-2606239567', 0, 0, 0, 0, '2026-06-23 08:22:51', '2026-06-23 08:22:51'),
+(32, 'SPK-2606248336', 0, 0, 0, 0, '2026-06-24 00:09:48', '2026-06-24 00:09:48');
 
 -- --------------------------------------------------------
 
@@ -2573,9 +2760,9 @@ INSERT INTO `mata_ayams` (`id`, `kode_spk`, `atas`, `bawah`, `kiri`, `kanan`, `c
 
 CREATE TABLE `materbahans` (
   `id` bigint UNSIGNED NOT NULL,
-  `kode_bahan_pakai` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `kode_bahan_jual` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `keterangan` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tanggal` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `satuan` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2584,51 +2771,116 @@ CREATE TABLE `materbahans` (
 -- Dumping data for table `materbahans`
 --
 
-INSERT INTO `materbahans` (`id`, `kode_bahan_pakai`, `keterangan`, `tanggal`, `created_at`, `updated_at`) VALUES
-(3, 'OSTD', 'tidak ada', '22/06/2026', NULL, NULL),
-(4, 'OTAP', 'tidak ada', '23/06/2026', NULL, NULL),
-(5, 'OTBO', 'tidak ada', '24/06/2026', NULL, NULL),
-(6, 'OBS', 'tidak ada', '25/06/2026', NULL, NULL),
-(7, 'OBSJ', 'tidak ada', '26/06/2026', NULL, NULL),
-(8, 'OBSK', 'tidak ada', '27/06/2026', NULL, NULL),
-(9, 'OJR', 'tidak ada', '28/06/2026', NULL, NULL),
-(10, 'OKOC', 'tidak ada', '29/06/2026', NULL, NULL),
-(11, 'O440', 'tidak ada', '30/06/2026', NULL, NULL),
-(12, 'OKST', 'tidak ada', '01/07/2026', NULL, NULL),
-(13, 'OSAR', 'tidak ada', '02/07/2026', NULL, NULL),
-(14, 'OSAR MATT', 'tidak ada', '03/07/2026', NULL, NULL),
-(15, 'OSBL-IN', 'tidak ada', '04/07/2026', NULL, NULL),
-(16, 'OSBO', 'tidak ada', '05/07/2026', NULL, NULL),
-(17, 'OSTP', 'tidak ada', '06/07/2026', NULL, NULL),
-(18, 'OWV', 'tidak ada', '07/07/2026', NULL, NULL),
-(19, 'SS', 'tidak ada', '08/07/2026', NULL, NULL),
-(20, 'DALT', 'tidak ada', '09/07/2026', NULL, NULL),
-(21, 'DPP', 'tidak ada', '10/07/2026', NULL, NULL),
-(22, 'DSV', 'tidak ada', '11/07/2026', NULL, NULL),
-(23, 'DD', 'tidak ada', '12/07/2026', NULL, NULL),
-(24, 'DSTP', 'tidak ada', '13/07/2026', NULL, NULL),
-(25, 'TBOUV', 'tidak ada', '14/07/2026', NULL, NULL),
-(26, 'BSUV', 'tidak ada', '15/07/2026', NULL, NULL),
-(27, 'BSJ UV', 'tidak ada', '16/07/2026', NULL, NULL),
-(28, 'BSK UV', 'tidak ada', '17/07/2026', NULL, NULL),
-(29, 'KOCUV', 'tidak ada', '18/07/2026', NULL, NULL),
-(30, '440UV', 'tidak ada', '19/07/2026', NULL, NULL),
-(31, 'SUV', 'tidak ada', '20/07/2026', NULL, NULL),
-(32, 'SMUV', 'tidak ada', '21/07/2026', NULL, NULL),
-(33, 'SBLUV', 'tidak ada', '22/07/2026', NULL, NULL),
-(34, 'SBOUV', 'tidak ada', '23/07/2026', NULL, NULL),
-(35, 'STPUV', 'tidak ada', '24/07/2026', NULL, NULL),
-(36, 'OWUV', 'tidak ada', '25/07/2026', NULL, NULL),
-(37, 'SSUV', 'tidak ada', '26/07/2026', NULL, NULL),
-(38, 'ALTUV', 'tidak ada', '27/07/2026', NULL, NULL),
-(39, 'DPPUV', 'tidak ada', '28/07/2026', NULL, NULL),
-(40, 'DDUV', 'tidak ada', '29/07/2026', NULL, NULL),
-(41, 'LMG', 'tidak ada', '30/07/2026', NULL, NULL),
-(42, 'LMD', 'tidak ada', '31/07/2026', NULL, NULL),
-(43, 'LMF', 'tidak ada', '01/08/2026', NULL, NULL),
-(44, 'SOWUV', 'tidak ada', '02/08/2026', NULL, NULL),
-(45, 'SCSUV', 'tidak ada', '03/08/2026', NULL, NULL),
-(46, 'LMP', 'tidak ada', '04/08/2026', NULL, NULL);
+INSERT INTO `materbahans` (`id`, `kode_bahan_jual`, `keterangan`, `satuan`, `created_at`, `updated_at`) VALUES
+(66, 'OSTD', 'ok', 'M2', NULL, NULL),
+(67, 'OTAP', 'ok', 'M2', NULL, NULL),
+(68, 'OTBO', 'ok', 'M2', NULL, NULL),
+(69, 'OBS', 'ok', 'M2', NULL, NULL),
+(70, 'OBSJ', 'ok', 'M2', NULL, NULL),
+(71, 'OBSK', 'ok', 'M2', NULL, NULL),
+(72, 'OJR', 'ok', 'M2', NULL, NULL),
+(73, 'OKOC', 'ok', 'M2', NULL, NULL),
+(74, 'O440', 'ok', 'M2', NULL, NULL),
+(75, 'OKST', 'ok', 'M2', NULL, NULL),
+(76, 'LMP', 'ok', 'M2', NULL, NULL),
+(77, 'OSAR', 'ok', 'M2', NULL, NULL),
+(78, 'OSAR MATT', 'ok', 'M2', NULL, NULL),
+(79, 'OSBL-IN', 'ok', 'M2', NULL, NULL),
+(80, 'OSBO', 'ok', 'M2', NULL, NULL),
+(81, 'OSTP', 'ok', 'M2', NULL, NULL),
+(82, 'OWV', 'ok', 'M2', NULL, NULL),
+(83, 'SS', 'ok', 'M2', NULL, NULL),
+(84, 'DALT', 'ok', 'M2', NULL, NULL),
+(85, 'DPP', 'ok', 'M2', NULL, NULL),
+(86, 'DSV', 'ok', 'M2', NULL, NULL),
+(87, 'DD', 'ok', 'M2', NULL, NULL),
+(88, 'DSTP', 'ok', 'M2', NULL, NULL),
+(89, 'TBOUV', 'ok', 'M2', NULL, NULL),
+(90, 'BSUV', 'ok', 'M2', NULL, NULL),
+(91, 'BSJ UV', 'ok', 'M2', NULL, NULL),
+(92, 'BSK UV', 'ok', 'M2', NULL, NULL),
+(93, 'KOCUV', 'ok', 'M2', NULL, NULL),
+(94, '440UV', 'ok', 'M2', NULL, NULL),
+(95, 'SUV', 'ok', 'M2', NULL, NULL),
+(96, 'SMUV', 'ok', 'M2', NULL, NULL),
+(97, 'SBLUV', 'ok', 'M2', NULL, NULL),
+(98, 'SBOUV', 'ok', 'M2', NULL, NULL),
+(99, 'STPUV', 'ok', 'M2', NULL, NULL),
+(100, 'OWUV', 'ok', 'M2', NULL, NULL),
+(101, 'SSUV', 'ok', 'M2', NULL, NULL),
+(102, 'ALTUV', 'ok', 'M2', NULL, NULL),
+(103, 'DPPUV', 'ok', 'M2', NULL, NULL),
+(104, 'DDUV', 'ok', 'M2', NULL, NULL),
+(105, 'LMG', 'ok', 'M2', NULL, NULL),
+(106, 'LMD', 'ok', 'M2', NULL, NULL),
+(107, 'LMF', 'ok', 'M2', NULL, NULL),
+(108, 'SOWUV', 'ok', 'M2', NULL, NULL),
+(109, 'SCSUV', 'ok', 'M2', NULL, NULL),
+(110, 'LUV', 'ok', 'M2', NULL, NULL),
+(111, 'SHUV', 'ok', 'PCS', NULL, NULL),
+(112, 'FB', 'ok', 'PCS', NULL, NULL),
+(113, 'INF', 'ok', 'PCS', NULL, NULL),
+(114, 'PVC', 'ok', 'PCS', NULL, NULL),
+(115, 'KMB', 'ok', 'PCS', NULL, NULL),
+(116, 'KXB', 'ok', 'PCS', NULL, NULL),
+(117, 'KYB1', 'ok', 'PCS', NULL, NULL),
+(118, 'KYB2', 'ok', 'PCS', NULL, NULL),
+(119, 'KRB1', 'ok', 'PCS', NULL, NULL),
+(120, 'KRB2', 'ok', 'PCS', NULL, NULL),
+(121, 'KRB3', 'ok', 'PCS', NULL, NULL),
+(122, 'KD1', 'ok', 'PCS', NULL, NULL),
+(123, 'KD2', 'ok', 'PCS', NULL, NULL),
+(124, 'KF', 'ok', 'PCS', NULL, NULL),
+(125, 'KTP1', 'ok', 'PCS', NULL, NULL),
+(126, 'KTP2', 'ok', 'PCS', NULL, NULL),
+(127, 'KEDSEK', 'ok', 'PCS', NULL, NULL),
+(128, 'KPOPT', 'ok', 'PCS', NULL, NULL),
+(129, 'KSPW6', 'ok', 'PCS', NULL, NULL),
+(130, 'KSPW8', 'ok', 'PCS', NULL, NULL),
+(131, 'LMKD1', 'ok', 'LEMBAR', NULL, NULL),
+(132, 'LMKD2', 'ok', 'LEMBAR', NULL, NULL),
+(133, 'LMKG1', 'ok', 'LEMBAR', NULL, NULL),
+(134, 'LMKG2', 'ok', 'LEMBAR', NULL, NULL),
+(135, 'LSK1', 'ok', 'LEMBAR', NULL, NULL),
+(136, 'LSK2', 'ok', 'LEMBAR', NULL, NULL),
+(137, 'LSTP', 'ok', 'LEMBAR', NULL, NULL),
+(138, 'LSV', 'ok', 'LEMBAR', NULL, NULL),
+(139, 'LSVM', 'ok', 'LEMBAR', NULL, NULL),
+(140, 'LSS', 'ok', 'LEMBAR', NULL, NULL),
+(141, 'LSG', 'ok', 'LEMBAR', NULL, NULL),
+(142, 'LSCP', 'ok', 'LEMBAR', NULL, NULL),
+(143, 'LTIK190', 'ok', 'LEMBAR', NULL, NULL),
+(144, 'LTIK190TB', 'ok', 'LEMBAR', NULL, NULL),
+(145, 'LTIK210', 'ok', 'LEMBAR', NULL, NULL),
+(146, 'LTIK210TB', 'ok', 'LEMBAR', NULL, NULL),
+(147, 'LTIK230', 'ok', 'LEMBAR', NULL, NULL),
+(148, 'LTIK230TB', 'ok', 'LEMBAR', NULL, NULL),
+(149, 'LTIK260', 'ok', 'LEMBAR', NULL, NULL),
+(150, 'LTIK260TB', 'ok', 'LEMBAR', NULL, NULL),
+(151, 'LTIK310', 'ok', 'LEMBAR', NULL, NULL),
+(152, 'LTIK310TB', 'ok', 'LEMBAR', NULL, NULL),
+(153, 'LHVS80', 'ok', 'LEMBAR', NULL, NULL),
+(154, 'LHVS80TB', 'ok', 'LEMBAR', NULL, NULL),
+(155, 'LHVS100', 'ok', 'LEMBAR', NULL, NULL),
+(156, 'LHVS100TB', 'ok', 'LEMBAR', NULL, NULL),
+(157, 'LIVO', 'ok', 'LEMBAR', NULL, NULL),
+(158, 'LIVOTB', 'ok', 'LEMBAR', NULL, NULL),
+(159, 'LBW', 'ok', 'LEMBAR', NULL, NULL),
+(160, 'LBWTB', 'ok', 'LEMBAR', NULL, NULL),
+(161, 'LBC', 'ok', 'LEMBAR', NULL, NULL),
+(162, 'LBCTB', 'ok', 'LEMBAR', NULL, NULL),
+(163, 'LC', 'ok', 'LEMBAR', NULL, NULL),
+(164, 'LCTB', 'ok', 'LEMBAR', NULL, NULL),
+(165, 'LCP', 'ok', 'LEMBAR', NULL, NULL),
+(166, 'LCPTB', 'ok', 'LEMBAR', NULL, NULL),
+(167, 'LKS120', 'ok', 'LEMBAR', NULL, NULL),
+(168, 'LKS120TB', 'ok', 'LEMBAR', NULL, NULL),
+(169, 'LKS150', 'ok', 'LEMBAR', NULL, NULL),
+(170, 'LKS150TB', 'ok', 'LEMBAR', NULL, NULL),
+(171, 'STP1', 'ok', 'PCS', NULL, NULL),
+(172, 'STP2', 'ok', 'PCS', NULL, NULL),
+(173, 'STP3', 'ok', 'PCS', NULL, NULL),
+(174, 'STP4', 'ok', 'PCS', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -2710,7 +2962,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (66, '2026_06_22_073153_add_kode_label_to_itemstokbahans_table', 45),
 (67, '2026_06_22_081028_add_sisa_putih_to_produksis_table', 46),
 (69, '2026_06_22_084728_add_kode_bahanbeli_to_produksis_table', 47),
-(70, '2026_06_23_155124_rename_bahanbeli_columns_to_bahanpakai', 48);
+(70, '2026_06_23_155124_rename_bahanbeli_columns_to_bahanpakai', 48),
+(71, '2026_06_24_000001_rename_kode_bahan_pakai_to_kode_bahan_jual', 49);
 
 -- --------------------------------------------------------
 
@@ -2845,7 +3098,8 @@ INSERT INTO `pinisings` (`id`, `kode_spk`, `atas`, `bawah`, `kanan`, `kiri`, `ca
 (18, 'SPK-2606173375', '', '', '', '', '', '2026-06-16 20:08:14', '2026-06-16 20:08:14'),
 (28, 'SPK-2606226061', 'Kantongan', 'Lipat Pas Gambar', 'Lipat Pas Gambar', 'Potong Pas Gambar', 'harus selsai siapnya', '2026-06-22 00:40:56', '2026-06-22 00:40:56'),
 (30, 'SPK-2606231195', 'Kantongan', 'Kantongan', 'Kantongan', 'Kantongan', 'Seusai detail', '2026-06-23 06:32:43', '2026-06-23 06:33:43'),
-(31, 'SPK-2606239567', 'Sisa Putih', 'Sisa Putih', '', 'Sisa Putih', 'sepdnauk ostd new', '2026-06-23 08:22:51', '2026-06-23 08:22:51');
+(31, 'SPK-2606239567', 'Sisa Putih', 'Sisa Putih', '', 'Sisa Putih', 'sepdnauk ostd new', '2026-06-23 08:22:51', '2026-06-23 08:22:51'),
+(32, 'SPK-2606248336', '', '', '', '', '', '2026-06-24 00:09:48', '2026-06-24 00:09:48');
 
 -- --------------------------------------------------------
 
@@ -2991,9 +3245,10 @@ CREATE TABLE `produksis` (
 --
 
 INSERT INTO `produksis` (`id`, `tanggal`, `no_invoice`, `id_desain`, `id_desainer`, `no_antrian`, `kode_spk`, `id_customer`, `id_bahan`, `keterangan`, `satuan`, `tinggi`, `lebar`, `qty`, `sisi`, `id_kategori_desain`, `catatan`, `pembayaran`, `metode_pengantaran`, `tgl_kirim`, `cara_perhitungan`, `harga_bahan`, `total_harga`, `status_produksi`, `status_finishing`, `status_logistik`, `status_selesai`, `otorisasi`, `selesai`, `created_at`, `updated_at`, `sisa_putih_panjang`, `sisa_putih_lebar`, `sisa_putih_total`, `kode_bahanpakai`) VALUES
-(30, '2026-06-22', 'INVOICE-2606227587', NULL, '2', 'ANT-00001', 'SPK-2606226061', '8', '2', 'cetak sepanduk', 'Meter', '3', '1', '1', '1 SISI', 0, '1', 'lunas', 'Diambil Sendiri', '2026-06-22', 'LUAS', '17000', '51000', 1, 1, 1, 1, 0, NULL, '2026-06-22 00:40:56', '2026-06-23 06:29:28', '3.05', '1.05', '3.2025', 'OSTD1'),
-(32, '2026-06-23', 'INVOICE-260623957', NULL, '2', 'ANT-00002', 'SPK-2606231195', '9', '2', 'bodresk', 'Cm', '100', '300', '1', '1 SISI', 0, '1', 'lunas', 'Diambil Sendiri', '2026-06-23', 'LUAS', '15200', '45600', 1, 0, NULL, 0, 0, NULL, '2026-06-23 06:32:43', '2026-06-23 06:34:20', NULL, NULL, NULL, NULL),
-(33, '2026-06-23', 'INVOICE-2606238098', NULL, '2', 'ANT-00003', 'SPK-2606239567', '8', '2', 'sepdnauk ostd new', 'Cm', '100', '100', '1', '1 SISI', 0, '1', 'lunas', 'Diambil Sendiri', '2026-06-23', 'LUAS', '17000', '17000', 1, 1, NULL, 0, 0, NULL, '2026-06-23 08:22:51', '2026-06-23 08:26:13', '100', '100', '1', 'OSTD1');
+(30, '2026-06-22', 'INVOICE-2606227587', NULL, '2', 'ANT-00001', 'SPK-2606226061', '8', '2', 'cetak sepanduk', 'Meter', '3', '1', '1', '1 SISI', 0, '1', 'lunas', 'Diambil Sendiri', '2026-06-22', 'LUAS', '17000', '51000', 1, 0, 1, 1, 0, NULL, '2026-06-22 00:40:56', '2026-06-24 01:10:48', '3.05', '1.05', '3.2025', 'OSTD1'),
+(32, '2026-06-23', 'INVOICE-260623957', NULL, '2', 'ANT-00002', 'SPK-2606231195', '9', '2', 'bodresk', 'Cm', '100', '300', '1', '1 SISI', 0, '1', 'lunas', 'Diambil Sendiri', '2026-06-23', 'LUAS', '15200', '45600', 1, 1, 1, 0, 0, NULL, '2026-06-23 06:32:43', '2026-06-24 00:18:56', '105', '305', '3.2025', 'OSTD1'),
+(33, '2026-06-23', 'INVOICE-2606238098', NULL, '2', 'ANT-00003', 'SPK-2606239567', '8', '2', 'sepdnauk ostd new', 'Cm', '100', '100', '1', '1 SISI', 0, '1', 'lunas', 'Diambil Sendiri', '2026-06-23', 'LUAS', '17000', '17000', 1, 1, 1, 0, 0, NULL, '2026-06-23 08:22:51', '2026-06-24 00:18:50', '100', '100', '1', 'OSTD1'),
+(34, '2026-06-24', 'INVOICE-2606246011', NULL, '2', 'ANT-00004', 'SPK-2606248336', '9', '68', '445454', 'Cm', '100', '100', '2', '1 SISI', 0, '1', 'lunas', 'Diambil Sendiri', '2026-06-24', 'QTY', '80000', '160000', 1, 1, 1, 0, 0, NULL, '2026-06-24 00:09:48', '2026-06-24 00:10:18', NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -3064,8 +3319,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('NoAN8jdTmysVPXPPVN1yIRVNsZQDDzqcsn6iatv6', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJsVURPMzFSeHpFdzlmNzZsYTF5NzFZYnJjSjlSenBsYkxMR0VWeXVnIiwidXJsIjp7ImludGVuZGVkIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL3Byb2R1a3NpXC9wcm9kdWtzaSJ9LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2xvZ2luIiwicm91dGUiOiJsb2dpbiJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1782282049),
-('rBszXYlRRYkVq9jjSBCzHPKWOrBWSsNmHOQ7dkKT', 2, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiI2MzgwQ1VTam5NczRRMWN3UWZ4anZHcXVxVU9TVWd6QlFPVHVFNjdQIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9iYWhhbnBha2FpIiwicm91dGUiOiJiYWhhbnBha2FpIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwidXJsIjpbXSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjJ9', 1782230233);
+('9feHlePXFeDdMySHuvykBrD1AIFZX7jxJF9nXOQQ', 2, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJLcUliQ0Z1RjlNUzV1TjlsY0dvVEhNQjFTVFJMSHZZaWc0Y1JBc2xmIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9iYWhhbnBha2FpIiwicm91dGUiOiJiYWhhbnBha2FpIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwidXJsIjpbXSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjJ9', 1782294439),
+('NoAN8jdTmysVPXPPVN1yIRVNsZQDDzqcsn6iatv6', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJsVURPMzFSeHpFdzlmNzZsYTF5NzFZYnJjSjlSenBsYkxMR0VWeXVnIiwidXJsIjp7ImludGVuZGVkIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL3Byb2R1a3NpXC9wcm9kdWtzaSJ9LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2xvZ2luIiwicm91dGUiOiJsb2dpbiJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1782282049);
 
 -- --------------------------------------------------------
 
@@ -3406,7 +3661,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `bahanpakais`
 --
 ALTER TABLE `bahanpakais`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=263;
 
 --
 -- AUTO_INCREMENT for table `bahans`
@@ -3490,19 +3745,19 @@ ALTER TABLE `list_po_eksternals`
 -- AUTO_INCREMENT for table `mata_ayams`
 --
 ALTER TABLE `mata_ayams`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `materbahans`
 --
 ALTER TABLE `materbahans`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=192;
 
 --
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
 
 --
 -- AUTO_INCREMENT for table `noantrians`
@@ -3532,7 +3787,7 @@ ALTER TABLE `penggunas`
 -- AUTO_INCREMENT for table `pinisings`
 --
 ALTER TABLE `pinisings`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `po_eksternals`
@@ -3556,7 +3811,7 @@ ALTER TABLE `po_pembelian_bahan_items`
 -- AUTO_INCREMENT for table `produksis`
 --
 ALTER TABLE `produksis`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `rekening_suplayers`
