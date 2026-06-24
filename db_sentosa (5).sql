@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 22, 2026 at 09:51 AM
+-- Generation Time: Jun 24, 2026 at 06:25 AM
 -- Server version: 8.0.30
--- PHP Version: 8.3.14
+-- PHP Version: 8.3.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,27 +24,27 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `bahanbelis`
+-- Table structure for table `bahanpakais`
 --
 
-CREATE TABLE `bahanbelis` (
+CREATE TABLE `bahanpakais` (
   `id` bigint UNSIGNED NOT NULL,
   `id_master_bahan` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `kode_bahan` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `keterangan` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `panjang` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `lebar` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `total` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `satuan` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `kode_bahan` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `keterangan` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `panjang` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `lebar` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `total` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `satuan` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `bahanbelis`
+-- Dumping data for table `bahanpakais`
 --
 
-INSERT INTO `bahanbelis` (`id`, `id_master_bahan`, `kode_bahan`, `keterangan`, `panjang`, `lebar`, `total`, `satuan`, `created_at`, `updated_at`) VALUES
+INSERT INTO `bahanpakais` (`id`, `id_master_bahan`, `kode_bahan`, `keterangan`, `panjang`, `lebar`, `total`, `satuan`, `created_at`, `updated_at`) VALUES
 (2, 'OSTD', 'OSTD1', 'MMT 280 Gsm  Uk. 3.2 x 70 M', '3.2', '70', '224', 'M2', '2026-06-21 21:36:45', '2026-06-21 21:36:45'),
 (3, 'OSTD', 'OSTD2', 'MMT 280 Gsm Uk. 2.8 x 70 M', '2.8', '70', '196', 'M2', '2026-06-21 21:43:45', '2026-06-21 21:43:45'),
 (4, 'OSTD', 'OSTD3', 'MMT 280 Gsm Uk. 2.6 x 70 M', '2.6', '70', '182', 'M2', '2026-06-21 21:45:56', '2026-06-21 21:45:56'),
@@ -2357,35 +2357,37 @@ INSERT INTO `hargabahans` (`id`, `kode_bahan`, `sisi`, `qty_min`, `qty_max`, `ha
 
 CREATE TABLE `itemstokbahans` (
   `id` bigint UNSIGNED NOT NULL,
-  `kode_bahan_beli` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `luas` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `qty` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `kode_bahan_pakai` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `luas` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `qty` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `po_pembelian_bahan_id` bigint UNSIGNED DEFAULT NULL,
   `po_pembelian_bahan_item_id` bigint UNSIGNED DEFAULT NULL,
-  `kode_po` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `panjang` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `lebar` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `satuan` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `keterangan` text COLLATE utf8mb4_unicode_ci,
-  `kode_label` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+  `kode_po` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `panjang` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `lebar` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `satuan` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `keterangan` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `kode_label` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `itemstokbahans`
 --
 
-INSERT INTO `itemstokbahans` (`id`, `kode_bahan_beli`, `luas`, `qty`, `created_at`, `updated_at`, `po_pembelian_bahan_id`, `po_pembelian_bahan_item_id`, `kode_po`, `panjang`, `lebar`, `satuan`, `keterangan`, `kode_label`) VALUES
-(10, 'OSTD2', '196', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 2, 'PB-2606-0001', '2.8', '70', 'M2', 'MMT 280 GSM UK 2.8 x 70', 'LB4-2-1'),
-(11, 'OSTD2', '196', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 2, 'PB-2606-0001', '2.8', '70', 'M2', 'MMT 280 GSM UK 2.8 x 70', 'LB4-2-2'),
-(12, 'OSTD1', '224', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 3, 'PB-2606-0001', '3.2', '70', 'M2', 'MMT 20 GSM uk 3.2 x 70', 'LB4-3-1'),
-(13, 'OSTD1', '224', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 3, 'PB-2606-0001', '3.2', '70', 'M2', 'MMT 20 GSM uk 3.2 x 70', 'LB4-3-2'),
+INSERT INTO `itemstokbahans` (`id`, `kode_bahan_pakai`, `luas`, `qty`, `created_at`, `updated_at`, `po_pembelian_bahan_id`, `po_pembelian_bahan_item_id`, `kode_po`, `panjang`, `lebar`, `satuan`, `keterangan`, `kode_label`) VALUES
+(10, 'OSTD2', '196', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 2, 'PB-2606-0001', '2.8', '70', 'M2', 'MMT 280 GSM UK 2.8 x 70', 'LB-OSTD2-001'),
+(11, 'OSTD2', '196', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 2, 'PB-2606-0001', '2.8', '70', 'M2', 'MMT 280 GSM UK 2.8 x 70', 'LB-OSTD2-002'),
+(12, 'OSTD1', '0', '1', '2026-06-22 00:34:27', '2026-06-23 08:26:13', 4, 3, 'PB-2606-0001', '3.2', '70', 'M2', 'MMT 20 GSM uk 3.2 x 70', 'LB-OSTD1-001'),
+(13, 'OSTD1', '224', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 3, 'PB-2606-0001', '3.2', '70', 'M2', 'MMT 20 GSM uk 3.2 x 70', 'LB-OSTD1-002'),
 (14, 'OSTD3', '182', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 4, 'PB-2606-0001', '2.6', '70', 'M2', 'lorem ipsum danger', 'LB4-4-1'),
 (15, 'OSTD3', '182', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 4, 'PB-2606-0001', '2.6', '70', 'M2', 'lorem ipsum danger', 'LB4-4-2'),
 (16, 'OSTD3', '182', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 4, 'PB-2606-0001', '2.6', '70', 'M2', 'lorem ipsum danger', 'LB4-4-3'),
 (17, 'OSTD3', '182', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 4, 'PB-2606-0001', '2.6', '70', 'M2', 'lorem ipsum danger', 'LB4-4-4'),
-(18, 'OSTD3', '182', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 4, 'PB-2606-0001', '2.6', '70', 'M2', 'lorem ipsum danger', 'LB4-4-5');
+(18, 'OSTD3', '182', '1', '2026-06-22 00:34:27', '2026-06-22 00:34:27', 4, 4, 'PB-2606-0001', '2.6', '70', 'M2', 'lorem ipsum danger', 'LB4-4-5'),
+(19, 'OSTD1', '224', '1', '2026-06-23 08:34:29', '2026-06-23 08:34:29', 5, 5, 'PB-2606-0002', '3.2', '70', 'M2', 'tidak ada', 'LB5-5-1'),
+(20, 'OSTD2', '196', '1', '2026-06-23 08:57:05', '2026-06-23 08:57:05', 6, 6, 'PB-2606-0003', '2.8', '70', 'M2', 'lorem ipsum', 'LB6-6-1');
 
 -- --------------------------------------------------------
 
@@ -2559,7 +2561,9 @@ INSERT INTO `mata_ayams` (`id`, `kode_spk`, `atas`, `bawah`, `kiri`, `kanan`, `c
 (16, 'SPK-2606168511', 0, 0, 0, 0, '2026-06-15 23:00:06', '2026-06-15 23:00:06'),
 (17, 'SPK-2606174781', 0, 0, 0, 0, '2026-06-16 19:41:50', '2026-06-16 19:41:50'),
 (18, 'SPK-2606173375', 0, 0, 0, 0, '2026-06-16 20:08:14', '2026-06-16 20:08:14'),
-(28, 'SPK-2606226061', 1, 1, 1, 1, '2026-06-22 00:40:57', '2026-06-22 00:40:57');
+(28, 'SPK-2606226061', 1, 1, 1, 1, '2026-06-22 00:40:57', '2026-06-22 00:40:57'),
+(30, 'SPK-2606231195', 1, 1, 1, 1, '2026-06-23 06:32:43', '2026-06-23 06:33:43'),
+(31, 'SPK-2606239567', 0, 0, 0, 0, '2026-06-23 08:22:51', '2026-06-23 08:22:51');
 
 -- --------------------------------------------------------
 
@@ -2569,9 +2573,9 @@ INSERT INTO `mata_ayams` (`id`, `kode_spk`, `atas`, `bawah`, `kiri`, `kanan`, `c
 
 CREATE TABLE `materbahans` (
   `id` bigint UNSIGNED NOT NULL,
-  `kode_bahan_pakai` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `keterangan` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tanggal` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `kode_bahan_pakai` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `keterangan` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tanggal` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2705,7 +2709,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (65, '2026_06_22_072339_add_po_relations_to_itemstokbahans_table', 44),
 (66, '2026_06_22_073153_add_kode_label_to_itemstokbahans_table', 45),
 (67, '2026_06_22_081028_add_sisa_putih_to_produksis_table', 46),
-(69, '2026_06_22_084728_add_kode_bahanbeli_to_produksis_table', 47);
+(69, '2026_06_22_084728_add_kode_bahanbeli_to_produksis_table', 47),
+(70, '2026_06_23_155124_rename_bahanbeli_columns_to_bahanpakai', 48);
 
 -- --------------------------------------------------------
 
@@ -2838,7 +2843,9 @@ INSERT INTO `pinisings` (`id`, `kode_spk`, `atas`, `bawah`, `kanan`, `kiri`, `ca
 (16, 'SPK-2606168511', '', '', '', '', '', '2026-06-15 23:00:06', '2026-06-15 23:00:06'),
 (17, 'SPK-2606174781', 'Kantongan', 'Potong Pas Gambar', 'Potong Pas Gambar', 'Lipat Pas Gambar', '', '2026-06-16 19:41:50', '2026-06-16 19:41:50'),
 (18, 'SPK-2606173375', '', '', '', '', '', '2026-06-16 20:08:14', '2026-06-16 20:08:14'),
-(28, 'SPK-2606226061', 'Kantongan', 'Lipat Pas Gambar', 'Lipat Pas Gambar', 'Potong Pas Gambar', 'harus selsai siapnya', '2026-06-22 00:40:56', '2026-06-22 00:40:56');
+(28, 'SPK-2606226061', 'Kantongan', 'Lipat Pas Gambar', 'Lipat Pas Gambar', 'Potong Pas Gambar', 'harus selsai siapnya', '2026-06-22 00:40:56', '2026-06-22 00:40:56'),
+(30, 'SPK-2606231195', 'Kantongan', 'Kantongan', 'Kantongan', 'Kantongan', 'Seusai detail', '2026-06-23 06:32:43', '2026-06-23 06:33:43'),
+(31, 'SPK-2606239567', 'Sisa Putih', 'Sisa Putih', '', 'Sisa Putih', 'sepdnauk ostd new', '2026-06-23 08:22:51', '2026-06-23 08:22:51');
 
 -- --------------------------------------------------------
 
@@ -2854,7 +2861,7 @@ CREATE TABLE `po_eksternals` (
   `id_distributor` bigint UNSIGNED DEFAULT NULL,
   `mata_uang` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `batas_bayar` date DEFAULT NULL,
-  `pembayaran` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pembayaran` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `id_suplayer` bigint UNSIGNED DEFAULT NULL,
   `diskon` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `ppn` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -2869,10 +2876,7 @@ CREATE TABLE `po_eksternals` (
 --
 
 INSERT INTO `po_eksternals` (`id`, `tgl`, `no_po`, `hal`, `id_distributor`, `mata_uang`, `batas_bayar`, `pembayaran`, `id_suplayer`, `diskon`, `ppn`, `sub_total`, `total_harga`, `created_at`, `updated_at`) VALUES
-(2, '2026-06-15', 'PO-2606-0001', '4ererere', NULL, 'IDR', '2026-06-16', 'CASH', 1, '0', '0', '571380000', '571380000.00', '2026-06-15 11:35:12', '2026-06-19 19:05:00'),
-(4, '2026-06-17', 'PO-2606-0002', '60', NULL, 'IDR', '2026-06-17', 'CREDIT', 1, '10', '0', '0', '0', '2026-06-16 23:21:46', '2026-06-19 19:04:55'),
-(5, '2026-06-19', 'PO-2606-0003', 'Laser', NULL, 'IDR', '2026-06-19', 'CASH', 1, '0', '0', '1280000', '1280000.00', '2026-06-19 01:33:13', '2026-06-19 19:02:28'),
-(6, '2026-06-20', 'PO-2606-0004', NULL, NULL, 'IDR', '2026-07-24', 'CASH', 2, NULL, NULL, '0', '0', '2026-06-19 19:20:58', '2026-06-19 19:54:30');
+(7, '2026-06-23', 'PO-2606-0001', 'Cetak sepanduk new', NULL, 'IDR', '2026-07-23', 'CASH', 1, NULL, NULL, '0', '0', '2026-06-23 05:47:57', '2026-06-23 05:48:18');
 
 -- --------------------------------------------------------
 
@@ -2886,7 +2890,7 @@ CREATE TABLE `po_pembelian_bahans` (
   `no_po` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `id_suplayer` bigint UNSIGNED DEFAULT NULL,
   `hal` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `pembayaran` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pembayaran` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `diskon` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `ppn` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `sub_total` decimal(15,2) NOT NULL DEFAULT '0.00',
@@ -2900,7 +2904,9 @@ CREATE TABLE `po_pembelian_bahans` (
 --
 
 INSERT INTO `po_pembelian_bahans` (`id`, `tgl`, `no_po`, `id_suplayer`, `hal`, `pembayaran`, `diskon`, `ppn`, `sub_total`, `created_at`, `updated_at`, `status`) VALUES
-(4, '2026-06-22', 'PB-2606-0001', 1, 'BELI BAHAN OSTD', 'CASH', NULL, NULL, '150000.00', '2026-06-21 23:33:56', '2026-06-22 00:34:27', 1);
+(4, '2026-06-22', 'PB-2606-0001', 1, 'BELI BAHAN OSTD', 'CASH', NULL, NULL, '150000.00', '2026-06-21 23:33:56', '2026-06-23 08:48:20', 1),
+(5, '2026-06-23', 'PB-2606-0002', 1, 'beli bahan ostd', 'CASH', NULL, NULL, '50000.00', '2026-06-23 08:31:42', '2026-06-23 08:34:29', 1),
+(6, '2026-06-23', 'PB-2606-0003', 1, NULL, 'CASH', NULL, NULL, '50000.00', '2026-06-23 08:56:31', '2026-06-23 08:57:06', 1);
 
 -- --------------------------------------------------------
 
@@ -2912,13 +2918,13 @@ CREATE TABLE `po_pembelian_bahan_items` (
   `id` bigint UNSIGNED NOT NULL,
   `po_pembelian_bahan_id` bigint UNSIGNED NOT NULL,
   `id_bahan` bigint UNSIGNED DEFAULT NULL,
-  `panjang` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `lebar` varchar(39) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `luas` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0.00',
-  `harga` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `qty` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0.00',
+  `panjang` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `lebar` varchar(39) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `luas` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0.00',
+  `harga` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `qty` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0.00',
   `satuan` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `total_harga` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0.00',
+  `total_harga` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0.00',
   `keterangan` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -2932,7 +2938,9 @@ INSERT INTO `po_pembelian_bahan_items` (`id`, `po_pembelian_bahan_id`, `id_bahan
 (1, 1, 831, '2.00', '1.00', '2.00', '200.00', '3.00', 'RIM', '1200.00', 'tisda adaa', '2026-06-16 06:03:38', '2026-06-16 06:03:38'),
 (2, 4, 3, '2.8', '70', '196', '20000', '2', 'M2', '40000', 'MMT 280 GSM UK 2.8 x 70', '2026-06-21 23:45:30', '2026-06-21 23:53:41'),
 (3, 4, 2, '3.2', '70', '224', '50000', '2', 'M2', '100000', 'MMT 20 GSM uk 3.2 x 70', '2026-06-21 23:54:46', '2026-06-21 23:54:46'),
-(4, 4, 4, '2.6', '70', '182', '2000', '5', 'M2', '10000', 'lorem ipsum danger', '2026-06-21 23:55:59', '2026-06-21 23:55:59');
+(4, 4, 4, '2.6', '70', '182', '2000', '5', 'M2', '10000', 'lorem ipsum danger', '2026-06-21 23:55:59', '2026-06-21 23:55:59'),
+(5, 5, 2, '3.2', '70', '224', '50000', '1', 'M2', '50000', 'tidak ada', '2026-06-23 08:33:30', '2026-06-23 08:33:30'),
+(6, 6, 3, '2.8', '70', '196', '50000', '1', 'M2', '50000', 'lorem ipsum', '2026-06-23 08:56:59', '2026-06-23 08:56:59');
 
 -- --------------------------------------------------------
 
@@ -2972,18 +2980,20 @@ CREATE TABLE `produksis` (
   `selesai` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `sisa_putih_panjang` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sisa_putih_lebar` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sisa_putih_total` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `kode_bahanbeli` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+  `sisa_putih_panjang` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sisa_putih_lebar` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sisa_putih_total` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `kode_bahanpakai` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `produksis`
 --
 
-INSERT INTO `produksis` (`id`, `tanggal`, `no_invoice`, `id_desain`, `id_desainer`, `no_antrian`, `kode_spk`, `id_customer`, `id_bahan`, `keterangan`, `satuan`, `tinggi`, `lebar`, `qty`, `sisi`, `id_kategori_desain`, `catatan`, `pembayaran`, `metode_pengantaran`, `tgl_kirim`, `cara_perhitungan`, `harga_bahan`, `total_harga`, `status_produksi`, `status_finishing`, `status_logistik`, `status_selesai`, `otorisasi`, `selesai`, `created_at`, `updated_at`, `sisa_putih_panjang`, `sisa_putih_lebar`, `sisa_putih_total`, `kode_bahanbeli`) VALUES
-(30, '2026-06-22', 'INVOICE-2606227587', NULL, '2', 'ANT-00001', 'SPK-2606226061', '8', '2', 'cetak sepanduk', 'Meter', '3', '1', '1', '1 SISI', 0, '1', 'lunas', 'Diambil Sendiri', '2026-06-22', 'LUAS', '17000', '51000', 1, 0, NULL, 0, 0, NULL, '2026-06-22 00:40:56', '2026-06-22 01:13:21', '2', '2', '4', NULL);
+INSERT INTO `produksis` (`id`, `tanggal`, `no_invoice`, `id_desain`, `id_desainer`, `no_antrian`, `kode_spk`, `id_customer`, `id_bahan`, `keterangan`, `satuan`, `tinggi`, `lebar`, `qty`, `sisi`, `id_kategori_desain`, `catatan`, `pembayaran`, `metode_pengantaran`, `tgl_kirim`, `cara_perhitungan`, `harga_bahan`, `total_harga`, `status_produksi`, `status_finishing`, `status_logistik`, `status_selesai`, `otorisasi`, `selesai`, `created_at`, `updated_at`, `sisa_putih_panjang`, `sisa_putih_lebar`, `sisa_putih_total`, `kode_bahanpakai`) VALUES
+(30, '2026-06-22', 'INVOICE-2606227587', NULL, '2', 'ANT-00001', 'SPK-2606226061', '8', '2', 'cetak sepanduk', 'Meter', '3', '1', '1', '1 SISI', 0, '1', 'lunas', 'Diambil Sendiri', '2026-06-22', 'LUAS', '17000', '51000', 1, 1, 1, 1, 0, NULL, '2026-06-22 00:40:56', '2026-06-23 06:29:28', '3.05', '1.05', '3.2025', 'OSTD1'),
+(32, '2026-06-23', 'INVOICE-260623957', NULL, '2', 'ANT-00002', 'SPK-2606231195', '9', '2', 'bodresk', 'Cm', '100', '300', '1', '1 SISI', 0, '1', 'lunas', 'Diambil Sendiri', '2026-06-23', 'LUAS', '15200', '45600', 1, 0, NULL, 0, 0, NULL, '2026-06-23 06:32:43', '2026-06-23 06:34:20', NULL, NULL, NULL, NULL),
+(33, '2026-06-23', 'INVOICE-2606238098', NULL, '2', 'ANT-00003', 'SPK-2606239567', '8', '2', 'sepdnauk ostd new', 'Cm', '100', '100', '1', '1 SISI', 0, '1', 'lunas', 'Diambil Sendiri', '2026-06-23', 'LUAS', '17000', '17000', 1, 1, NULL, 0, 0, NULL, '2026-06-23 08:22:51', '2026-06-23 08:26:13', '100', '100', '1', 'OSTD1');
 
 -- --------------------------------------------------------
 
@@ -3019,9 +3029,9 @@ INSERT INTO `rekening_suplayers` (`id`, `id_suplayer`, `nama_bank`, `no_rekening
 CREATE TABLE `rekening_suplayer_pembelian_bahans` (
   `id` bigint UNSIGNED NOT NULL,
   `id_suplayer_pembelian_bahan` bigint UNSIGNED NOT NULL,
-  `nama_bank` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `no_rekening` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nama_rekening` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nama_bank` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `no_rekening` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nama_rekening` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -3054,8 +3064,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('cGcQzBVQiXny6YW7QYWSeDEVEWWNOZK4TRYyAudn', 2, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJyeDZiR05uNTdZQ1RNT0Q0U0JtQm5Udjg1b3J3OVZXR0R0bXVuOUs3IiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9wcm9kdWtzaVwvcHJvZHVrc2kiLCJyb3V0ZSI6InByb2R1a3NpLnByb2R1a3NpIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwidXJsIjpbXSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjJ9', 1782121253),
-('D1VR844L3p86Dd4yUuJXjqr9jDOAZhjJvH9pL8ot', 2, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiIxNk5VOVU4c1NwSUNVakZiRUZSTTBoZW54WHBmTkdrNkMzbEZmaGJrIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDAwXC9wcm9kdWtzaVwvcHJvZHVrc2kiLCJyb3V0ZSI6InByb2R1a3NpLnByb2R1a3NpIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwidXJsIjpbXSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjJ9', 1782121545);
+('NoAN8jdTmysVPXPPVN1yIRVNsZQDDzqcsn6iatv6', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJsVURPMzFSeHpFdzlmNzZsYTF5NzFZYnJjSjlSenBsYkxMR0VWeXVnIiwidXJsIjp7ImludGVuZGVkIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL3Byb2R1a3NpXC9wcm9kdWtzaSJ9LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2xvZ2luIiwicm91dGUiOiJsb2dpbiJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1782282049),
+('rBszXYlRRYkVq9jjSBCzHPKWOrBWSsNmHOQ7dkKT', 2, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiI2MzgwQ1VTam5NczRRMWN3UWZ4anZHcXVxVU9TVWd6QlFPVHVFNjdQIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9iYWhhbnBha2FpIiwicm91dGUiOiJiYWhhbnBha2FpIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwidXJsIjpbXSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjJ9', 1782230233);
 
 -- --------------------------------------------------------
 
@@ -3092,13 +3102,13 @@ INSERT INTO `suplayers` (`id`, `kode`, `nama_suplayer`, `alamat`, `nohp`, `produ
 
 CREATE TABLE `suplayer_pembelian_bahans` (
   `id` bigint UNSIGNED NOT NULL,
-  `kode` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nama_suplayer` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `alamat` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nohp` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `produk` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `harga` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `jatuh_tempo` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `kode` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nama_suplayer` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `alamat` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nohp` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `produk` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `harga` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `jatuh_tempo` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -3118,13 +3128,13 @@ INSERT INTO `suplayer_pembelian_bahans` (`id`, `kode`, `nama_suplayer`, `alamat`
 
 CREATE TABLE `typebahans` (
   `id` bigint UNSIGNED NOT NULL,
-  `id_master_bahan` varchar(11) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `kode_bahan` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `keterangan` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `panjang` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `lebar` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `total` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `satuan` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id_master_bahan` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `kode_bahan` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `keterangan` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `panjang` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `lebar` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `total` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `satuan` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -3158,9 +3168,9 @@ INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `re
 --
 
 --
--- Indexes for table `bahanbelis`
+-- Indexes for table `bahanpakais`
 --
-ALTER TABLE `bahanbelis`
+ALTER TABLE `bahanpakais`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -3393,10 +3403,10 @@ ALTER TABLE `users`
 --
 
 --
--- AUTO_INCREMENT for table `bahanbelis`
+-- AUTO_INCREMENT for table `bahanpakais`
 --
-ALTER TABLE `bahanbelis`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+ALTER TABLE `bahanpakais`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `bahans`
@@ -3444,7 +3454,7 @@ ALTER TABLE `hargabahans`
 -- AUTO_INCREMENT for table `itemstokbahans`
 --
 ALTER TABLE `itemstokbahans`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `jabatans`
@@ -3480,7 +3490,7 @@ ALTER TABLE `list_po_eksternals`
 -- AUTO_INCREMENT for table `mata_ayams`
 --
 ALTER TABLE `mata_ayams`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `materbahans`
@@ -3492,7 +3502,7 @@ ALTER TABLE `materbahans`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
 
 --
 -- AUTO_INCREMENT for table `noantrians`
@@ -3522,31 +3532,31 @@ ALTER TABLE `penggunas`
 -- AUTO_INCREMENT for table `pinisings`
 --
 ALTER TABLE `pinisings`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `po_eksternals`
 --
 ALTER TABLE `po_eksternals`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `po_pembelian_bahans`
 --
 ALTER TABLE `po_pembelian_bahans`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `po_pembelian_bahan_items`
 --
 ALTER TABLE `po_pembelian_bahan_items`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `produksis`
 --
 ALTER TABLE `produksis`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `rekening_suplayers`
