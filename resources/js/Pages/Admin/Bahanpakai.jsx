@@ -6,7 +6,7 @@ import autoTable from 'jspdf-autotable';
 
 const satuanOptions = ['M2', 'PCS', 'LITER', 'LEMBAR'];
 
-export default function Bahanbeli({ bahanbeli, masterBahan, kode }) {
+export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
   const { data, setData, post, delete: destroy, put, processing, reset } = useForm({
     id: 0,
     id_master_bahan: '',
@@ -48,7 +48,7 @@ export default function Bahanbeli({ bahanbeli, masterBahan, kode }) {
   const editmodalRef = useRef(null);
   const openModalEdit = (id) => {
     editmodalRef.current.showModal();
-    const item = bahanbeli.find((i) => i.id === id);
+    const item = bahanpakai.find((i) => i.id === id);
     setData({
       id: item.id,
       id_master_bahan: item.id_master_bahan,
@@ -68,7 +68,7 @@ export default function Bahanbeli({ bahanbeli, masterBahan, kode }) {
 
   const save = (e) => {
     e.preventDefault();
-    post('/bahanbeli', {
+    post('/bahanpakai', {
       onSuccess: () => {
         reset();
         closeModal();
@@ -78,14 +78,14 @@ export default function Bahanbeli({ bahanbeli, masterBahan, kode }) {
 
   const hapus = (id) => {
     if (confirm('Yakin ingin menghapus?')) {
-      destroy('/bahanbeli/' + id);
+      destroy('/bahanpakai/' + id);
       closeModalEdit();
     }
   };
 
   const update = (e) => {
     e.preventDefault();
-    put('/bahanbeli/' + data.id, {
+    put('/bahanpakai/' + data.id, {
       onSuccess: () => {
         closeModalEdit();
         reset();
@@ -100,7 +100,7 @@ export default function Bahanbeli({ bahanbeli, masterBahan, kode }) {
       doc.text('Data Bahan Beli', 14, 20);
       doc.setFontSize(10);
       doc.text('Tanggal: ' + new Date().toLocaleDateString('id-ID'), 14, 27);
-      const rows = bahanbeli.map((item, index) => [
+      const rows = bahanpakai.map((item, index) => [
         index + 1,
         item.kode_bahan,
         item.master_bahan?.keterangan || '-',
@@ -118,7 +118,7 @@ export default function Bahanbeli({ bahanbeli, masterBahan, kode }) {
         headStyles: { fillColor: [22, 163, 74] },
         theme: 'grid',
       });
-      doc.save('data_bahan_beli.pdf');
+      doc.save('data_bahan_pakai.pdf');
     } catch (error) {
       console.error('Gagal export PDF:', error);
       alert('Gagal mengexport PDF: ' + error.message);
@@ -134,13 +134,13 @@ export default function Bahanbeli({ bahanbeli, masterBahan, kode }) {
         <div className="xl:col-span-2 card bg-base-100 shadow-md border border-base-300">
           <div className="card-body">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-              <h2 className="card-title">Data Bahan Beli</h2>
+              <h2 className="card-title">Data Bahan Pakai</h2>
               <div className="flex gap-2">
                 <button className="btn btn-primary" onClick={exportPDF}>
                   <i className="fas fa-file-pdf"></i> Export PDF
                 </button>
                 <button className="btn btn-success" onClick={openModal}>
-                  <i className="fas fa-plus"></i> Tambah Bahan Beli
+                   <i className="fas fa-plus"></i> Tambah Bahan Pakai
                 </button>
 
                 <dialog ref={modalRef} className="modal">
@@ -153,13 +153,13 @@ export default function Bahanbeli({ bahanbeli, masterBahan, kode }) {
                       ✕
                     </button>
 
-                    <h3 className="text-lg font-bold mb-4">Tambah Bahan Beli</h3>
+                    <h3 className="text-lg font-bold mb-4">Tambah Bahan Pakai</h3>
 
                     <form onSubmit={save}>
                       <div className="grid grid-cols-1 gap-3">
                         <label className="form-control">
                           <div className="label">
-                            <span className="label-text">Kode Bahan Jual</span>
+                            <span className="label-text">Kode Bahan Pakai</span>
                           </div>
                           <select
                             value={data.id_master_bahan}
@@ -167,7 +167,7 @@ export default function Bahanbeli({ bahanbeli, masterBahan, kode }) {
                             required
                             onChange={(e) => setData('id_master_bahan', e.target.value)}
                           >
-                            <option value="">-- Pilih  Bahan Jual--</option>
+                            <option value="">-- Pilih Bahan Pakai --</option>
                             {masterBahan.map((item) => (
                               <option key={item.kode_bahan_pakai} value={item.kode_bahan_pakai}>
                                 {item.kode_bahan_pakai}
@@ -283,13 +283,13 @@ export default function Bahanbeli({ bahanbeli, masterBahan, kode }) {
                       ✕
                     </button>
 
-                    <h3 className="text-lg font-bold mb-4">Edit Bahan Beli</h3>
+                    <h3 className="text-lg font-bold mb-4">Edit Bahan Pakai</h3>
 
                     <form onSubmit={update}>
                       <div className="grid grid-cols-1 gap-3">
                         <label className="form-control">
                           <div className="label">
-                            <span className="label-text">Kode Bahan Jual</span>
+                            <span className="label-text">Kode Bahan Pakai</span>
                           </div>
 
                           <select
@@ -298,7 +298,7 @@ export default function Bahanbeli({ bahanbeli, masterBahan, kode }) {
                             required
                             onChange={(e) => setData('id_master_bahan', e.target.value)}
                           >
-                            <option value="">-- Pilih Bahan Jual --</option>
+                            <option value="">-- Pilih Bahan Pakai --</option>
                             {masterBahan.map((item) => (
                               <option key={item.kode_bahan_pakai} value={item.kode_bahan_pakai}>
                                 {item.keterangan}
@@ -418,7 +418,7 @@ export default function Bahanbeli({ bahanbeli, masterBahan, kode }) {
                 <thead>
                   <tr>
                     <th>No</th>
-                    <th>Kode bahan jual</th>
+                    <th>Kode bahan pakai</th>
                     <th>Kode Bahan</th>
                     <th>Keterangan</th>
                     <th>Panjang</th>
@@ -428,7 +428,7 @@ export default function Bahanbeli({ bahanbeli, masterBahan, kode }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {bahanbeli.map((item, index) => (
+                  {bahanpakai.map((item, index) => (
                     <tr
                       key={item.id}
                       onClick={() => openModalEdit(item.id)}

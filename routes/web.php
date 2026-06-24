@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\admin\BahanController;
-use App\Http\Controllers\admin\BahanbeliController;
+use App\Http\Controllers\admin\BahanpakaiController;
 use App\Http\Controllers\admin\CustomerController;
 use App\Http\Controllers\admin\DashboardController;
 use App\Http\Controllers\admin\DataOrderController;
@@ -85,10 +85,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/materbahan/{id}', [MaterbahanController::class, 'update'])->name('update.materbahan');
     Route::delete('/materbahan/{id}', [MaterbahanController::class, 'delete'])->name('delete.materbahan');
 
-    Route::get('/bahanbeli', [BahanbeliController::class, 'index'])->name('bahanbeli');
-    Route::post('/bahanbeli', [BahanbeliController::class, 'store'])->name('store.bahanbeli');
-    Route::put('/bahanbeli/{id}', [BahanbeliController::class, 'update'])->name('update.bahanbeli');
-    Route::delete('/bahanbeli/{id}', [BahanbeliController::class, 'delete'])->name('delete.bahanbeli');
+    Route::get('/bahanpakai', [BahanpakaiController::class, 'index'])->name('bahanpakai');
+    Route::post('/bahanpakai', [BahanpakaiController::class, 'store'])->name('store.bahanpakai');
+    Route::put('/bahanpakai/{id}', [BahanpakaiController::class, 'update'])->name('update.bahanpakai');
+    Route::delete('/bahanpakai/{id}', [BahanpakaiController::class, 'delete'])->name('delete.bahanpakai');
 
     Route::get('/desain', [DesainController::class, 'index'])->name('desain');
     Route::post('/desain', [DesainController::class, 'store'])->name('store.desain');

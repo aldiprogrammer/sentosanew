@@ -3,28 +3,28 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Bahanbeli;
+use App\Models\Bahanpakai;
 use App\Models\Materbahan;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class BahanbeliController extends Controller
+class BahanpakaiController extends Controller
 {
     public function index()
     {
-        $bahanbeli = Bahanbeli::with('masterBahan')->orderBy('id', 'desc')->get();
+        $bahanpakai = Bahanpakai::with('masterBahan')->orderBy('id', 'desc')->get();
         $masterBahan = Materbahan::orderBy('kode_bahan_pakai')->get();
-        $cek = Bahanbeli::first();
+        $cek = Bahanpakai::first();
         if ($cek == false) {
             $kode = 'BB-' . '00001';
         } else {
-            $ant = Bahanbeli::orderBy('id', 'desc')->first();
+            $ant = Bahanpakai::orderBy('id', 'desc')->first();
             $number = (int) substr($ant->kode_bahan, 4);
             $number++;
             $kode = 'BB-' . str_pad($number, 5, '0', STR_PAD_LEFT);
         }
 
-        return Inertia::render('Admin/Bahanbeli', compact('bahanbeli', 'masterBahan', 'kode'));
+        return Inertia::render('Admin/Bahanpakai', compact('bahanpakai', 'masterBahan', 'kode'));
     }
 
     public function store(Request $request)
@@ -39,7 +39,7 @@ class BahanbeliController extends Controller
             'satuan' => ['required', 'string', 'max:30'],
         ]);
 
-        $bb = new Bahanbeli;
+        $bb = new Bahanpakai;
         $bb->id_master_bahan = $request->id_master_bahan;
         $bb->kode_bahan = $request->kode_bahan;
         $bb->keterangan = $request->keterangan;
@@ -64,7 +64,7 @@ class BahanbeliController extends Controller
             'satuan' => ['required', 'string', 'max:30'],
         ]);
 
-        $bb = Bahanbeli::findOrFail($id);
+        $bb = Bahanpakai::findOrFail($id);
         $bb->id_master_bahan = $request->id_master_bahan;
         $bb->kode_bahan = $request->kode_bahan;
         $bb->keterangan = $request->keterangan;
@@ -79,7 +79,7 @@ class BahanbeliController extends Controller
 
     public function delete($id)
     {
-        $bb = Bahanbeli::findOrFail($id);
+        $bb = Bahanpakai::findOrFail($id);
         $bb->delete();
 
         return redirect()->back()->with('success', 'Data berhasil dihapus');

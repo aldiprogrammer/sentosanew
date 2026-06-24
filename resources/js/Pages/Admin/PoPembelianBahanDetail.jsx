@@ -58,7 +58,7 @@ const formatSatuan = (satuan) => {
   return satuan === 'M2' ? 'Meter' : (satuan || '-');
 };
 
-export default function PoPembelianBahanDetail({ po, bahanbelis }) {
+export default function PoPembelianBahanDetail({ po, bahanpakais }) {
   const { data, setData, post, delete: destroy, put, processing, reset } = useForm({
     id: 0,
     id_bahan: "",
@@ -80,7 +80,7 @@ export default function PoPembelianBahanDetail({ po, bahanbelis }) {
   const modalRef = useRef(null);
   const editModalRef = useRef(null);
 
-  const selectedBahan = bahanbelis.find((b) => b.id == data.id_bahan);
+  const selectedBahan = bahanpakais.find((b) => b.id == data.id_bahan);
 
   const hitungLuas = (panjang, lebar) => {
     const p = parseFloat(panjang) || 0;
@@ -584,10 +584,10 @@ export default function PoPembelianBahanDetail({ po, bahanbelis }) {
                 <label className="form-control">
                   <div className="label"><span className="label-text">Bahan</span></div>
                   <SearchableSelect
-                    options={bahanbelis.map(b => ({ value: b.id, label: `${b.kode_bahan || '-'} - ${b.keterangan || '-'}` }))}
+                    options={bahanpakais.map(b => ({ value: b.id, label: `${b.kode_bahan || '-'} - ${b.keterangan || '-'}` }))}
                     value={data.id_bahan}
                     onChange={(val) => setData("id_bahan", val)}
-                    placeholder="Pilih Bahan Beli"
+                    placeholder="Pilih Bahan Pakai"
                   />
                 </label>
                 <label className="form-control mt-2">
@@ -646,10 +646,10 @@ export default function PoPembelianBahanDetail({ po, bahanbelis }) {
                 <label className="form-control">
                   <div className="label"><span className="label-text">Bahan</span></div>
                   <SearchableSelect
-                    options={bahanbelis.map(b => ({ value: b.id, label: `${b.kode_bahan || '-'} - ${b.keterangan || '-'}` }))}
+                    options={bahanpakais.map(b => ({ value: b.id, label: `${b.kode_bahan || '-'} - ${b.keterangan || '-'}` }))}
                     value={data.id_bahan}
                     onChange={(val) => setData("id_bahan", val)}
-                    placeholder="Pilih Bahan Beli"
+                    placeholder="Pilih Bahan Pakai"
                   />
                 </label>
                 <label className="form-control mt-2">

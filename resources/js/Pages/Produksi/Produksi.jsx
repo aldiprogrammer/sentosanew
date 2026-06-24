@@ -3,13 +3,13 @@ import { router } from '@inertiajs/react'
 import React, { useMemo, useRef, useState } from 'react'
 import { buildFinishingReceiptHtml } from './StrukFinishingTemplate'
 
-export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
+export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
     const [selected, setSelected] = useState(null)
     const [filterKategori, setFilterKategori] = useState('')
     const [filterJenisBahan, setFilterJenisBahan] = useState('')
     const [sisaPutihPanjang, setSisaPutihPanjang] = useState('')
     const [sisaPutihLebar, setSisaPutihLebar] = useState('')
-    const [selectedBahanbeli, setSelectedBahanbeli] = useState('')
+    const [selectedBahanpakai, setSelectedBahanpakai] = useState('')
     const [selectedItemStok, setSelectedItemStok] = useState('')
     const modalRef = useRef(null)
 
@@ -40,15 +40,15 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
         return totalLuasM2 + totalSisaPutih
     }, [totalLuasM2, totalSisaPutih])
 
-    const bahanbeliOptions = useMemo(() => {
+    const bahanpakaiOptions = useMemo(() => {
         if (!selected) return []
-        return bahanbeliList?.filter((b) => b.id_master_bahan === selected.bahan?.kode) || []
-    }, [selected, bahanbeliList])
+        return bahanpakaiList?.filter((b) => b.id_master_bahan === selected.bahan?.kode) || []
+    }, [selected, bahanpakaiList])
 
     const itemStokOptions = useMemo(() => {
-        if (!selectedBahanbeli || !itemstokbahans) return []
-        return itemstokbahans.filter((s) => s.kode_bahan_beli === selectedBahanbeli && parseFloat(s.luas) > 0 && parseInt(s.qty) > 0)
-    }, [selectedBahanbeli, itemstokbahans])
+        if (!selectedBahanpakai || !itemstokbahans) return []
+        return itemstokbahans.filter((s) => s.kode_bahan_pakai === selectedBahanpakai && parseFloat(s.luas) > 0 && parseInt(s.qty) > 0)
+    }, [selectedBahanpakai, itemstokbahans])
 
     const stokTerpilih = useMemo(() => {
         if (!selectedItemStok || !itemstokbahans) return null
@@ -111,7 +111,7 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
         setSelected(item)
         setSisaPutihPanjang(item.tinggi ?? '')
         setSisaPutihLebar(item.lebar ?? '')
-        setSelectedBahanbeli(item.kode_bahanbeli ?? '')
+        setSelectedBahanpakai(item.kode_bahanpakai ?? '')
         setSelectedItemStok('')
         modalRef.current?.showModal()
     }
@@ -127,7 +127,7 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
             sisa_putih_panjang: sisaPutihPanjang,
             sisa_putih_lebar: sisaPutihLebar,
             sisa_putih_total: String(totalSisaPutih),
-            kode_bahanbeli: selectedBahanbeli,
+            kode_bahanpakai: selectedBahanpakai,
             id_item_stok: stokTerpilih?.id || null,
             total_all: totalAll.toFixed(2),
         }, {
@@ -313,19 +313,19 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
                                 <label className="form-control">
                                     <span className="label-text text-xs">Kode Bahan pakai</span>
                                     <select
-                                        value={selectedBahanbeli}
-                                        onChange={(e) => { setSelectedBahanbeli(e.target.value); setSelectedItemStok('') }}
+                                        value={selectedBahanpakai}
+                                        onChange={(e) => { setSelectedBahanpakai(e.target.value); setSelectedItemStok('') }}
                                         className="select select-bordered select-sm text-xs"
                                     >
                                         <option value="">Pilih Bahan Pakai</option>
-                                        {bahanbeliOptions.map((bb) => (
+                                        {bahanpakaiOptions.map((bb) => (
                                             <option key={bb.kode_bahan} value={bb.kode_bahan}>
                                                 {bb.kode_bahan} - {bb.keterangan}
                                             </option>
                                         ))}
                                     </select>
                                 </label>
-                                {selectedBahanbeli && itemStokOptions.length > 0 && (
+                                {selectedBahanpakai && itemStokOptions.length > 0 && (
                                     <label className="form-control">
                                         <span className="label-text text-xs">Pilih Lebel</span>
                                         <select
@@ -336,7 +336,7 @@ export default function Produksi({ produksi, bahanbeliList, itemstokbahans }) {
                                             <option value="">Pilih Label</option>
                                             {itemStokOptions.map((s) => (
                                                 <option key={s.id} value={s.id}>
-                                                    {s.kode_label || s.keterangan || `Stok #${s.id}`} - Sisa: {s.luas} {s.satuan}
+                                                    {s.kode_label || s.keterangan || `Stok #${s.id}`} - Sisa Luas: {s.luas} {s.satuan}
                                                 </option>
                                             ))}
                                         </select>

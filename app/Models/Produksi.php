@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Produksi extends Model
 {
-    protected $fillable = ['sisi', 'sisa_putih_panjang', 'sisa_putih_lebar', 'sisa_putih_total', 'kode_bahanbeli'];
+    protected $fillable = ['sisi', 'sisa_putih_panjang', 'sisa_putih_lebar', 'sisa_putih_total', 'kode_bahanpakai'];
 
     public function customer()
     {

@@ -10,7 +10,7 @@ class PoPembelianBahanItem extends Model
 
     public function bahan()
     {
-        return $this->belongsTo(Bahanbeli::class, 'id_bahan');
+        return $this->belongsTo(Bahanpakai::class, 'id_bahan');
     }
 
     public function po()

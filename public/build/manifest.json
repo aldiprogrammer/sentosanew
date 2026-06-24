@@ -128,10 +128,10 @@
       "_AdminLayout-BvrpYSlT.js"
     ]
   },
-  "resources/js/Pages/Admin/Bahanbeli.jsx": {
-    "file": "assets/Bahanbeli-iIgmCBSv.js",
-    "name": "Bahanbeli",
-    "src": "resources/js/Pages/Admin/Bahanbeli.jsx",
+  "resources/js/Pages/Admin/Bahanpakai.jsx": {
+    "file": "assets/Bahanpakai-iIgmCBSv.js",
+    "name": "Bahanpakai",
+    "src": "resources/js/Pages/Admin/Bahanpakai.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_chunk-CilyBKbf.js",
@@ -631,7 +631,7 @@
     ],
     "dynamicImports": [
       "resources/js/Pages/Admin/Bahan.jsx",
-      "resources/js/Pages/Admin/Bahanbeli.jsx",
+      "resources/js/Pages/Admin/Bahanpakai.jsx",
       "resources/js/Pages/Admin/Customer.jsx",
       "resources/js/Pages/Admin/DataDesain.jsx",
       "resources/js/Pages/Admin/DataOrder.jsx",

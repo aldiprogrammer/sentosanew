@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\produksi;
 
 use App\Http\Controllers\Controller;
-use App\Models\Bahanbeli;
+use App\Models\Bahanpakai;
 use App\Models\Itemstokbahan;
 use App\Models\Produksi;
 use Illuminate\Http\Request;
@@ -18,9 +18,9 @@ class ProduksiController extends Controller
             ->where('status_produksi', 1)
             ->orderBy('id', 'desc')
             ->get();
-        $bahanbeliList = Bahanbeli::with('masterBahan')->get();
+        $bahanpakaiList = Bahanpakai::with('masterBahan')->get();
         $itemstokbahans = Itemstokbahan::where('qty', '>', 0)->orderBy('id')->get();
-        return Inertia::render('Produksi/Produksi', compact('produksi', 'bahanbeliList', 'itemstokbahans'));
+        return Inertia::render('Produksi/Produksi', compact('produksi', 'bahanpakaiList', 'itemstokbahans'));
     }
 
     function dataproduksi(Request $request)
@@ -132,7 +132,7 @@ class ProduksiController extends Controller
         $pr->sisa_putih_panjang = $request->sisa_putih_panjang;
         $pr->sisa_putih_lebar = $request->sisa_putih_lebar;
         $pr->sisa_putih_total = $request->sisa_putih_total;
-        $pr->kode_bahanbeli = $request->kode_bahanbeli;
+        $pr->kode_bahanpakai = $request->kode_bahanpakai;
         $pr->update();
 
         if ($request->id_item_stok) {

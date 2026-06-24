@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Bahanbeli;
+use App\Models\Bahanpakai;
 use App\Models\Itemstokbahan;
 use App\Models\PoPembelianBahan;
 use App\Models\PoPembelianBahanItem;
@@ -74,9 +74,9 @@ class PoPembelianBahanController extends Controller
         $po->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
         $po->update();
 
-        $bahanbelis = Bahanbeli::with('masterBahan')->orderBy('kode_bahan')->get();
+        $bahanpakais = Bahanpakai::with('masterBahan')->orderBy('kode_bahan')->get();
 
-        return Inertia::render('Admin/PoPembelianBahanDetail', compact('po', 'bahanbelis'));
+        return Inertia::render('Admin/PoPembelianBahanDetail', compact('po', 'bahanpakais'));
     }
 
     public function storeItem(Request $request, $id)
@@ -84,7 +84,7 @@ class PoPembelianBahanController extends Controller
         $po = PoPembelianBahan::findOrFail($id);
 
         $data = $request->validate([
-            'id_bahan' => 'nullable|exists:bahanbelis,id',
+            'id_bahan' => 'nullable|exists:bahanpakais,id',
             'panjang' => 'nullable|numeric',
             'lebar' => 'nullable|numeric',
             'luas' => 'nullable|numeric',
@@ -106,7 +106,7 @@ class PoPembelianBahanController extends Controller
     public function updateItem(Request $request, $id)
     {
         $data = $request->validate([
-            'id_bahan' => 'nullable|exists:bahanbelis,id',
+            'id_bahan' => 'nullable|exists:bahanpakais,id',
             'panjang' => 'nullable|numeric',
             'lebar' => 'nullable|numeric',
             'luas' => 'nullable|numeric',
@@ -185,7 +185,7 @@ class PoPembelianBahanController extends Controller
                     'po_pembelian_bahan_item_id' => $item->id,
                     'kode_po' => $po->no_po,
                     'kode_label' => $kodeLabel,
-                    'kode_bahan_beli' => $item->bahan?->kode_bahan ?? '-',
+                    'kode_bahan_pakai' => $item->bahan?->kode_bahan ?? '-',
                     'panjang' => $item->panjang,
                     'lebar' => $item->lebar,
                     'luas' => $item->luas,
