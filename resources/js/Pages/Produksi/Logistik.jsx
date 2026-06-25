@@ -3,11 +3,13 @@ import { router } from '@inertiajs/react'
 import React, { useMemo, useRef, useState, useCallback } from 'react'
 import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
 
-export default function Logistik({ produksi, kurir }) {
+export default function Logistik({ produksi, kurir, bahanpakaiList, itemstokbahans }) {
     const [selected, setSelected] = useState(null)
     const [selectedKurir, setSelectedKurir] = useState('')
     const [filterKategori, setFilterKategori] = useState('')
     const [filterJenisBahan, setFilterJenisBahan] = useState('')
+    const [selectedBahanpakai, setSelectedBahanpakai] = useState('')
+    const [selectedItemStoks, setSelectedItemStoks] = useState([])
     const [showPasswordModal, setShowPasswordModal] = useState(false)
     const [pendingAction, setPendingAction] = useState(null)
     const modalRef = useRef(null)
@@ -15,6 +17,49 @@ export default function Logistik({ produksi, kurir }) {
     const kategoriList = ['INDOOR', 'INDOOR 2', 'OUTDOOR', 'OUTDOOR 2', 'DISPLAY', 'OFFSET', 'DLL']
 
     const jenisBahanList = ['DLL', 'DYE', 'UV', 'OFFSET', 'TONER', 'ECOSOLVENT', 'SOLVENT']
+
+    const totalAll = useMemo(() => {
+        if (!selected) return 0
+        const t = parseFloat(selected.tinggi) || 0
+        const l = parseFloat(selected.lebar) || 0
+        const qty = parseFloat(selected.qty) || 1
+        const luas = (selected.satuan || '').toLowerCase() === 'cm'
+            ? (t / 100) * (l / 100)
+            : t * l
+        return luas * qty
+    }, [selected])
+
+    const isDisplay = selected?.bahan?.kategori_cetak === 'DISPLAY'
+
+    const bahanpakaiOptions = useMemo(() => {
+        if (!selected) return []
+        return bahanpakaiList?.filter((b) => Array.isArray(b.id_master_bahan) && b.id_master_bahan.includes(selected.bahan?.kode)) || []
+    }, [selected, bahanpakaiList])
+
+    const itemStokOptions = useMemo(() => {
+        if (!selectedBahanpakai || !itemstokbahans) return []
+        return itemstokbahans.filter((s) => s.kode_bahan_pakai === selectedBahanpakai && parseFloat(s.luas) > 0 && parseInt(s.qty) > 0)
+    }, [selectedBahanpakai, itemstokbahans])
+
+    const qtyCount = parseInt(selected?.qty) || 1
+
+    const stokTerpilihSemua = useMemo(() => {
+        return selectedItemStoks.map((id) => itemstokbahans?.find((s) => s.id === id) || null).filter(Boolean)
+    }, [selectedItemStoks, itemstokbahans])
+
+    const availableOptions = useMemo(() => {
+        const usedIds = selectedItemStoks.filter(Boolean)
+        return itemStokOptions.filter((s) => !usedIds.includes(s.id))
+    }, [itemStokOptions, selectedItemStoks])
+
+    const semuaCukup = useMemo(() => {
+        if (selectedItemStoks.length !== qtyCount) return false
+        const totalAvailable = selectedItemStoks.reduce((sum, id) => {
+            const s = itemstokbahans?.find((st) => st.id === id)
+            return sum + (s ? parseFloat(s.luas) : 0)
+        }, 0)
+        return totalAvailable >= totalAll
+    }, [selectedItemStoks, totalAll, qtyCount, itemstokbahans])
 
     const shouldShowSection = (kategori) =>
         !filterKategori || filterKategori === kategori
@@ -42,6 +87,8 @@ export default function Logistik({ produksi, kurir }) {
     const openModal = (item) => {
         setSelected(item)
         setSelectedKurir('')
+        setSelectedBahanpakai(item.kode_bahanpakai ?? '')
+        setSelectedItemStoks(Array(parseInt(item.qty) || 1).fill(''))
         modalRef.current?.showModal()
     }
 
@@ -158,7 +205,11 @@ table.items tr:nth-child(even) { background: #f9f9f9; }
     const handleProses = () => {
         if (!selected) return
 
-        router.put(`/logistik/logistik/${selected.id}/proses`, {}, {
+        router.put(`/logistik/logistik/${selected.id}/proses`, {
+            kode_bahanpakai: selectedBahanpakai,
+            id_item_stoks: selectedItemStoks.filter(Boolean),
+            total_all: totalAll.toFixed(2),
+        }, {
             preserveScroll: true,
             onSuccess: () => {
                 closeModal()
@@ -311,6 +362,58 @@ table.items tr:nth-child(even) { background: #f9f9f9; }
                                 <span className="text-sm text-base-content/70">Kategori Cetak</span>
                                 <span>{selected.bahan?.kategori_cetak}</span>
                             </div>
+
+                            {isDisplay && (
+                                <div className="space-y-3 mt-3">
+                                    <label className="form-control">
+                                        <span className="label-text text-xs">Kode Bahan pakai</span>
+                                        <select
+                                            value={selectedBahanpakai}
+                                            onChange={(e) => {
+                                                setSelectedBahanpakai(e.target.value)
+                                                setSelectedItemStoks(Array(qtyCount).fill(''))
+                                            }}
+                                            className="select select-bordered select-sm text-xs"
+                                        >
+                                            <option value="">Pilih Bahan Pakai</option>
+                                            {bahanpakaiOptions.map((bb) => (
+                                                <option key={bb.kode_bahan} value={bb.kode_bahan}>
+                                                    {bb.kode_bahan} - {bb.keterangan}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                    {selectedBahanpakai && (
+                                        <div className="space-y-2">
+                                            <span className="text-xs font-medium">Pilih Label ({qtyCount} item)</span>
+                                            {Array.from({ length: qtyCount }).map((_, i) => {
+                                                const currentOpts = selectedItemStoks[i]
+                                                    ? [itemstokbahans?.find((s) => s.id === selectedItemStoks[i]), ...availableOptions].filter(Boolean)
+                                                    : availableOptions
+                                                return (
+                                                    <select
+                                                        key={i}
+                                                        value={selectedItemStoks[i] || ''}
+                                                        onChange={(e) => {
+                                                            const next = [...selectedItemStoks]
+                                                            next[i] = e.target.value ? Number(e.target.value) : ''
+                                                            setSelectedItemStoks(next)
+                                                        }}
+                                                        className="select select-bordered select-sm text-xs w-full"
+                                                    >
+                                                        <option value="">Label ke-{i + 1}</option>
+                                                        {currentOpts.map((s) => (
+                                                            <option key={s.id} value={s.id}>
+                                                                {s.kode_label || s.keterangan || `Stok #${s.id}`} - Sisa: {s.luas} {s.satuan}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                )
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     )}
                     <div className="form-control mt-4">
@@ -331,7 +434,7 @@ table.items tr:nth-child(even) { background: #f9f9f9; }
                         <button className="btn btn-secondary" onClick={() => requestPassword('cetak_surat')}>
                             <i className="fas fa-truck"></i> Cetak Surat Jalan
                         </button>
-                        <button className="btn btn-primary" onClick={() => requestPassword('selesai')}>
+                        <button className="btn btn-primary" disabled={isDisplay && (!semuaCukup || selectedItemStoks.filter(Boolean).length < qtyCount)} onClick={() => requestPassword('selesai')}>
                             <i className="fas fa-check"></i> Selesai Logistik
                         </button>
                     </div>

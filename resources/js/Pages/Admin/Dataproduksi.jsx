@@ -1,7 +1,8 @@
 import AdminLayout from '@/Layouts/AdminLayout'
 import { Link, router, usePage } from '@inertiajs/react'
-import React, { useRef } from 'react'
+import React, { useCallback, useRef } from 'react'
 import { buildProductionReceiptHtml } from './StrukProduksiTemplate.jsx'
+import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
 
 export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
     const { auth } = usePage().props;
@@ -14,6 +15,8 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
     const [paymentError, setPaymentError] = React.useState(null)
     const [processing, setProcessing] = React.useState(false)
     const [printMode, setPrintMode] = React.useState('single')
+    const [showPasswordModal, setShowPasswordModal] = React.useState(false)
+    const [pendingAction, setPendingAction] = React.useState(null)
     const previewRef = useRef(null)
     const iframeRef = useRef(null)
     const paymentModalRef = useRef(null)
@@ -141,6 +144,34 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
             setTimeout(() => w.print(), 300)
         })
     }
+
+    const requestPassword = useCallback((action) => {
+        setPendingAction(action)
+        setShowPasswordModal(true)
+    }, [])
+
+    const handlePasswordConfirmed = useCallback(() => {
+        setShowPasswordModal(false)
+        switch (pendingAction) {
+            case 'review':
+                reviewReceipt(selectedItems)
+                paymentModalRef.current?.close()
+                break
+            case 'cetak':
+                printReceipt(selectedItems)
+                paymentModalRef.current?.close()
+                break
+            case 'proses':
+                handlePaymentConfirm()
+                break
+        }
+        setPendingAction(null)
+    }, [pendingAction, selectedItems])
+
+    const handlePasswordCancel = useCallback(() => {
+        setShowPasswordModal(false)
+        setPendingAction(null)
+    }, [])
 
     const setPreview = (show) => {
         if (show && selectedItems.length > 0) {
@@ -416,16 +447,16 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                     )}
                     <div className="modal-action flex-col gap-2">
                         <div className="flex gap-2 w-full">
-                            <button className="btn btn-ghost flex-1" onClick={() => { reviewReceipt(selectedItems); paymentModalRef.current?.close() }}>
+                            <button className="btn btn-ghost flex-1" onClick={() => requestPassword('review')}>
                                 <i className="fas fa-eye"></i> Review Struk
                             </button>
-                            <button className="btn btn-outline flex-1" onClick={() => { printReceipt(selectedItems); paymentModalRef.current?.close() }}>
+                            <button className="btn btn-outline flex-1" onClick={() => requestPassword('cetak')}>
                                 <i className="fas fa-print"></i> Cetak Struk
                             </button>
                         </div>
                         <button
                             className="btn btn-primary w-full"
-                            onClick={handlePaymentConfirm}
+                            onClick={() => requestPassword('proses')}
                             disabled={processing || (paymentType === 'utang' && wouldExceedLimit)}
                         >
                             {processing ? <><span className="loading loading-spinner"></span> Memproses...</> : <><i className="fas fa-check"></i> Proses & Cetak Struk</>}
@@ -436,6 +467,11 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                     <button onClick={() => paymentModalRef.current?.close()}>close</button>
                 </form>
             </dialog>
+            <KonfirmasiPassword
+                show={showPasswordModal}
+                onConfirmed={handlePasswordConfirmed}
+                onClose={handlePasswordCancel}
+            />
         </AdminLayout>
     )
 }

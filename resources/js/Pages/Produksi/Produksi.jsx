@@ -26,22 +26,15 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
             : t * l
     }
 
-    const totalSisaPutih = useMemo(() => {
-        const p = parseFloat(sisaPutihPanjang) || 0
-        const l = parseFloat(sisaPutihLebar) || 0
-        const luas = p * l
-        return (selected?.satuan || '').toLowerCase() === 'cm' ? luas / 10000 : luas
-    }, [sisaPutihPanjang, sisaPutihLebar, selected?.satuan])
-
     const totalLuasM2 = useMemo(() => {
         if (!selected) return 0
+        const p = parseFloat(sisaPutihPanjang) || 0
+        const l = parseFloat(sisaPutihLebar) || 0
         const qty = parseFloat(selected.qty) || 1
-        return hitungLuasM2(selected.tinggi, selected.lebar, selected.satuan) * qty
-    }, [selected])
+        return hitungLuasM2(p, l, selected.satuan) * qty
+    }, [selected, sisaPutihPanjang, sisaPutihLebar])
 
-    const totalAll = useMemo(() => {
-        return totalLuasM2 + totalSisaPutih
-    }, [totalLuasM2, totalSisaPutih])
+    const totalAll = totalLuasM2
 
     const bahanpakaiOptions = useMemo(() => {
         if (!selected) return []
@@ -129,7 +122,7 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
         router.put(`/produksi/produksi/${selected.id}/proses`, {
             sisa_putih_panjang: sisaPutihPanjang,
             sisa_putih_lebar: sisaPutihLebar,
-            sisa_putih_total: String(totalSisaPutih),
+            sisa_putih_total: String(totalAll),
             kode_bahanpakai: selectedBahanpakai,
             id_item_stok: stokTerpilih?.id || null,
             total_all: totalAll.toFixed(2),
@@ -307,7 +300,7 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
                             <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
                                 <span className="text-sm text-base-content/70">Luas ({selected.satuan})</span>
                                 <span className="font-semibold text-sm">
-                                    {selected.tinggi} × {selected.lebar}{selected.qty > 1 ? ` × ${selected.qty} pcs` : ''} = {totalLuasM2.toFixed(2)} m²
+                                    {sisaPutihPanjang} × {sisaPutihLebar}{selected.qty > 1 ? ` × ${selected.qty} pcs` : ''} = {totalLuasM2.toFixed(2)} m²
                                 </span>
                             </div>
 
@@ -339,7 +332,7 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
                                 <span className="font-semibold text-sm"> {totalSisaPutih || 0} cm²</span>
                             </div> */}
                             <div className="flex justify-between items-center p-2 bg-base-200 rounded-lg">
-                                <span className="text-xs text-base-content/70">Total Luas + Sisa Putih (m²)</span>
+                                <span className="text-xs text-base-content/70">Total Luas (m²)</span>
                                 <span className="font-semibold text-sm">{totalAll.toFixed(2)} m²</span>
                             </div>
                             <div className="grid grid-cols-2 gap-2">

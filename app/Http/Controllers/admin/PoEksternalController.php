@@ -230,6 +230,8 @@ class PoEksternalController extends Controller
             ->get()
             ->keyBy('no_invoice');
 
+        $user = auth()->user();
+
         $pdf = Pdf::loadView('pdf.po-eksternal', [
             'po' => $po,
             'produksiByInvoice' => $produksiByInvoice,
@@ -237,6 +239,7 @@ class PoEksternalController extends Controller
             'diskonAmount' => $diskonAmount,
             'ppnAmount' => $ppnAmount,
             'grandTotal' => $po->sub_total,
+            'dibuatOleh' => $user?->username ?: $user?->name ?: 'Admin',
         ])->setPaper('a4', 'portrait');
 
         return $pdf->stream('po_eksternal_'.$po->no_po.'.pdf');

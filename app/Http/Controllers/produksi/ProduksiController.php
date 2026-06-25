@@ -140,7 +140,18 @@ class ProduksiController extends Controller
 
             if ($stok && $request->total_all) {
                 $stok->luas = max(0, (float) $stok->luas - (float) $request->total_all);
+                if ((float) $stok->luas == 0) $stok->qty = 0;
                 $stok->save();
+            }
+        }
+
+        if ($request->kode_bahanpakai && $request->total_all) {
+            $bahan = Bahanpakai::where('kode_bahan', $request->kode_bahanpakai)->first();
+            if ($bahan) {
+                $totalAll = (float) $request->total_all;
+                $currentStok = (float) ($bahan->total_stok ?? 0);
+                $bahan->total_stok = max(0, $currentStok - $totalAll);
+                $bahan->save();
             }
         }
 

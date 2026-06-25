@@ -454,14 +454,14 @@
                     <tr>
                         <td>Disiapkan Oleh,</td>
                         <td>Disetujui Oleh</td>
-                        <td>Konfirmasi</td>
+                        <td>Dikonfirmasi Oleh</td>
                     </tr>
                     <br />
                      <br />
                     <tr>
-                        <td class="sign-name" style="height: 70px">nanda</td>
-                        <td class="sign-name">nanda</td>
-                        <td class="sign-name">Distributor</td>
+                        <td class="sign-name" style="height: 70px">{{ Str::upper($dibuatOleh) }}</td>
+                        <td class="sign-name">{{ Str::upper($dibuatOleh) }}</td>
+                        <td class="sign-name">{{ Str::upper($po->suplayer?->nama_suplayer ?? '-') }}</td>
                     </tr>
                 </table>
             </td>

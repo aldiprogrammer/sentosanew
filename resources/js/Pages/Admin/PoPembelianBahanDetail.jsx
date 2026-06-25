@@ -59,7 +59,7 @@ const formatSatuan = (satuan) => {
 };
 
 export default function PoPembelianBahanDetail({ po, bahanpakais }) {
-  const { data, setData, post, delete: destroy, put, processing, reset } = useForm({
+  const { data, setData, post, delete: destroy, put, processing, reset, errors } = useForm({
     id: 0,
     id_bahan: "",
     panjang: "",
@@ -399,7 +399,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                 <button className="btn btn-primary" onClick={cetakPDF}>
                   <i className="fas fa-file-pdf"></i> Cetak PDF
                 </button>
-                <button className="btn btn-info" onClick={cetakLabel}>
+                <button className="btn btn-info" onClick={() => window.open('/po-pembelian-bahan/' + po.id + '/cetak-label', '_blank')}>
                   <i className="fas fa-tag"></i> Cetak Label
                 </button>
                 {po.status == 1 ? (
@@ -589,6 +589,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                     onChange={(val) => setData("id_bahan", val)}
                     placeholder="Pilih Bahan Pakai"
                   />
+                  {errors.id_bahan && <span className="text-error text-xs mt-1 block">{errors.id_bahan}</span>}
                 </label>
                 <label className="form-control mt-2">
                   <div className="label"><span className="label-text">Satuan</span></div>
@@ -597,17 +598,20 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                 <label className="form-control mt-2">
                   <div className="label"><span className="label-text">Keterangan</span></div>
                   <textarea value={data.keterangan} className="textarea textarea-bordered textarea-success w-full" onChange={(e) => setData("keterangan", e.target.value)}></textarea>
+                  {errors.keterangan && <span className="text-error text-xs mt-1 block">{errors.keterangan}</span>}
                 </label>
               </div>
               <div className="bg-gray-100 p-2 rounded-lg">
                 <div className="grid grid-cols-2 gap-2">
                   <label className="form-control">
-                    <div className="label"><span className="label-text">Panjang</span></div>
+                    <div className="label"><span className="label-text">Panjang erer</span></div>
                     <input type="number" step="0.01" value={data.panjang} className="input input-bordered input-success w-full" onChange={(e) => setData("panjang", e.target.value)} />
+                    {errors.panjang && <span className="text-error text-xs mt-1 block">{errors.panjang}</span>}
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Lebar</span></div>
                     <input type="number" step="0.01" value={data.lebar} className="input input-bordered input-success w-full" onChange={(e) => setData("lebar", e.target.value)} />
+                    {errors.lebar && <span className="text-error text-xs mt-1 block">{errors.lebar}</span>}
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Luas</span></div>
@@ -616,10 +620,12 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                   <label className="form-control">
                     <div className="label"><span className="label-text">Qty</span></div>
                     <input type="number" step="0.01" value={data.qty} className="input input-bordered input-success w-full" onChange={(e) => setData("qty", e.target.value)} />
+                    {errors.qty && <span className="text-error text-xs mt-1 block">{errors.qty}</span>}
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Harga</span></div>
                     <input type="number" step="0.01" value={data.harga} className="input input-bordered input-success w-full" onChange={(e) => setData("harga", e.target.value)} />
+                    {errors.harga && <span className="text-error text-xs mt-1 block">{errors.harga}</span>}
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Total Harga</span></div>
@@ -651,6 +657,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                     onChange={(val) => setData("id_bahan", val)}
                     placeholder="Pilih Bahan Pakai"
                   />
+                  {errors.id_bahan && <span className="text-error text-xs mt-1 block">{errors.id_bahan}</span>}
                 </label>
                 <label className="form-control mt-2">
                   <div className="label"><span className="label-text">Satuan</span></div>
@@ -659,6 +666,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                 <label className="form-control mt-2">
                   <div className="label"><span className="label-text">Keterangan</span></div>
                   <textarea value={data.keterangan} className="textarea textarea-bordered textarea-success w-full" onChange={(e) => setData("keterangan", e.target.value)}></textarea>
+                  {errors.keterangan && <span className="text-error text-xs mt-1 block">{errors.keterangan}</span>}
                 </label>
               </div>
               <div className="bg-gray-100 p-2 rounded-lg">
@@ -666,10 +674,12 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                   <label className="form-control">
                     <div className="label"><span className="label-text">Panjang</span></div>
                     <input type="number" step="0.01" value={data.panjang} className="input input-bordered input-success w-full" onChange={(e) => setData("panjang", e.target.value)} />
+                    {errors.panjang && <span className="text-error text-xs mt-1 block">{errors.panjang}</span>}
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Lebar</span></div>
                     <input type="number" step="0.01" value={data.lebar} className="input input-bordered input-success w-full" onChange={(e) => setData("lebar", e.target.value)} />
+                    {errors.lebar && <span className="text-error text-xs mt-1 block">{errors.lebar}</span>}
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Luas</span></div>
@@ -678,10 +688,12 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                   <label className="form-control">
                     <div className="label"><span className="label-text">Qty</span></div>
                     <input type="number" step="0.01" value={data.qty} className="input input-bordered input-success w-full" onChange={(e) => setData("qty", e.target.value)} />
+                    {errors.qty && <span className="text-error text-xs mt-1 block">{errors.qty}</span>}
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Harga</span></div>
                     <input type="number" step="0.01" value={data.harga} className="input input-bordered input-success w-full" onChange={(e) => setData("harga", e.target.value)} />
+                    {errors.harga && <span className="text-error text-xs mt-1 block">{errors.harga}</span>}
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Total Harga</span></div>

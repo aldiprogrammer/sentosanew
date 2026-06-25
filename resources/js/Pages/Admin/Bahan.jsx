@@ -57,6 +57,7 @@ const jenisBahanOptions = [
   'OFFSET',
   'SOLVENT',
   'TONER',
+  'DISPLAY',
   'UV',
 ];
 const perhitunganOptions = ['QTY', 'LUAS', 'QTY KHUSUS'];

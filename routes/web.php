@@ -180,6 +180,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/po-pembelian-bahan/{id}/header', [PoPembelianBahanController::class, 'updateHeader'])->name('update-header.po-pembelian-bahan');
     Route::put('/po-pembelian-bahan/{id}/update-stok', [PoPembelianBahanController::class, 'updateStok'])->name('update-stok.po-pembelian-bahan');
     Route::put('/po-pembelian-bahan/{id}/tarik-stok', [PoPembelianBahanController::class, 'tarikStok'])->name('tarik-stok.po-pembelian-bahan');
+    Route::get('/po-pembelian-bahan/{id}/cetak-label', [PoPembelianBahanController::class, 'cetakLabel'])->name('cetak-label.po-pembelian-bahan');
 });
 
 require __DIR__ . '/auth.php';

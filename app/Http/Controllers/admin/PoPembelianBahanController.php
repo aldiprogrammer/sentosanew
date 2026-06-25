@@ -8,6 +8,7 @@ use App\Models\Itemstokbahan;
 use App\Models\PoPembelianBahan;
 use App\Models\PoPembelianBahanItem;
 use App\Models\SuplayerPembelianBahan;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -83,6 +84,8 @@ class PoPembelianBahanController extends Controller
     {
         $po = PoPembelianBahan::findOrFail($id);
 
+        $request->merge(collect($request->all())->map(fn($v) => $v === '' ? null : $v)->all());
+
         $data = $request->validate([
             'id_bahan' => 'nullable|exists:bahanpakais,id',
             'panjang' => 'nullable|numeric',
@@ -105,6 +108,8 @@ class PoPembelianBahanController extends Controller
 
     public function updateItem(Request $request, $id)
     {
+        $request->merge(collect($request->all())->map(fn($v) => $v === '' ? null : $v)->all());
+
         $data = $request->validate([
             'id_bahan' => 'nullable|exists:bahanpakais,id',
             'panjang' => 'nullable|numeric',
@@ -176,16 +181,30 @@ class PoPembelianBahanController extends Controller
             return redirect()->back()->with('success', 'Stok sudah diupdate');
         }
 
+        $nextSeq = [];
         foreach ($po->items as $item) {
-            $qty = (int) $item->qty ?: 1;
+            if (!$item->bahan) continue;
+            $kodeBahan = $item->bahan->kode_bahan;
+
+            if (!isset($nextSeq[$kodeBahan])) {
+                $existingMax = Itemstokbahan::where('kode_bahan_pakai', $kodeBahan)
+                    ->whereNotNull('kode_label')
+                    ->pluck('kode_label')
+                    ->map(fn ($l) => (int) substr($l, strrpos($l, '-') + 1))
+                    ->max() ?? 0;
+                $nextSeq[$kodeBahan] = $existingMax + 1;
+            }
+
+            $qty = max((int) round((float) ($item->qty ?? 0)), 1);
             for ($i = 0; $i < $qty; $i++) {
-                $kodeLabel = 'LB' . $po->id . '-' . $item->id . '-' . ($i + 1);
+                $seq = $nextSeq[$kodeBahan]++;
+                $kodeLabel = 'LB-' . $kodeBahan . '-' . str_pad($seq, 3, '0', STR_PAD_LEFT);
                 Itemstokbahan::create([
                     'po_pembelian_bahan_id' => $po->id,
                     'po_pembelian_bahan_item_id' => $item->id,
                     'kode_po' => $po->no_po,
                     'kode_label' => $kodeLabel,
-                    'kode_bahan_pakai' => $item->bahan?->kode_bahan ?? '-',
+                    'kode_bahan_pakai' => $kodeBahan,
                     'panjang' => $item->panjang,
                     'lebar' => $item->lebar,
                     'luas' => $item->luas,
@@ -194,6 +213,8 @@ class PoPembelianBahanController extends Controller
                     'keterangan' => $item->keterangan,
                 ]);
             }
+
+            $this->tambahStokBahan($item);
         }
 
         $po->status = 1;
@@ -204,10 +225,14 @@ class PoPembelianBahanController extends Controller
 
     public function tarikStok($id)
     {
-        $po = PoPembelianBahan::findOrFail($id);
+        $po = PoPembelianBahan::with('items.bahan')->findOrFail($id);
 
         if ($po->status == 0) {
             return redirect()->back()->with('success', 'Stok sudah ditarik');
+        }
+
+        foreach ($po->items as $item) {
+            $this->kurangStokBahan($item);
         }
 
         Itemstokbahan::where('po_pembelian_bahan_id', $po->id)->delete();
@@ -228,5 +253,68 @@ class PoPembelianBahanController extends Controller
             $po->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
             $po->update();
         }
+    }
+
+    private function tambahStokBahan($item)
+    {
+        $bahan = Bahanpakai::find($item->id_bahan);
+        if (!$bahan) return;
+
+        $satuan = strtoupper(trim($item->satuan ?? ''));
+        $currentStok = (float) ($bahan->total_stok ?? 0);
+
+        if ($satuan === 'M2') {
+            $luas = (float) ($item->luas ?? 0);
+            $bahan->total_stok = $currentStok + ($luas * 3);
+        } elseif ('PCS' || 'LEMBAR' || 'LITER') {
+            $qty = (float) ($item->qty ?? 1);
+            $bahan->total_stok = $currentStok + $qty;
+        }
+
+        $bahan->save();
+    }
+
+    private function kurangStokBahan($item)
+    {
+        $bahan = Bahanpakai::find($item->id_bahan);
+        if (!$bahan) return;
+
+        $satuan = strtoupper(trim($item->satuan ?? ''));
+        $currentStok = (float) ($bahan->total_stok ?? 0);
+
+        if ($satuan === 'M2') {
+            $luas = (float) ($item->luas ?? 0);
+            $bahan->total_stok = max(0, $currentStok - ($luas * 3));
+        } else {
+            $qty = (float) ($item->qty ?? 1);
+            $bahan->total_stok = max(0, $currentStok - $qty);
+        }
+
+        $bahan->save();
+    }
+
+    public function cetakLabel($id)
+    {
+        $po = PoPembelianBahan::with('items.bahan')->findOrFail($id);
+
+        $labelStart = [];
+        foreach ($po->items as $item) {
+            if (!$item->bahan) continue;
+            $kode = $item->bahan->kode_bahan;
+            if (isset($labelStart[$kode])) continue;
+            $max = Itemstokbahan::where('kode_bahan_pakai', $kode)
+                ->whereNotNull('kode_label')
+                ->pluck('kode_label')
+                ->map(fn ($l) => (int) substr($l, strrpos($l, '-') + 1))
+                ->max() ?? 0;
+            $labelStart[$kode] = $max + 1;
+        }
+
+        $pdf = Pdf::loadView('pdf.label-bahan', [
+            'po' => $po,
+            'labelStart' => $labelStart,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream('label_bahan_' . $po->no_po . '.pdf');
     }
 }

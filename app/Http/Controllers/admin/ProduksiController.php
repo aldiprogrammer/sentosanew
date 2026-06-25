@@ -43,14 +43,32 @@ class ProduksiController extends Controller
         $customer = Customer::all();
         $bahan = Databahan::with('hargaBahan')->get();
 
-        $kodespk = 'SPK-' . date('ymd') . rand(0, 10000);
+        do {
+            $kodespk = 'SPK-' . date('ymd') . rand(0, 100000);
+        } while (Produksi::where('kode_spk', $kodespk)->exists());
         $kode_antrian = $this->kodeAntrianProduksiBerikutnya();
+        $kode_invoice = 'INVOICE-' . date('ymd') . rand(100, 999);
+        $existingInvoices = Produksi::select('no_invoice')
+            ->whereNotNull('no_invoice')
+            ->where('no_invoice', '!=', '')
+            ->distinct()
+            ->orderBy('no_invoice')
+            ->pluck('no_invoice');
 
-        return Inertia::render('Admin/Produksi', compact('produksi', 'desain', 'bahan', 'customer', 'kode_antrian', 'kodespk'));
+        $todayActiveProduksi = Produksi::where('tanggal', date('Y-m-d'))
+            ->where('status_produksi', 0)
+            ->get(['id_customer', 'no_invoice']);
+
+        return Inertia::render('Admin/Produksi', compact('produksi', 'desain', 'bahan', 'customer', 'kode_antrian', 'kodespk', 'kode_invoice', 'existingInvoices', 'todayActiveProduksi'));
     }
 
     public function store(Request $request)
     {
+        $request->validate([
+            'kode_spk' => 'required|unique:produksis,kode_spk',
+        ], [
+            'kode_spk.unique' => 'Kode SPK sudah digunakan, silakan ganti dengan yang lain.',
+        ]);
 
         $bahan = Databahan::find($request->id_bahan);
         $harga_produk = $this->hargaProduk($bahan, $request);
@@ -64,7 +82,17 @@ class ProduksiController extends Controller
 
         $pr = new Produksi;
         $pr->tanggal = date('Y-m-d');
-        $pr->no_invoice = 'INVOICE-' . date('ymd') . rand(0, 10000);
+        $pr->no_invoice = $request->no_invoice ?: (function () use ($request) {
+            $existing = Produksi::where('id_customer', $request->id_customer)
+                ->where('tanggal', date('Y-m-d'))
+                ->where('status_produksi', 0)
+                ->first();
+            if ($existing) {
+                return $existing->no_invoice;
+            }
+
+            return 'INVOICE-' . date('ymd') . rand(100, 999);
+        })();
         $pr->id_customer = $request->id_customer;
         $pr->id_desain = $desain->id ?? $request->id_desain;
         $pr->id_desainer = auth()->id();
@@ -118,11 +146,18 @@ class ProduksiController extends Controller
 
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'kode_spk' => 'required|unique:produksis,kode_spk,' . $id,
+        ], [
+            'kode_spk.unique' => 'Kode SPK sudah digunakan, silakan ganti dengan yang lain.',
+        ]);
+
         $pr = Produksi::find($id);
         $bahan = Databahan::find($request->id_bahan);
         $harga_produk = $this->hargaProduk($bahan, $request);
         $total_harga = $this->totalHarga($bahan, $request, $harga_produk);
 
+        $pr->no_invoice = $request->no_invoice ?: $pr->no_invoice;
         $pr->id_customer = $request->id_customer;
         $pr->id_desain = $request->id_desain;
         $pr->no_antrian = $request->no_antrian;

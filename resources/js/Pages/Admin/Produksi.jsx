@@ -83,7 +83,7 @@ function QtyRangeInfo({ ranges, caraPerhitungan }) {
   );
 }
 
-export default function Produksi({ produksi, desain, bahan, customer, kode_antrian, kodespk }) {
+export default function Produksi({ produksi, desain, bahan, customer, kode_antrian, kodespk, kode_invoice, existingInvoices, todayActiveProduksi }) {
   const { auth } = usePage().props;
   const isDesainer = auth.user?.role === 'Desainer';
   const today = new Date().toISOString().split("T")[0];
@@ -171,11 +171,13 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
     put,
     processing,
     reset,
+    errors,
   } = useForm({
     id: 0,
     id_desain: "",
     no_antrian: "",
     kode_spk: kodespk,
+    no_invoice: kode_invoice,
     alamat: "",
     tanggal: "",
     id_customer: "",
@@ -236,6 +238,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       id_desain: pd.id_desain,
       no_antrian: pd.no_antrian,
       kode_spk: pd.kode_spk,
+      no_invoice: pd.no_invoice,
       id_customer: pd.id_customer,
       id_kategori_desain: pd.id_kategori_desain,
       customer: pd.customer.nama,
@@ -286,7 +289,9 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       onSuccess: () => {
         console.log("berhasil");
         reset();
+        setData('kode_spk', 'SPK-' + new Date().toISOString().slice(2, 10).replace(/-/g, '') + Math.floor(Math.random() * 100000));
         closeModal();
+        router.reload();
       },
     });
   };
@@ -324,10 +329,17 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
 
     if (!cs) return;
 
+    const active = todayActiveProduksi?.find(p => Number(p.id_customer) === Number(idCustomer));
+    const invoice = active ? active.no_invoice : 'INVOICE-' + new Date().toISOString().slice(2, 10).replace(/-/g, '') + Math.floor(Math.random() * 900 + 100);
+    const spkPrefix = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+    const newSpk = 'SPK-' + spkPrefix + Math.floor(Math.random() * 100000);
+
     setData((prev) => ({
       ...prev,
       id_desain: ds?.id ?? "",
       id_customer: cs.id,
+      no_invoice: invoice,
+      kode_spk: newSpk,
       no_antrian: ds?.no_antrian ?? kode_antrian,
       alamat: cs.alamat,
       customer: cs.nama,
@@ -501,10 +513,45 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   name="kode_spk"
                                   value={data.kode_spk}
                                   onChange={handleChange}
-                                  className="input input-bordered input-success w-full"
+                                  className={`input input-bordered w-full ${errors.kode_spk ? 'input-error' : 'input-success'}`}
                                   placeholder="SPK-001"
                                   required
                                 />
+                                {errors.kode_spk && <span className="text-error text-xs mt-1 block">{errors.kode_spk}</span>}
+                              </label>
+                              {/* No Invoice */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">No Invoice</span>
+                                </div>
+                                <div className="flex gap-1">
+                                  <input
+                                    type="text"
+                                    name="no_invoice"
+                                    value={data.no_invoice}
+                                    onChange={handleChange}
+                                    className="input input-bordered input-success w-full"
+                                    placeholder="INVOICE-001"
+                                    list="existingInvoicesList"
+                                    required
+                                  />
+                                  <button
+                                    type="button"
+                                    className="btn btn-outline btn-success btn-sm"
+                                    onClick={() => {
+                                      const prefix = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+                                      setData('no_invoice', 'INVOICE-' + prefix + Math.floor(Math.random() * 900 + 100));
+                                    }}
+                                    title="Generate invoice baru"
+                                  >
+                                    <i className="fas fa-sync-alt"></i>
+                                  </button>
+                                </div>
+                                <datalist id="existingInvoicesList">
+                                  {existingInvoices?.map((inv) => (
+                                    <option key={inv} value={inv} />
+                                  ))}
+                                </datalist>
                               </label>
                               {/* Alamat */}
                               <label className="form-control w-full">
@@ -917,7 +964,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
 
                       <h3 className="text-lg font-bold">Edit Produksi</h3>
 
-                      <form onSubmit={update}>
+                          <form onSubmit={update}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                           {/* Customer */}
                           <div className="p-5 bg-base-200 rounded-lg">
@@ -962,10 +1009,45 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   name="kode_spk"
                                   value={data.kode_spk}
                                   onChange={handleChange}
-                                  className="input input-bordered input-success w-full"
+                                  className={`input input-bordered w-full ${errors.kode_spk ? 'input-error' : 'input-success'}`}
                                   placeholder="SPK-001"
                                   required
                                 />
+                                {errors.kode_spk && <span className="text-error text-xs mt-1 block">{errors.kode_spk}</span>}
+                              </label>
+                              {/* No Invoice */}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">No Invoice</span>
+                                </div>
+                                <div className="flex gap-1">
+                                  <input
+                                    type="text"
+                                    name="no_invoice"
+                                    value={data.no_invoice}
+                                    onChange={handleChange}
+                                    className="input input-bordered input-success w-full"
+                                    placeholder="INVOICE-001"
+                                    list="existingInvoicesEditList"
+                                    required
+                                  />
+                                  <button
+                                    type="button"
+                                    className="btn btn-outline btn-success btn-sm"
+                                    onClick={() => {
+                                      const prefix = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+                                      setData('no_invoice', 'INVOICE-' + prefix + Math.floor(Math.random() * 900 + 100));
+                                    }}
+                                    title="Generate invoice baru"
+                                  >
+                                    <i className="fas fa-sync-alt"></i>
+                                  </button>
+                                </div>
+                                <datalist id="existingInvoicesEditList">
+                                  {existingInvoices?.map((inv) => (
+                                    <option key={inv} value={inv} />
+                                  ))}
+                                </datalist>
                               </label>
                               {/* Alamat */}
                               <label className="form-control w-full">
@@ -1372,11 +1454,12 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
 
               <div>
                 <div className="overflow-x-auto">
-                  <table className="table table-zebra" id="myTable">
+                    <table className="table table-zebra" id="myTable">
                     <thead>
                       <tr>
                         <th>No</th>
                         <th>Kode SPK</th>
+                        <th>No Invoice</th>
                         <th>Customer</th>
                         <th>Bahan</th>
                         <th>Keterangan</th>
@@ -1400,6 +1483,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                         >
                           <td>{produksi.from + index}</td>
                           <td>{item.kode_spk}</td>
+                          <td>{item.no_invoice}</td>
                           <td>{item.customer.nama}</td>
                           <td>{item.bahan.bahan}</td>
                           <td>{item.keterangan}</td>
