@@ -86,6 +86,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/materbahan', [MaterbahanController::class, 'store'])->name('store.materbahan');
     Route::put('/materbahan/{id}', [MaterbahanController::class, 'update'])->name('update.materbahan');
     Route::delete('/materbahan/{id}', [MaterbahanController::class, 'delete'])->name('delete.materbahan');
+    Route::get('/relasi-bahan', [MaterbahanController::class, 'relasi'])->name('relasi-bahan');
+    Route::put('/materbahan/{id}/relasi', [MaterbahanController::class, 'updateRelasi'])->name('update.relasi-bahan');
 
     Route::get('/bahanpakai', [BahanpakaiController::class, 'index'])->name('bahanpakai');
     Route::post('/bahanpakai', [BahanpakaiController::class, 'store'])->name('store.bahanpakai');

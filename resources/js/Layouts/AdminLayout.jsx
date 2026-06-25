@@ -106,7 +106,7 @@ export default function AdminLayout({ children }) {
                                 </Link>
                             </li>
                         )}
-                        {(hasMenu('pengguna') || hasMenu('distributor') || hasMenu('kurir') || hasMenu('suplayer') || hasMenu('suplayer-pembelian-bahan') || hasMenu('master-bahan') || hasMenu('master-materbahan') || hasMenu('master-bahanpakai') || hasMenu('master-kategoridesain') || hasMenu('master-jabatan')) && (
+                        {(hasMenu('pengguna') || hasMenu('distributor') || hasMenu('kurir') || hasMenu('suplayer') || hasMenu('suplayer-pembelian-bahan') || hasMenu('master-kategoridesain') || hasMenu('master-jabatan')) && (
                             <li>
                                 <details>
                                     <summary className="rounded-xl">
@@ -114,21 +114,6 @@ export default function AdminLayout({ children }) {
                                         Master Data
                                     </summary>
                                     <ul>
-                                        {hasMenu('master-bahan') && (
-                                            <li>
-                                                <Link href={route('bahan')}>Bahan</Link>
-                                            </li>
-                                        )}
-                                        {hasMenu('master-materbahan') && (
-                                            <li>
-                                                <Link href={route('materbahan')}>Master Bahan</Link>
-                                            </li>
-                                        )}
-                                        {hasMenu('master-bahanpakai') && (
-                                            <li>
-                                                <Link href={route('bahanpakai')}>Bahan Pakai</Link>
-                                            </li>
-                                        )}
                                         {hasMenu('master-kategoridesain') && (
                                             <li>
                                                 <Link href={route('kategoridesain')}>Kategori Desain</Link>
@@ -162,6 +147,38 @@ export default function AdminLayout({ children }) {
                                         {hasMenu('suplayer-pembelian-bahan') && (
                                             <li>
                                                 <Link href={route('suplayer-pembelian-bahan')}>Suplayer Pembelian Bahan</Link>
+                                            </li>
+                                        )}
+                                    </ul>
+                                </details>
+                            </li>
+                        )}
+                        {(hasMenu('master-bahan') || hasMenu('master-materbahan') || hasMenu('master-bahanpakai') || hasMenu('relasi-bahan')) && (
+                            <li>
+                                <details>
+                                    <summary className="rounded-xl">
+                                        <i className="fas fa-cubes"></i>
+                                        Bahan
+                                    </summary>
+                                    <ul>
+                                        {hasMenu('master-bahan') && (
+                                            <li>
+                                                <Link href={route('bahan')}>Bahan Jual</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('master-materbahan') && (
+                                            <li>
+                                                <Link href={route('materbahan')}>Master Bahan</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('master-bahanpakai') && (
+                                            <li>
+                                                <Link href={route('bahanpakai')}>Bahan Pakai</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('relasi-bahan') && (
+                                            <li>
+                                                <Link href={route('relasi-bahan')}>Relasi Bahan</Link>
                                             </li>
                                         )}
                                     </ul>

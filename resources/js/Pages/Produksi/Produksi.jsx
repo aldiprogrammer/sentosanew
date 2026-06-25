@@ -45,12 +45,12 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
 
     const bahanpakaiOptions = useMemo(() => {
         if (!selected) return []
-        return bahanpakaiList?.filter((b) => b.id_master_bahan === selected.bahan?.kode) || []
+        return bahanpakaiList?.filter((b) => Array.isArray(b.id_master_bahan) && b.id_master_bahan.includes(selected.bahan?.kode)) || []
     }, [selected, bahanpakaiList])
 
     const itemStokOptions = useMemo(() => {
         if (!selectedBahanpakai || !itemstokbahans) return []
-        return itemstokbahans.filter((s) => s.kode_bahan_jual === selectedBahanpakai && parseFloat(s.luas) > 0 && parseInt(s.qty) > 0)
+        return itemstokbahans.filter((s) => s.kode_bahan_pakai === selectedBahanpakai && parseFloat(s.luas) > 0 && parseInt(s.qty) > 0)
     }, [selectedBahanpakai, itemstokbahans])
 
     const stokTerpilih = useMemo(() => {

@@ -119,18 +119,6 @@ export default function Materbahan({ mater, kode }) {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
               <h2 className="card-title">Data Master Bahan</h2>
               <div className="flex gap-2">
-                <form onSubmit={handleSearch} className="join">
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Cari..."
-                    className="input input-bordered input-sm join-item"
-                  />
-                  <button type="submit" className="btn btn-sm join-item">
-                    <i className="fas fa-search"></i>
-                  </button>
-                </form>
                 <button className="btn btn-primary btn-sm" onClick={exportPDF}>
                   <i className="fas fa-file-pdf"></i> Export PDF
                 </button>
@@ -138,6 +126,18 @@ export default function Materbahan({ mater, kode }) {
                   <i className="fas fa-plus"></i> Tambah Master Bahan
                 </button>
               </div>
+            </div>
+
+            <div className="mb-3">
+              <form onSubmit={handleSearch}>
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Cari kode bahan jual, keterangan, atau satuan..."
+                  className="input input-bordered input-success w-full max-w-xs"
+                />
+              </form>
             </div>
 
             <div>

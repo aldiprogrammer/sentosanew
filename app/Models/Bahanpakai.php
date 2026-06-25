@@ -8,8 +8,10 @@ class Bahanpakai extends Model
 {
     protected $guarded = [];
 
-    public function masterBahan()
+    protected function casts(): array
     {
-        return $this->belongsTo(Materbahan::class, 'id_master_bahan', 'kode_bahan_jual');
+        return [
+            'id_master_bahan' => 'array',
+        ];
     }
 }

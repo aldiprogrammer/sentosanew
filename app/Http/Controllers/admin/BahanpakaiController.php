@@ -10,9 +10,21 @@ use Inertia\Inertia;
 
 class BahanpakaiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $bahanpakai = Bahanpakai::with('masterBahan')->orderBy('id', 'desc')->get();
+        $search = $request->query('search');
+        $bahanpakai = Bahanpakai::orderBy('id', 'desc')
+            ->when($search, function ($q, $search) {
+                $q->where(function ($query) use ($search) {
+                    $query->where('kode_bahan', 'like', "%{$search}%")
+                        ->orWhere('keterangan', 'like', "%{$search}%")
+                        ->orWhere('panjang', 'like', "%{$search}%")
+                        ->orWhere('lebar', 'like', "%{$search}%")
+                        ->orWhere('satuan', 'like', "%{$search}%");
+                });
+            })->paginate(10);
+        $bahanpakai->appends(['search' => $search]);
+
         $masterBahan = Materbahan::orderBy('kode_bahan_jual')->get();
         $cek = Bahanpakai::first();
         if ($cek == false) {
@@ -30,7 +42,8 @@ class BahanpakaiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'id_master_bahan' => ['required', 'string', 'max:30'],
+            'id_master_bahan' => ['nullable', 'array'],
+            'id_master_bahan.*' => ['string', 'max:30'],
             'kode_bahan' => ['required', 'string', 'max:30'],
             'keterangan' => ['required', 'string'],
             'panjang' => ['required', 'string', 'max:30'],
@@ -55,7 +68,8 @@ class BahanpakaiController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'id_master_bahan' => ['required', 'string', 'max:30'],
+            'id_master_bahan' => ['nullable', 'array'],
+            'id_master_bahan.*' => ['string', 'max:30'],
             'kode_bahan' => ['required', 'string', 'max:30'],
             'keterangan' => ['required', 'string'],
             'panjang' => ['required', 'string', 'max:30'],

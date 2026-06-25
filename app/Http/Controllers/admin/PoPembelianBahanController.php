@@ -67,14 +67,14 @@ class PoPembelianBahanController extends Controller
 
     public function detail($id)
     {
-        $po = PoPembelianBahan::with('suplayer', 'items.bahan.masterBahan')->findOrFail($id);
+        $po = PoPembelianBahan::with('suplayer', 'items.bahan')->findOrFail($id);
         $totalHarga = PoPembelianBahanItem::where('po_pembelian_bahan_id', $po->id)->sum('total_harga');
         $diskonAmount = $totalHarga * ($po->diskon / 100);
         $ppnAmount = $totalHarga * ($po->ppn / 100);
         $po->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
         $po->update();
 
-        $bahanpakais = Bahanpakai::with('masterBahan')->orderBy('kode_bahan')->get();
+        $bahanpakais = Bahanpakai::orderBy('kode_bahan')->get();
 
         return Inertia::render('Admin/PoPembelianBahanDetail', compact('po', 'bahanpakais'));
     }
@@ -185,7 +185,7 @@ class PoPembelianBahanController extends Controller
                     'po_pembelian_bahan_item_id' => $item->id,
                     'kode_po' => $po->no_po,
                     'kode_label' => $kodeLabel,
-                    'kode_bahan_jual' => $item->bahan?->kode_bahan ?? '-',
+                    'kode_bahan_pakai' => $item->bahan?->kode_bahan ?? '-',
                     'panjang' => $item->panjang,
                     'lebar' => $item->lebar,
                     'luas' => $item->luas,

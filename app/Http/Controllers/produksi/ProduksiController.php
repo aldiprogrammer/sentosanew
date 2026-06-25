@@ -18,7 +18,7 @@ class ProduksiController extends Controller
             ->where('status_produksi', 1)
             ->orderBy('id', 'desc')
             ->get();
-        $bahanpakaiList = Bahanpakai::with('masterBahan')->get();
+        $bahanpakaiList = Bahanpakai::get();
         $itemstokbahans = Itemstokbahan::where('qty', '>', 0)->orderBy('id')->get();
         return Inertia::render('Produksi/Produksi', compact('produksi', 'bahanpakaiList', 'itemstokbahans'));
     }

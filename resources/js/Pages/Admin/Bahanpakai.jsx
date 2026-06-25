@@ -1,15 +1,26 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { useForm } from '@inertiajs/react';
-import React, { useRef } from 'react';
+import { Link, router, useForm } from '@inertiajs/react';
+import React, { useEffect, useRef, useState } from 'react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const satuanOptions = ['M2', 'PCS', 'LITER', 'LEMBAR'];
 
 export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
+  const [search, setSearch] = useState(
+    new URLSearchParams(window.location.search).get('search') || '',
+  );
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      router.get('/bahanpakai', { search }, { preserveState: true, replace: true });
+    }, 500);
+    return () => clearTimeout(t);
+  }, [search]);
+
   const { data, setData, post, delete: destroy, put, processing, reset } = useForm({
     id: 0,
-    id_master_bahan: '',
+    id_master_bahan: [],
     kode_bahan: '',
     keterangan: '',
     panjang: '',
@@ -48,10 +59,11 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
   const editmodalRef = useRef(null);
   const openModalEdit = (id) => {
     editmodalRef.current.showModal();
-    const item = bahanpakai.find((i) => i.id === id);
+    const items = bahanpakai.data || bahanpakai;
+    const item = items.find((i) => i.id === id);
     setData({
       id: item.id,
-      id_master_bahan: item.id_master_bahan,
+      id_master_bahan: item.id_master_bahan || [],
       kode_bahan: item.kode_bahan,
       keterangan: item.keterangan,
       panjang: item.panjang,
@@ -100,10 +112,11 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
       doc.text('Data Bahan Beli', 14, 20);
       doc.setFontSize(10);
       doc.text('Tanggal: ' + new Date().toLocaleDateString('id-ID'), 14, 27);
-      const rows = bahanpakai.map((item, index) => [
+      const items = bahanpakai.data || bahanpakai;
+      const rows = items.map((item, index) => [
         index + 1,
         item.kode_bahan,
-        item.master_bahan?.keterangan || '-',
+        Array.isArray(item.id_master_bahan) ? item.id_master_bahan.join(', ') : '-',
         item.keterangan,
         item.panjang,
         item.lebar,
@@ -159,21 +172,27 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
                       <div className="grid grid-cols-1 gap-3">
                         <label className="form-control">
                           <div className="label">
-                            <span className="label-text">Kode Bahan Jual</span>
+                            <span className="label-text">Master Bahan</span>
                           </div>
-                          <select
-                            value={data.id_master_bahan}
-                            className="select select-bordered select-success w-full"
-                            required
-                            onChange={(e) => setData('id_master_bahan', e.target.value)}
-                          >
-                            <option value="">-- Pilih Bahan Pakai --</option>
+                          <div className="grid grid-cols-2 gap-1 max-h-40 overflow-y-auto border rounded-lg p-2">
                             {masterBahan.map((item) => (
-                              <option key={item.kode_bahan_jual} value={item.kode_bahan_jual}>
-                                {item.kode_bahan_jual}
-                              </option>
+                              <label key={item.kode_bahan_jual} className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  className="checkbox checkbox-xs"
+                                  checked={data.id_master_bahan.includes(item.kode_bahan_jual)}
+                                  onChange={() =>
+                                    setData('id_master_bahan',
+                                      data.id_master_bahan.includes(item.kode_bahan_jual)
+                                        ? data.id_master_bahan.filter((v) => v !== item.kode_bahan_jual)
+                                        : [...data.id_master_bahan, item.kode_bahan_jual]
+                                    )
+                                  }
+                                />
+                                <span className="text-sm">{item.kode_bahan_jual}</span>
+                              </label>
                             ))}
-                          </select>
+                          </div>
                         </label>
 
                         <label className="form-control">
@@ -289,22 +308,27 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
                       <div className="grid grid-cols-1 gap-3">
                         <label className="form-control">
                           <div className="label">
-                            <span className="label-text">Kode Bahan Jual</span>
+                            <span className="label-text">Master Bahan</span>
                           </div>
-
-                          <select
-                            value={data.id_master_bahan}
-                            className="select select-bordered select-success w-full"
-                            required
-                            onChange={(e) => setData('id_master_bahan', e.target.value)}
-                          >
-                            <option value="">-- Pilih Bahan Pakai --</option>
+                          <div className="grid grid-cols-2 gap-1 max-h-40 overflow-y-auto border rounded-lg p-2">
                             {masterBahan.map((item) => (
-                              <option key={item.kode_bahan_jual} value={item.kode_bahan_jual}>
-                                {item.keterangan}
-                              </option>
+                              <label key={item.kode_bahan_jual} className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  className="checkbox checkbox-xs"
+                                  checked={data.id_master_bahan.includes(item.kode_bahan_jual)}
+                                  onChange={() =>
+                                    setData('id_master_bahan',
+                                      data.id_master_bahan.includes(item.kode_bahan_jual)
+                                        ? data.id_master_bahan.filter((v) => v !== item.kode_bahan_jual)
+                                        : [...data.id_master_bahan, item.kode_bahan_jual]
+                                    )
+                                  }
+                                />
+                                <span className="text-sm">{item.kode_bahan_jual}</span>
+                              </label>
                             ))}
-                          </select>
+                          </div>
                         </label>
 
                         <label className="form-control">
@@ -413,12 +437,22 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
               </div>
             </div>
 
+            <div className="mb-3">
+              <input
+                type="text"
+                placeholder="Cari kode bahan, keterangan, atau satuan..."
+                className="input input-bordered input-success w-full max-w-xs"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
             <div>
               <table className="table table-zebra" id="myTable">
                 <thead>
                   <tr>
                     <th>No</th>
-                    <th>Kode bahan pakai</th>
+                    <th>Kode Master Bahan</th>
                     <th>Kode Bahan</th>
                     <th>Keterangan</th>
                     <th>Panjang</th>
@@ -428,16 +462,19 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {bahanpakai.map((item, index) => (
+                  {(bahanpakai.data || bahanpakai).map((item, index) => (
                     <tr
                       key={item.id}
                       onClick={() => openModalEdit(item.id)}
                       className="cursor-pointer hover:bg-base-200"
                     >
-                      <td>{index + 1}</td>
-                      <td>{item.master_bahan?.kode_bahan_jual || '-'}</td>
+                      <td>{bahanpakai.from ? bahanpakai.from + index : index + 1}</td>
+                      <td>
+                        {Array.isArray(item.id_master_bahan)
+                          ? item.id_master_bahan.join(', ')
+                          : '-'}
+                      </td>
                       <td>{item.kode_bahan}</td>
-
                       <td>{item.keterangan}</td>
                       <td>{item.panjang}</td>
                       <td>{item.lebar}</td>
@@ -448,6 +485,21 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
                 </tbody>
               </table>
             </div>
+
+            {bahanpakai.links && (
+              <div className="join mt-4 flex justify-center">
+                {bahanpakai.links.map((link, i) => (
+                  <Link
+                    key={i}
+                    href={link.url || '#'}
+                    className={`btn btn-sm join-item ${link.active ? 'btn-success' : ''} ${!link.url ? 'btn-disabled' : ''}`}
+                    preserveState
+                    replace
+                    dangerouslySetInnerHTML={{ __html: link.label }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div >
