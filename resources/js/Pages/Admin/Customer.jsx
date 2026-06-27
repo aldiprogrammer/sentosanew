@@ -588,7 +588,7 @@ export default function Customer({ customer, kode }) {
                                         <tr
                                             key={item.id}
                                             onClick={() => openModalEdit(item.id, item.nama, item.alamat, item.kode, item.nohp, item.kategori, item.limit, item.sapaan, item.limit_akhir, item.jatuh_tempo)}
-                                            className={`cursor-pointer hover:bg-base-200 ${Number(item.limit_akhir) >= Number(item.limit) ? 'bg-error/20' : ''}`}
+                                            className={`cursor-pointer hover:bg-base-200 ${item.jatuh_tempo && Number(item.limit_akhir) === 0 ? 'bg-error/20' : ''}`}
                                         >
                                             <td>{customer.from ? customer.from + index : index + 1}</td>
                                             <td>{item.kode}</td>

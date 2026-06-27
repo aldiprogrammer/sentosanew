@@ -17,4 +17,9 @@ class PoPembelianBahanItem extends Model
     {
         return $this->belongsTo(PoPembelianBahan::class, 'po_pembelian_bahan_id');
     }
+
+    public function itemStok()
+    {
+        return $this->hasMany(Itemstokbahan::class, 'po_pembelian_bahan_item_id');
+    }
 }

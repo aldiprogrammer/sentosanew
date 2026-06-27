@@ -535,7 +535,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                     list="existingInvoicesList"
                                     required
                                   />
-                                  <button
+                                  {/* <button
                                     type="button"
                                     className="btn btn-outline btn-success btn-sm"
                                     onClick={() => {
@@ -545,7 +545,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                     title="Generate invoice baru"
                                   >
                                     <i className="fas fa-sync-alt"></i>
-                                  </button>
+                                  </button> */}
                                 </div>
                                 <datalist id="existingInvoicesList">
                                   {existingInvoices?.map((inv) => (
@@ -554,7 +554,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 </datalist>
                               </label>
                               {/* Alamat */}
-                              <label className="form-control w-full">
+                              <label className="form-control w-full col-span-2">
                                 <div className="label">
                                   <span className="label-text">Alamat</span>
                                 </div>
@@ -566,6 +566,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   required
                                 ></textarea>
                               </label>
+
                               <label className="form-control w-full col-span-2">
                                 <div className="label">
                                   <span className="label-text">Keterangan</span>
@@ -596,7 +597,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                             </label>
                             <div className="divider mt-4 mb-6">Pinising</div>
                             <div className="grid grid-cols-2 gap-2">
-                              {["atas", "bawah", "kanan", "kiri"].map(
+                              {["atas", "bawah", "kiri", "kanan"].map(
                                 (sisi) => (
                                   <label key={sisi} className="form-control">
                                     <div className="label py-1">
@@ -964,7 +965,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
 
                       <h3 className="text-lg font-bold">Edit Produksi</h3>
 
-                          <form onSubmit={update}>
+                      <form onSubmit={update}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                           {/* Customer */}
                           <div className="p-5 bg-base-200 rounded-lg">
@@ -1454,7 +1455,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
 
               <div>
                 <div className="overflow-x-auto">
-                    <table className="table table-zebra" id="myTable">
+                  <table className="table table-zebra" id="myTable">
                     <thead>
                       <tr>
                         <th>No</th>

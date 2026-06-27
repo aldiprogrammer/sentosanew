@@ -16,8 +16,8 @@ class MaterbahanController extends Controller
 
         $mater = Materbahan::when($search, function ($q, $search) {
             $q->where('kode_bahan_jual', 'like', "%{$search}%")
-              ->orWhere('keterangan', 'like', "%{$search}%")
-              ->orWhere('satuan', 'like', "%{$search}%");
+                ->orWhere('keterangan', 'like', "%{$search}%")
+                ->orWhere('satuan', 'like', "%{$search}%");
         })
             ->orderBy('id', 'desc')
             ->paginate(10);
@@ -33,14 +33,14 @@ class MaterbahanController extends Controller
         $request->validate([
             'kode_bahan_jual' => ['required', 'string', 'max:30'],
             'keterangan' => ['required', 'string'],
-            'tanggal' => ['required', 'string', 'max:20'],
+            // 'tanggal' => ['required', 'string', 'max:20'],
             'satuan' => ['nullable', 'string', 'max:30'],
         ]);
 
         $mb = new Materbahan;
         $mb->kode_bahan_jual = $request->kode_bahan_jual;
         $mb->keterangan = $request->keterangan;
-        $mb->tanggal = $request->tanggal;
+        // $mb->tanggal = $request->tanggal;
         $mb->satuan = $request->satuan;
         $mb->save();
 
@@ -52,14 +52,14 @@ class MaterbahanController extends Controller
         $request->validate([
             'kode_bahan_jual' => ['required', 'string', 'max:30'],
             'keterangan' => ['required', 'string'],
-            'tanggal' => ['required', 'string', 'max:20'],
+            // 'tanggal' => ['required', 'string', 'max:20'],
             'satuan' => ['nullable', 'string', 'max:30'],
         ]);
 
         $mb = Materbahan::findOrFail($id);
         $mb->kode_bahan_jual = $request->kode_bahan_jual;
         $mb->keterangan = $request->keterangan;
-        $mb->tanggal = $request->tanggal;
+        // $mb->tanggal = $request->tanggal;
         $mb->satuan = $request->satuan;
         $mb->update();
 
@@ -80,7 +80,7 @@ class MaterbahanController extends Controller
 
         $mater = Materbahan::when($search, function ($q, $search) {
             $q->where('kode_bahan_jual', 'like', "%{$search}%")
-              ->orWhere('keterangan', 'like', "%{$search}%");
+                ->orWhere('keterangan', 'like', "%{$search}%");
         })
             ->orderBy('kode_bahan_jual')
             ->get();

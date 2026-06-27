@@ -153,7 +153,7 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
                   <i className="fas fa-file-pdf"></i> Export PDF
                 </button>
                 <button className="btn btn-success" onClick={openModal}>
-                   <i className="fas fa-plus"></i> Tambah Bahan Pakai
+                  <i className="fas fa-plus"></i> Tambah Bahan Pakai
                 </button>
 
                 <dialog ref={modalRef} className="modal">
@@ -170,7 +170,7 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
 
                     <form onSubmit={save}>
                       <div className="grid grid-cols-1 gap-3">
-                        <label className="form-control">
+                        {/* <label className="form-control">
                           <div className="label">
                             <span className="label-text">Master Bahan</span>
                           </div>
@@ -193,7 +193,7 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
                               </label>
                             ))}
                           </div>
-                        </label>
+                        </label> */}
 
                         <label className="form-control">
                           <div className="label">
@@ -306,7 +306,7 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
 
                     <form onSubmit={update}>
                       <div className="grid grid-cols-1 gap-3">
-                        <label className="form-control">
+                        {/* <label className="form-control">
                           <div className="label">
                             <span className="label-text">Master Bahan</span>
                           </div>
@@ -329,7 +329,7 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
                               </label>
                             ))}
                           </div>
-                        </label>
+                        </label> */}
 
                         <label className="form-control">
                           <div className="label">
@@ -452,7 +452,7 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
                 <thead>
                   <tr>
                     <th>No</th>
-                    <th>Kode Master Bahan</th>
+                    {/* <th>Kode Master Bahan</th> */}
                     <th>Kode Bahan</th>
                     <th>Keterangan</th>
                     <th>Panjang</th>
@@ -469,11 +469,11 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
                       className="cursor-pointer hover:bg-base-200"
                     >
                       <td>{bahanpakai.from ? bahanpakai.from + index : index + 1}</td>
-                      <td>
+                      {/* <td>
                         {Array.isArray(item.id_master_bahan)
                           ? item.id_master_bahan.join(', ')
                           : '-'}
-                      </td>
+                      </td> */}
                       <td>{item.kode_bahan}</td>
                       <td>{item.keterangan}</td>
                       <td>{item.panjang}</td>

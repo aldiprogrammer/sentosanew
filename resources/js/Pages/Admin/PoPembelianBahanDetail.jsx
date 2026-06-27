@@ -79,6 +79,9 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
 
   const modalRef = useRef(null);
   const editModalRef = useRef(null);
+  const stokModalRef = useRef(null);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [qtyDiterima, setQtyDiterima] = useState('');
 
   const selectedBahan = bahanpakais.find((b) => b.id == data.id_bahan);
 
@@ -388,6 +391,57 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
     }
   };
 
+  const openStokModal = (item, e) => {
+    e.stopPropagation();
+    setSelectedItem(item);
+    const sisa = Number(item.qty) - (item.stok_count || 0);
+    setQtyDiterima(String(sisa > 0 ? sisa : item.qty || ''));
+    stokModalRef.current.showModal();
+  };
+
+  const showSwal = (opts) => {
+    return Swal.fire({
+      buttonsStyling: false,
+      background: '#fff',
+      customClass: {
+        confirmButton: 'btn btn-success',
+        cancelButton: 'btn btn-ghost',
+        popup: 'shadow-xl',
+      },
+      ...opts,
+    });
+  };
+
+  const updateStokItemSubmit = (e) => {
+    e.preventDefault();
+    stokModalRef.current.close();
+    setSelectedItem(null);
+    setQtyDiterima('');
+    router.put(route('update-stok-item.po-pembelian-bahan', selectedItem.id), {
+      qty_diterima: qtyDiterima,
+      preserveScroll: true,
+      onSuccess: () => setTimeout(() => showSwal({
+        icon: 'success',
+        title: 'Berhasil',
+        text: 'Stok item berhasil diupdate',
+        timer: 2000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+      }), 150),
+      onError: (errors) => {
+        const msg = Object.values(errors).flat().join(', ');
+        showSwal({
+          icon: 'error',
+          title: 'Gagal',
+          text: msg || 'Terjadi kesalahan',
+          timer: 2000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+        });
+      },
+    });
+  };
+
   return (
     <AdminLayout>
       <div className="grid grid-cols-1 gap-4">
@@ -460,7 +514,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                     <th>Qty</th>
                     <th>Total Harga</th>
                     <th>Keterangan</th>
-                    {/* <th>Aksi</th> */}
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="text-xs">
@@ -483,11 +537,64 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                         <td>{item.qty}</td>
                         <td>{formatRp(item.total_harga)}</td>
                         <td>{item.keterangan || "-"}</td>
-                        {/* <td>
-                          <button onClick={(e) => { e.stopPropagation(); hapusItem(item.id); }} className="btn btn-xs btn-error">
-                            <i className="fas fa-trash"></i>
-                          </button>
-                        </td> */}
+                        <td>
+                          {item.stok_count >= Number(item.qty) ? (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                showSwal({
+                                  icon: 'warning',
+                                  title: 'Tarik Stok?',
+                                  text: `Yakin ingin menarik ${item.stok_count} stok entry untuk item ini?`,
+                                  showCancelButton: true,
+                                  confirmButtonText: 'Ya, Tarik',
+                                  cancelButtonText: 'Batal',
+                                  customClass: {
+                                    confirmButton: 'btn btn-error',
+                                    cancelButton: 'btn btn-ghost',
+                                  },
+                                }).then((result) => {
+                                  if (result.isConfirmed) {
+                                    router.delete(route('tarik-stok-item.po-pembelian-bahan', item.id), {
+                                      preserveScroll: true,
+                                      onSuccess: () => {
+                                        setTimeout(() => showSwal({
+                                          icon: 'success',
+                                          title: 'Berhasil',
+                                          text: `Stok berhasil ditarik (${item.stok_count} entry)`,
+                                          timer: 2000,
+                                          timerProgressBar: true,
+                                          showConfirmButton: false,
+                                        }), 150);
+                                      },
+                                      onError: (errors) => {
+                                        const msg = Object.values(errors).flat().join(', ');
+                                        showSwal({
+                                          icon: 'error',
+                                          title: 'Gagal',
+                                          text: msg || 'Terjadi kesalahan',
+                                          timer: 2000,
+                                          timerProgressBar: true,
+                                          showConfirmButton: false,
+                                        });
+                                      },
+                                    });
+                                  }
+                                });
+                              }}
+                              className="btn btn-xs btn-warning"
+                            >
+                              <i className="fas fa-undo"></i> Tarik Stok ({item.stok_count})
+                            </button>
+                          ) : (
+                            <button
+                              onClick={(e) => openStokModal(item, e)}
+                              className={`btn btn-xs ${item.stok_count > 0 ? 'btn-info' : 'btn-success'}`}
+                            >
+                              <i className="fas fa-box"></i> Update Stok{item.stok_count > 0 ? ' (+' + (Number(item.qty) - item.stok_count) + ')' : ''}
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))
                   )}
@@ -708,6 +815,51 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
               <button type="button" onClick={() => hapusItem(data.id)} className="btn btn-error"><i className="fas fa-trash"></i> Hapus</button>
             </div>
           </form>
+        </div>
+      </dialog>
+
+      <dialog ref={stokModalRef} className="modal">
+        <div className="modal-box">
+          <button type="button" onClick={() => { stokModalRef.current.close(); setSelectedItem(null); }} className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+          <h3 className="text-lg font-bold mb-4">Update Stok Item</h3>
+          {selectedItem && (
+            <form onSubmit={updateStokItemSubmit}>
+              <div className="bg-gray-100 p-4 rounded-lg space-y-3">
+                <div>
+                  <span className="text-xs text-gray-500">Bahan</span>
+                  <p className="font-semibold">{selectedItem.bahan?.kode_bahan || '-'}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-gray-500">Qty PO</span>
+                  <p className="font-semibold">{selectedItem.qty}</p>
+                </div>
+                {selectedItem.stok_count > 0 && (
+                  <div>
+                    <span className="text-xs text-gray-500">Sudah Diupdate</span>
+                    <p className="font-semibold text-info">{selectedItem.stok_count}</p>
+                  </div>
+                )}
+                <label className="form-control">
+                  <div className="label"><span className="label-text">Qty Diterima</span></div>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    max={Number(selectedItem.qty) - (selectedItem.stok_count || 0)}
+                    value={qtyDiterima}
+                    className="input input-bordered input-success w-full"
+                    required
+                    onChange={(e) => setQtyDiterima(e.target.value)}
+                  />
+                  <span className="text-xs text-gray-500 mt-1">Maksimal: {Number(selectedItem.qty) - (selectedItem.stok_count || 0)} (sisa)</span>
+                </label>
+              </div>
+              <div className="mt-6 flex gap-2">
+                <button type="submit" className="btn btn-success"><i className="fas fa-box"></i> Update Stok</button>
+                <button type="button" onClick={() => { stokModalRef.current.close(); setSelectedItem(null); }} className="btn btn-error">Batal</button>
+              </div>
+            </form>
+          )}
         </div>
       </dialog>
     </AdminLayout>
