@@ -139,8 +139,8 @@ class ProduksiController extends Controller
             $stok = Itemstokbahan::find($request->id_item_stok);
 
             if ($stok && $request->total_all) {
-                $stok->luas = max(0, (float) $stok->luas - (float) $request->total_all);
-                if ((float) $stok->luas == 0) {
+                $stok->total = max(0, (float) $stok->total - (float) $request->total_all);
+                if ((float) $stok->total == 0) {
                     $stok->qty = 0;
                 }
                 $stok->save();

@@ -42,8 +42,8 @@ class LogistikController extends Controller
             foreach ($ids as $itemStokId) {
                 $stok = Itemstokbahan::find($itemStokId);
                 if ($stok) {
-                    $stok->luas = max(0, (float) $stok->luas - $perItem);
-                    if ((float) $stok->luas == 0) {
+                    $stok->total = max(0, (float) $stok->total - $perItem);
+                    if ((float) $stok->total == 0) {
                         $stok->qty = 0;
                     }
                     $stok->save();
