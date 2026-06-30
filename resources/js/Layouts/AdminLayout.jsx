@@ -22,7 +22,7 @@ export default function AdminLayout({ children }) {
             <div className="drawer-content flex flex-col">
                 <div className="navbar bg-base-100 border-b border-base-300 px-4 shadow-sm">
                     <div className="flex-none lg:hidden">
-                        <label for="sidebar" className="btn btn-square btn-ghost">
+                        <label htmlFor="sidebar" className="btn btn-square btn-ghost">
                             <svg xmlns="http://www.w3.org/2000/svg" className="inline-block h-5 w-5 stroke-current"
                                 fill="none" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -48,7 +48,7 @@ export default function AdminLayout({ children }) {
                         </button>
 
                         <div className="dropdown dropdown-end">
-                            <div tabindex="0" role="button" className="btn btn-ghost flex items-center gap-2">
+                            <div tabIndex="0" role="button" className="btn btn-ghost flex items-center gap-2">
                                 <div className="avatar placeholder">
                                     <div className="bg-green-700 text-white rounded-full w-10">
                                         <span>{getInitial(auth?.user?.username)}</span>
@@ -57,7 +57,7 @@ export default function AdminLayout({ children }) {
                                 <span className="hidden md:block font-medium">{auth.user.username}</span>
                             </div>
 
-                            <ul tabindex="0"
+                            <ul tabIndex="0"
                                 className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
                                 <li>
                                     <button onClick={handleLogout} className="text-error w-full text-left">
