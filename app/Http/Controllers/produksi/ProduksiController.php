@@ -135,13 +135,24 @@ class ProduksiController extends Controller
         $pr->kode_bahanpakai = $request->kode_bahanpakai;
         $pr->update();
 
-        if ($request->id_item_stok) {
-            $stok = Itemstokbahan::find($request->id_item_stok);
+        $itemStokIds = $request->input('item_stok_ids', []);
+        if (empty($itemStokIds) && $request->id_item_stok) {
+            $itemStokIds = [$request->id_item_stok];
+        }
 
-            if ($stok && $request->total_all) {
-                $stok->luas = max(0, (float) $stok->luas - (float) $request->total_all);
-                if ((float) $stok->luas == 0) $stok->qty = 0;
+        if (!empty($itemStokIds)) {
+            $remainingNeed = (float) $request->total_all;
+            foreach ($itemStokIds as $stokId) {
+                if ($remainingNeed <= 0) break;
+                $stok = Itemstokbahan::find($stokId);
+                if (!$stok) continue;
+
+                $take = min((float) $stok->total, $remainingNeed);
+                $stok->total = max(0, (float) $stok->total - $take);
+                if ((float) $stok->total == 0) $stok->qty = 0;
                 $stok->save();
+
+                $remainingNeed -= $take;
             }
         }
 

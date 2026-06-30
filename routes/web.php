@@ -22,6 +22,7 @@ use App\Http\Controllers\admin\SuplayerPembelianBahanController;
 use App\Http\Controllers\admin\OtorisasiController;
 use App\Http\Controllers\produksi\FinishingController;
 use App\Http\Controllers\produksi\LogistikController;
+use App\Http\Controllers\produksi\PengambilanStokController;
 use App\Http\Controllers\produksi\ProduksiController as ProduksiProduksiController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -154,6 +155,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/produksi/logistik', [LogistikController::class, 'index'])->name('logistik.logistik');
     Route::put('/logistik/logistik/{id}/proses', [LogistikController::class, 'proses'])->name('logistik.logistik');
+
+    Route::get('/produksi/pengambilan-stok', [PengambilanStokController::class, 'index'])->name('pengambilan-stok');
+    Route::post('/produksi/pengambilan-stok/proses', [PengambilanStokController::class, 'proses'])->name('pengambilan-stok.proses');
+    Route::get('/produksi/riwayat-pengambilan-stok', [PengambilanStokController::class, 'riwayat'])->name('riwayat-pengambilan-stok');
+    Route::get('/produksi/riwayat-pemakaian-bahan', [PengambilanStokController::class, 'riwayatPemakaian'])->name('riwayat-pemakaian-bahan');
 
     Route::get('/laporan-pembukuan', [LaporanPembukuanController::class, 'index'])->name('laporan-pembukuan');
 

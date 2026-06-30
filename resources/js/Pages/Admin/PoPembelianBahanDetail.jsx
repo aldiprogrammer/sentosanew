@@ -84,6 +84,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
   const [qtyDiterima, setQtyDiterima] = useState('');
 
   const selectedBahan = bahanpakais.find((b) => b.id == data.id_bahan);
+  const isLembar = (selectedBahan?.satuan || '').toLowerCase() === 'lembar';
 
   const hitungLuas = (panjang, lebar) => {
     const p = parseFloat(panjang) || 0;
@@ -98,10 +99,13 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
   };
 
   const totalSemua = po.items.reduce((sum, item) => sum + parseFloat(item.total_harga || 0), 0);
+  const adaItemLembar = po.items.some((item) => (item.satuan || '').toLowerCase() === 'lembar');
 
   useEffect(() => {
-    const luas = hitungLuas(data.panjang, data.lebar);
-    setData("luas", luas);
+    if (!isLembar) {
+      const luas = hitungLuas(data.panjang, data.lebar);
+      setData("luas", luas);
+    }
     const total = hitungTotal(data.qty, data.harga);
     setData("total_harga", total);
   }, [data.panjang, data.lebar, data.qty, data.harga]);
@@ -509,7 +513,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                     <th>Satuan</th>
                     <th>Panjang</th>
                     <th>Lebar</th>
-                    <th>Luas</th>
+                    <th>{adaItemLembar ? 'Jumlah Kertas' : 'Luas'}</th>
                     <th>Harga</th>
                     <th>Qty</th>
                     <th>Total Harga</th>
@@ -721,8 +725,12 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                     {errors.lebar && <span className="text-error text-xs mt-1 block">{errors.lebar}</span>}
                   </label>
                   <label className="form-control">
-                    <div className="label"><span className="label-text">Luas</span></div>
-                    <input type="text" value={data.luas} className="input input-bordered w-full bg-base-200" readOnly />
+                    <div className="label"><span className="label-text">{isLembar ? 'Jumlah Lembar' : 'Luas'}</span></div>
+                    {isLembar ? (
+                      <input type="number" step="0.01" value={data.luas} className="input input-bordered input-success w-full" onChange={(e) => setData("luas", e.target.value)} />
+                    ) : (
+                      <input type="text" value={data.luas} className="input input-bordered w-full bg-base-200" readOnly />
+                    )}
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Qty</span></div>
@@ -789,8 +797,12 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                     {errors.lebar && <span className="text-error text-xs mt-1 block">{errors.lebar}</span>}
                   </label>
                   <label className="form-control">
-                    <div className="label"><span className="label-text">Luas</span></div>
-                    <input type="text" value={data.luas} className="input input-bordered w-full bg-base-200" readOnly />
+                    <div className="label"><span className="label-text">{isLembar ? 'Jumlah Lembar' : 'Luas'}</span></div>
+                    {isLembar ? (
+                      <input type="number" step="0.01" value={data.luas} className="input input-bordered input-success w-full" onChange={(e) => setData("luas", e.target.value)} />
+                    ) : (
+                      <input type="text" value={data.luas} className="input input-bordered w-full bg-base-200" readOnly />
+                    )}
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Qty</span></div>

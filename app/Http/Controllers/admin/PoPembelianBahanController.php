@@ -26,9 +26,9 @@ class PoPembelianBahanController extends Controller
             ->paginate(10);
         $po->appends(['search' => $search]);
 
-        $prefix = 'PB-'.date('ym').'-';
-        $last = PoPembelianBahan::where('no_po', 'like', $prefix.'%')->orderBy('no_po', 'desc')->first();
-        $no_po = $prefix.str_pad($last ? ((int) substr($last->no_po, -4)) + 1 : 1, 4, '0', STR_PAD_LEFT);
+        $prefix = 'PB-' . date('ym') . '-';
+        $last = PoPembelianBahan::where('no_po', 'like', $prefix . '%')->orderBy('no_po', 'desc')->first();
+        $no_po = $prefix . str_pad($last ? ((int) substr($last->no_po, -4)) + 1 : 1, 4, '0', STR_PAD_LEFT);
         $suplayers = SuplayerPembelianBahan::orderBy('nama_suplayer')
             ->get(['id', 'kode', 'nama_suplayer']);
 
@@ -88,7 +88,7 @@ class PoPembelianBahanController extends Controller
     {
         $po = PoPembelianBahan::findOrFail($id);
 
-        $request->merge(collect($request->all())->map(fn ($v) => $v === '' ? null : $v)->all());
+        $request->merge(collect($request->all())->map(fn($v) => $v === '' ? null : $v)->all());
 
         $data = $request->validate([
             'id_bahan' => 'nullable|exists:bahanpakais,id',
@@ -112,7 +112,7 @@ class PoPembelianBahanController extends Controller
 
     public function updateItem(Request $request, $id)
     {
-        $request->merge(collect($request->all())->map(fn ($v) => $v === '' ? null : $v)->all());
+        $request->merge(collect($request->all())->map(fn($v) => $v === '' ? null : $v)->all());
 
         $data = $request->validate([
             'id_bahan' => 'nullable|exists:bahanpakais,id',
@@ -196,7 +196,7 @@ class PoPembelianBahanController extends Controller
                 $existingMax = Itemstokbahan::where('kode_bahan_pakai', $kodeBahan)
                     ->whereNotNull('kode_label')
                     ->pluck('kode_label')
-                    ->map(fn ($l) => (int) substr($l, strrpos($l, '-') + 1))
+                    ->map(fn($l) => (int) substr($l, strrpos($l, '-') + 1))
                     ->max() ?? 0;
                 $nextSeq[$kodeBahan] = $existingMax + 1;
             }
@@ -204,7 +204,7 @@ class PoPembelianBahanController extends Controller
             $qty = max((int) round((float) ($item->qty ?? 0)), 1);
             for ($i = 0; $i < $qty; $i++) {
                 $seq = $nextSeq[$kodeBahan]++;
-                $kodeLabel = 'LB-'.$kodeBahan.'-'.str_pad($seq, 3, '0', STR_PAD_LEFT);
+                $kodeLabel = 'LB-' . $kodeBahan . '-' . str_pad($seq, 3, '0', STR_PAD_LEFT);
                 Itemstokbahan::create([
                     'po_pembelian_bahan_id' => $po->id,
                     'po_pembelian_bahan_item_id' => $item->id,
@@ -213,7 +213,7 @@ class PoPembelianBahanController extends Controller
                     'kode_bahan_pakai' => $kodeBahan,
                     'panjang' => $item->panjang,
                     'lebar' => $item->lebar,
-                    'luas' => $item->luas,
+                    'total' => $item->luas,
                     'qty' => 1,
                     'satuan' => $item->satuan,
                     'keterangan' => $item->keterangan,
@@ -271,10 +271,10 @@ class PoPembelianBahanController extends Controller
         $satuan = strtoupper(trim($item->satuan ?? ''));
         $currentStok = (float) ($bahan->total_stok ?? 0);
 
-        if ($satuan === 'M2') {
+        if ($satuan === 'M2' || $satuan === 'LEMBAR') {
             $luas = (float) ($item->luas ?? 0);
-            $bahan->total_stok = $currentStok + ($luas * 3);
-        } elseif ('PCS' || 'LEMBAR' || 'LITER') {
+            $bahan->total_stok = $currentStok + ($luas * $item->qty);
+        } elseif ($satuan === 'PCS'  || $satuan === 'LITER') {
             $qty = (float) ($item->qty ?? 1);
             $bahan->total_stok = $currentStok + $qty;
         }
@@ -292,9 +292,9 @@ class PoPembelianBahanController extends Controller
         $satuan = strtoupper(trim($item->satuan ?? ''));
         $currentStok = (float) ($bahan->total_stok ?? 0);
 
-        if ($satuan === 'M2') {
+        if ($satuan === 'M2' || $satuan === 'LEMBAR') {
             $luas = (float) ($item->luas ?? 0);
-            $bahan->total_stok = max(0, $currentStok - ($luas * 3));
+            $bahan->total_stok = max(0, $currentStok - ($luas * $item->qty));
         } else {
             $qty = (float) ($item->qty ?? 1);
             $bahan->total_stok = max(0, $currentStok - $qty);
@@ -322,7 +322,7 @@ class PoPembelianBahanController extends Controller
         if ($totalStok > (float) ($item->qty ?? 0)) {
             $sisa = (float) ($item->qty ?? 0) - $existingStok;
 
-            return redirect()->back()->with('error', 'Sisa qty yang bisa diupdate: '.max(0, $sisa).' (sudah diupdate '.$existingStok.')');
+            return redirect()->back()->with('error', 'Sisa qty yang bisa diupdate: ' . max(0, $sisa) . ' (sudah diupdate ' . $existingStok . ')');
         }
 
         if (! $item->bahan) {
@@ -334,13 +334,13 @@ class PoPembelianBahanController extends Controller
         $existingMax = Itemstokbahan::where('kode_bahan_pakai', $kodeBahan)
             ->whereNotNull('kode_label')
             ->pluck('kode_label')
-            ->map(fn ($l) => (int) substr($l, strrpos($l, '-') + 1))
+            ->map(fn($l) => (int) substr($l, strrpos($l, '-') + 1))
             ->max() ?? 0;
         $nextSeq = $existingMax + 1;
 
         for ($i = 0; $i < $qtyDiterima; $i++) {
             $seq = $nextSeq++;
-            $kodeLabel = 'LB-'.$kodeBahan.'-'.str_pad($seq, 3, '0', STR_PAD_LEFT);
+            $kodeLabel = 'LB-' . $kodeBahan . '-' . str_pad($seq, 3, '0', STR_PAD_LEFT);
             Itemstokbahan::create([
                 'po_pembelian_bahan_id' => $item->po_pembelian_bahan_id,
                 'po_pembelian_bahan_item_id' => $item->id,
@@ -349,7 +349,7 @@ class PoPembelianBahanController extends Controller
                 'kode_bahan_pakai' => $kodeBahan,
                 'panjang' => $item->panjang,
                 'lebar' => $item->lebar,
-                'luas' => $item->luas,
+                'total' => $item->luas,
                 'qty' => 1,
                 'satuan' => $item->satuan,
                 'keterangan' => $item->keterangan,
@@ -360,9 +360,9 @@ class PoPembelianBahanController extends Controller
         $satuan = strtoupper(trim($item->satuan ?? ''));
         $currentStok = (float) ($bahan->total_stok ?? 0);
 
-        if ($satuan === 'M2') {
+        if ($satuan === 'M2' || $satuan === 'LEMBAR') {
             $luas = (float) ($item->luas ?? 0);
-            $bahan->total_stok = $currentStok + ($luas * 3 * $qtyDiterima);
+            $bahan->total_stok = $currentStok + ($luas * $item->qty  * $qtyDiterima);
         } else {
             $bahan->total_stok = $currentStok + $qtyDiterima;
         }
@@ -391,7 +391,7 @@ class PoPembelianBahanController extends Controller
 
         if ($satuan === 'M2') {
             $luas = (float) ($item->luas ?? 0);
-            $bahan->total_stok = max(0, $currentStok - ($luas * 3 * $existingStok));
+            $bahan->total_stok = max(0, $currentStok - ($luas * $item->qty * $existingStok));
         } else {
             $bahan->total_stok = max(0, $currentStok - $existingStok);
         }
@@ -400,7 +400,7 @@ class PoPembelianBahanController extends Controller
 
         Itemstokbahan::where('po_pembelian_bahan_item_id', $item->id)->delete();
 
-        return redirect()->back()->with('success', 'Stok item berhasil ditarik ('.$existingStok.' entry)');
+        return redirect()->back()->with('success', 'Stok item berhasil ditarik (' . $existingStok . ' entry)');
     }
 
     public function cetakLabel($id)
@@ -419,7 +419,7 @@ class PoPembelianBahanController extends Controller
             $max = Itemstokbahan::where('kode_bahan_pakai', $kode)
                 ->whereNotNull('kode_label')
                 ->pluck('kode_label')
-                ->map(fn ($l) => (int) substr($l, strrpos($l, '-') + 1))
+                ->map(fn($l) => (int) substr($l, strrpos($l, '-') + 1))
                 ->max() ?? 0;
             $labelStart[$kode] = $max + 1;
         }
@@ -429,6 +429,6 @@ class PoPembelianBahanController extends Controller
             'labelStart' => $labelStart,
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->stream('label_bahan_'.$po->no_po.'.pdf');
+        return $pdf->stream('label_bahan_' . $po->no_po . '.pdf');
     }
 }

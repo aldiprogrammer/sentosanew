@@ -12,6 +12,7 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
     const [sisaPutihLebar, setSisaPutihLebar] = useState('')
     const [selectedBahanpakai, setSelectedBahanpakai] = useState('')
     const [selectedItemStok, setSelectedItemStok] = useState('')
+    const [selectedItemStokIds, setSelectedItemStokIds] = useState([])
     const [showPasswordModal, setShowPasswordModal] = useState(false)
     const [pendingAction, setPendingAction] = useState(null)
     const modalRef = useRef(null)
@@ -34,7 +35,7 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
         return hitungLuasM2(p, l, selected.satuan) * qty
     }, [selected, sisaPutihPanjang, sisaPutihLebar])
 
-    const totalAll = totalLuasM2
+    const totalAll = selected?.bahan?.satuan == 'LEMBAR' ? parseFloat(selected.qty) || 1 : totalLuasM2
 
     const bahanpakaiOptions = useMemo(() => {
         if (!selected) return []
@@ -43,7 +44,7 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
 
     const itemStokOptions = useMemo(() => {
         if (!selectedBahanpakai || !itemstokbahans) return []
-        return itemstokbahans.filter((s) => s.kode_bahan_pakai === selectedBahanpakai && parseFloat(s.luas) > 0 && parseInt(s.qty) > 0)
+        return itemstokbahans.filter((s) => s.kode_bahan_pakai === selectedBahanpakai && parseFloat(s.total) > 0 && parseInt(s.qty) > 0)
     }, [selectedBahanpakai, itemstokbahans])
 
     const stokTerpilih = useMemo(() => {
@@ -52,9 +53,17 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
     }, [selectedItemStok, itemstokbahans])
 
     const isSisaKurang = useMemo(() => {
+        if (selected?.bahan?.satuan == 'LEMBAR') {
+            if (!selectedItemStokIds.length) return true
+            const totalAvailable = selectedItemStokIds.reduce((sum, id) => {
+                const stok = itemstokbahans.find(s => s.id === id)
+                return sum + (parseFloat(stok?.total) || 0)
+            }, 0)
+            return totalAvailable < totalAll
+        }
         if (!stokTerpilih) return false
-        return parseFloat(stokTerpilih.luas) < totalAll
-    }, [stokTerpilih, totalAll])
+        return parseFloat(stokTerpilih.total) < totalAll
+    }, [stokTerpilih, totalAll, selectedItemStokIds, selected, itemstokbahans])
 
     const reviewReceipt = (item) => {
         const w = window.open('', '_blank', 'width=420,height=640')
@@ -109,6 +118,7 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
         setSisaPutihLebar(item.lebar ?? '')
         setSelectedBahanpakai(item.kode_bahanpakai ?? '')
         setSelectedItemStok('')
+        setSelectedItemStokIds([])
         modalRef.current?.showModal()
     }
 
@@ -119,14 +129,21 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
 
     const handleProses = () => {
         if (!selected) return
-        router.put(`/produksi/produksi/${selected.id}/proses`, {
+        const payload = {
             sisa_putih_panjang: sisaPutihPanjang,
             sisa_putih_lebar: sisaPutihLebar,
             sisa_putih_total: String(totalAll),
             kode_bahanpakai: selectedBahanpakai,
-            id_item_stok: stokTerpilih?.id || null,
             total_all: totalAll.toFixed(2),
-        }, {
+        }
+        if (selected?.bahan?.satuan == 'LEMBAR') {
+            payload.item_stok_ids = selectedItemStokIds
+            payload.id_item_stok = null
+        } else {
+            payload.item_stok_ids = stokTerpilih?.id ? [stokTerpilih.id] : []
+            payload.id_item_stok = stokTerpilih?.id || null
+        }
+        router.put(`/produksi/produksi/${selected.id}/proses`, payload, {
             preserveScroll: true,
             onSuccess: () => {
                 closeModal()
@@ -297,50 +314,80 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
                                 <span>{selected.bahan?.kategori_cetak}</span>
                             </div>
 
-                            <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
-                                <span className="text-sm text-base-content/70">Luas ({selected.satuan})</span>
-                                <span className="font-semibold text-sm">
-                                    {sisaPutihPanjang} × {sisaPutihLebar}{selected.qty > 1 ? ` × ${selected.qty} pcs` : ''} = {totalLuasM2.toFixed(2)} m²
-                                </span>
-                            </div>
+                            {selected.bahan?.satuan == "LEMBAR" ?
+                                <>
+                                    <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
+                                        <span className="text-sm text-base-content/70">Qty</span>
+                                        <span className="font-semibold text-sm">
+                                            {selected.qty} LEMBAR
+                                        </span>
+                                    </div>
+                                </>
+                                :
+                                <>
+                                    <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
+                                        <span className="text-sm text-base-content/70">Luas ({selected.satuan})</span>
+                                        <span className="font-semibold text-sm">
+                                            {sisaPutihPanjang} × {sisaPutihLebar}{selected.qty > 1 ? ` × ${selected.qty} pcs` : ''} = {totalLuasM2.toFixed(2)} m²
+                                        </span>
+                                    </div>
+                                </>
+                            }
 
-                            <div className="divider text-xs text-base-content/50">Sisa Putih</div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <label className="form-control">
-                                    <span className="label-text text-xs">Panjang ({selected.satuan})</span>
-                                    <input
-                                        type="number"
-                                        value={sisaPutihPanjang}
-                                        onChange={(e) => setSisaPutihPanjang(e.target.value)}
-                                        className="input input-bordered input-sm"
-                                        placeholder="0"
-                                    />
-                                </label>
-                                <label className="form-control">
-                                    <span className="label-text text-xs">Lebar ({selected.satuan})</span>
-                                    <input
-                                        type="number"
-                                        value={sisaPutihLebar}
-                                        onChange={(e) => setSisaPutihLebar(e.target.value)}
-                                        className="input input-bordered input-sm"
-                                        placeholder="0"
-                                    />
-                                </label>
-                            </div>
+
+
+                            {selected.bahan?.satuan == 'LEMBAR' ?
+                                <>
+                                    <div className="flex justify-between items-center p-2 bg-base-200 rounded-lg">
+                                        <span className="text-xs text-base-content/70">Total Qty</span>
+                                        <span className="font-semibold text-sm">{selected.qty} LEMBAR</span>
+                                    </div>
+                                </>
+                                :
+                                <>
+                                    <div className="divider text-xs text-base-content/50">Sisa Putih</div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <label className="form-control">
+                                            <span className="label-text text-xs">Panjang ({selected.satuan})</span>
+                                            <input
+                                                type="number"
+                                                value={sisaPutihPanjang}
+                                                onChange={(e) => setSisaPutihPanjang(e.target.value)}
+                                                className="input input-bordered input-sm"
+                                                placeholder="0"
+                                            />
+                                        </label>
+                                        <label className="form-control">
+                                            <span className="label-text text-xs">Lebar ({selected.satuan})</span>
+                                            <input
+                                                type="number"
+                                                value={sisaPutihLebar}
+                                                onChange={(e) => setSisaPutihLebar(e.target.value)}
+                                                className="input input-bordered input-sm"
+                                                placeholder="0"
+                                            />
+                                        </label>
+                                    </div>
+
+                                    <div className="flex justify-between items-center p-2 bg-base-200 rounded-lg">
+                                        <span className="text-xs text-base-content/70">Total Luas (m²)</span>
+                                        <span className="font-semibold text-sm">{totalAll.toFixed(2)} m²</span>
+                                    </div>
+                                </>
+                            }
+
+
                             {/* <div className="flex justify-between items-center p-2 bg-base-200 rounded-lg">
                                 <span className="text-xs text-base-content/70">Total Sisa Putih</span>
                                 <span className="font-semibold text-sm"> {totalSisaPutih || 0} cm²</span>
                             </div> */}
-                            <div className="flex justify-between items-center p-2 bg-base-200 rounded-lg">
-                                <span className="text-xs text-base-content/70">Total Luas (m²)</span>
-                                <span className="font-semibold text-sm">{totalAll.toFixed(2)} m²</span>
-                            </div>
+
                             <div className="grid grid-cols-2 gap-2">
                                 <label className="form-control">
                                     <span className="label-text text-xs">Kode Bahan pakai</span>
                                     <select
                                         value={selectedBahanpakai}
-                                        onChange={(e) => { setSelectedBahanpakai(e.target.value); setSelectedItemStok('') }}
+                                        onChange={(e) => { setSelectedBahanpakai(e.target.value); setSelectedItemStok(''); setSelectedItemStokIds([]) }}
                                         className="select select-bordered select-sm text-xs"
                                     >
                                         <option value="">Pilih Bahan Pakai</option>
@@ -351,48 +398,105 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
                                         ))}
                                     </select>
                                 </label>
-                                {selectedBahanpakai && itemStokOptions.length > 0 && (
-                                    <label className="form-control">
-                                        <span className="label-text text-xs">Pilih Lebel</span>
-                                        <select
-                                            value={selectedItemStok}
-                                            onChange={(e) => setSelectedItemStok(Number(e.target.value))}
-                                            className="select select-bordered select-sm text-xs"
-                                        >
-                                            <option value="">Pilih Label</option>
-                                            {itemStokOptions.map((s) => (
-                                                <option key={s.id} value={s.id}>
-                                                    {s.kode_label || s.keterangan || `Stok #${s.id}`} - Sisa Luas: {s.luas} {s.satuan}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </label>
+                                {selected?.bahan?.satuan == 'LEMBAR' ? (
+                                    selectedBahanpakai && itemStokOptions.length > 0 && (
+                                        <div className="form-control">
+                                            <span className="label-text text-xs mb-1">Pilih Label (bisa lebih dari 1)</span>
+                                            <div className="space-y-1 max-h-40 overflow-y-auto border border-base-300 rounded-lg p-2">
+                                                {itemStokOptions.map((s) => (
+                                                    <label key={s.id} className="flex items-center gap-2 p-1.5 bg-base-200 rounded cursor-pointer hover:bg-base-300">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedItemStokIds.includes(s.id)}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    setSelectedItemStokIds(prev => [...prev, s.id])
+                                                                } else {
+                                                                    setSelectedItemStokIds(prev => prev.filter(id => id !== s.id))
+                                                                }
+                                                            }}
+                                                            className="checkbox checkbox-xs"
+                                                        />
+                                                        <span className="text-xs">
+                                                            {s.kode_label || s.keterangan || `Stok #${s.id}`} - Sisa: <strong>{s.total}</strong> {s.satuan}
+                                                        </span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )
+                                ) : (
+                                    selectedBahanpakai && itemStokOptions.length > 0 && (
+                                        <label className="form-control">
+                                            <span className="label-text text-xs">Pilih Label</span>
+                                            <select
+                                                value={selectedItemStok}
+                                                onChange={(e) => setSelectedItemStok(Number(e.target.value))}
+                                                className="select select-bordered select-sm text-xs"
+                                            >
+                                                <option value="">Pilih Label</option>
+                                                {itemStokOptions.map((s) => (
+                                                    <option key={s.id} value={s.id}>
+                                                        {s.kode_label || s.keterangan || `Stok #${s.id}`} - Sisa: {s.total} {s.satuan}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </label>
+                                    )
                                 )}
                             </div>
 
-                            {stokTerpilih && (
+                            {selected?.bahan?.satuan == 'LEMBAR' && selectedItemStokIds.length > 0 ? (
+                                <div className="p-2 bg-base-200 rounded-lg">
+                                    <span className="text-xs text-base-content/70 mb-1 block">Label terpilih:</span>
+                                    <div className="space-y-1">
+                                        {selectedItemStokIds.map(id => {
+                                            const s = itemstokbahans.find(st => st.id === id)
+                                            if (!s) return null
+                                            return (
+                                                <div key={s.id} className="flex justify-between text-xs bg-base-100 rounded px-2 py-1">
+                                                    <span>{s.kode_label || `Stok #${s.id}`}</span>
+                                                    <span className="font-semibold">Sisa: {s.total} {s.satuan}</span>
+                                                </div>
+                                            )
+                                        })}
+                                        <div className="flex justify-between text-xs font-bold border-t border-base-300 pt-1 mt-1">
+                                            <span>Total tersedia</span>
+                                            <span>{selectedItemStokIds.reduce((sum, id) => {
+                                                const s = itemstokbahans.find(st => st.id === id)
+                                                return sum + (parseFloat(s?.total) || 0)
+                                            }, 0)} LEMBAR</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : stokTerpilih && (
                                 <div className="grid grid-cols-2 gap-2 p-2 bg-base-200 rounded-lg">
-                                    <div>
-                                        <span className="text-xs text-base-content/70">Panjang</span>
-                                        <p className="font-semibold text-sm">{stokTerpilih.panjang}</p>
-                                    </div>
-                                    <div>
-                                        <span className="text-xs text-base-content/70">Lebar</span>
-                                        <p className="font-semibold text-sm">{stokTerpilih.lebar}</p>
-                                    </div>
-                                    <div>
-                                        <span className="text-xs text-base-content/70">Luas awal</span>
-                                        <p className="font-semibold text-sm">{stokTerpilih.lebar * stokTerpilih.panjang} {stokTerpilih.satuan}</p>
-                                    </div>
 
-                                    <div>
-                                        <span className="text-xs text-base-content/70">Sisa Luas</span>
-                                        <p className="font-semibold text-sm">{stokTerpilih.luas} {stokTerpilih.satuan}</p>
-                                    </div>
-                                    {/* <div>
-                                        <span className="text-xs text-base-content/70">Qty</span>
-                                        <p className="font-semibold text-sm">{stokTerpilih.qty}</p>
-                                    </div> */}
+                                    {stokTerpilih.satuan == 'LEMBAR' ? <>
+                                        <div>
+                                            <span className="text-xs text-base-content/70">Sisa</span>
+                                            <p className="font-semibold text-sm">{stokTerpilih.total} {stokTerpilih.satuan}</p>
+                                        </div></> : <>
+
+                                        <div>
+                                            <span className="text-xs text-base-content/70">Panjang</span>
+                                            <p className="font-semibold text-sm">{stokTerpilih.panjang}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-base-content/70">Lebar</span>
+                                            <p className="font-semibold text-sm">{stokTerpilih.lebar}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-base-content/70">Luas awal</span>
+                                            <p className="font-semibold text-sm">{stokTerpilih.lebar * stokTerpilih.panjang} {stokTerpilih.satuan}</p>
+                                        </div>
+
+                                        <div>
+                                            <span className="text-xs text-base-content/70">Sisa</span>
+                                            <p className="font-semibold text-sm">{stokTerpilih.total} {stokTerpilih.satuan}</p>
+                                        </div>
+                                    </>}
+
                                     <div className="col-span-2">
                                         <span className="text-xs text-base-content/70">Keterangan</span>
                                         <p className="font-semibold text-sm">{stokTerpilih.keterangan || '-'}</p>
@@ -407,10 +511,13 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
                         </div>
                     )}
                     <div className="modal-action flex-col gap-2">
-                        {isSisaKurang && stokTerpilih && (
+                        {isSisaKurang && (
                             <div className="alert alert-warning text-xs">
                                 <i className="fas fa-exclamation-triangle"></i>
-                                Sisa luas ({parseFloat(stokTerpilih.luas).toFixed(2)}) tidak mencukupi untuk total ({totalAll.toFixed(2)})
+                                {selected?.bahan?.satuan == 'LEMBAR'
+                                    ? `Total stok terpilih tidak mencukupi untuk ${totalAll} LEMBAR`
+                                    : `Sisa (${parseFloat(stokTerpilih?.total || 0).toFixed(2)}) tidak mencukupi untuk total (${totalAll.toFixed(2)})`
+                                }
                             </div>
                         )}
                         <div className="flex gap-2 w-full">
