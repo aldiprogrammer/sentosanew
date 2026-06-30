@@ -14,7 +14,7 @@ class CustomerController extends Controller
         $search = $request->query('search');
         $customer = Customer::when($search, function ($q, $search) {
             $q->where('nama', 'like', "%{$search}%")
-              ->orWhere('nohp', 'like', "%{$search}%");
+                ->orWhere('nohp', 'like', "%{$search}%");
         })
             ->orderBy('id', 'desc')
             ->paginate(10);
@@ -74,6 +74,6 @@ class CustomerController extends Controller
 
     private function kodeCustomer()
     {
-        return 'CS-' . rand(100, 999);
+        return 'CS-'.rand(100, 999);
     }
 }

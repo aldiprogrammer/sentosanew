@@ -24,9 +24,9 @@ class DataOrderController extends Controller
             ->when($searchDesain, function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     $q->where('no_invoice', 'like', "%{$search}%")
-                      ->orWhereHas('customer', function ($q) use ($search) {
-                          $q->where('nama', 'like', "%{$search}%");
-                      });
+                        ->orWhereHas('customer', function ($q) use ($search) {
+                            $q->where('nama', 'like', "%{$search}%");
+                        });
                 });
             })
             ->when($tglAwal, function ($q, $tglAwal) {
@@ -46,10 +46,10 @@ class DataOrderController extends Controller
             ->when($searchProduksi, function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     $q->where('no_invoice', 'like', "%{$search}%")
-                      ->orWhere('kode_spk', 'like', "%{$search}%")
-                      ->orWhereHas('customer', function ($q) use ($search) {
-                          $q->where('nama', 'like', "%{$search}%");
-                      });
+                        ->orWhere('kode_spk', 'like', "%{$search}%")
+                        ->orWhereHas('customer', function ($q) use ($search) {
+                            $q->where('nama', 'like', "%{$search}%");
+                        });
                 });
             })
             ->when($tglAwal, function ($q, $tglAwal) {

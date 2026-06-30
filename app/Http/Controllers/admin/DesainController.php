@@ -20,10 +20,9 @@ class DesainController extends Controller
             $desain = Desain::with('customer', 'kategoridesain', 'desainer')->get();
         }
 
-
         $kategoridesain = Kategoridesain::all();
         $customer = Customer::all();
-        $kodespk = 'SPK-' . date('ymd') . rand(0, 10000);
+        $kodespk = 'SPK-'.date('ymd').rand(0, 10000);
         $cek = Desain::first();
         if ($cek == false) {
             $kode_antrian = 'ANT-00001';
@@ -31,7 +30,7 @@ class DesainController extends Controller
             $ant = Desain::orderBy('id', 'desc')->first();
             $number = (int) substr($ant->no_antrian, 4);
             $number++;
-            $kode_antrian = 'ANT-' . str_pad($number, 5, '0', STR_PAD_LEFT);
+            $kode_antrian = 'ANT-'.str_pad($number, 5, '0', STR_PAD_LEFT);
         }
 
         $tanggal = date('Y-m-d');
@@ -86,7 +85,7 @@ class DesainController extends Controller
 
         $cs = new Desain;
         $cs->no_antrian = $request->kodeantiran;
-        $cs->no_invoice = 'INVOICE-' . date('ymd') . rand(0, 10000);
+        $cs->no_invoice = 'INVOICE-'.date('ymd').rand(0, 10000);
         $cs->tanggal = $request->tanggal;
         $cs->id_customer = $request->id_customer;
         $cs->id_kategori_desain = $request->id_kategori_desain;
@@ -129,7 +128,7 @@ class DesainController extends Controller
 
                 if (($customer->limit_akhir + $total) > $customer->limit) {
                     return back()->withErrors([
-                        'payment' => 'Limit customer tidak mencukupi. Sisa limit: Rp ' . number_format($customer->limit - $customer->limit_akhir),
+                        'payment' => 'Limit customer tidak mencukupi. Sisa limit: Rp '.number_format($customer->limit - $customer->limit_akhir),
                     ]);
                 }
 
@@ -138,6 +137,7 @@ class DesainController extends Controller
         }
 
         Desain::whereIn('id', $ids)->update(['pembayaran' => $paymentType]);
+
         return back()->with('success', 'Pembayaran berhasil diproses');
     }
 

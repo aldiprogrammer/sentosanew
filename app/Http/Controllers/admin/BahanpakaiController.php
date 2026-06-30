@@ -28,12 +28,12 @@ class BahanpakaiController extends Controller
         $masterBahan = Materbahan::orderBy('kode_bahan_jual')->get();
         $cek = Bahanpakai::first();
         if ($cek == false) {
-            $kode = 'BB-' . '00001';
+            $kode = 'BB-'.'00001';
         } else {
             $ant = Bahanpakai::orderBy('id', 'desc')->first();
             $number = (int) substr($ant->kode_bahan, 4);
             $number++;
-            $kode = 'BB-' . str_pad($number, 5, '0', STR_PAD_LEFT);
+            $kode = 'BB-'.str_pad($number, 5, '0', STR_PAD_LEFT);
         }
 
         return Inertia::render('Admin/Bahanpakai', compact('bahanpakai', 'masterBahan', 'kode'));

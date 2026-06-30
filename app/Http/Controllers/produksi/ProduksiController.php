@@ -11,7 +11,7 @@ use Inertia\Inertia;
 
 class ProduksiController extends Controller
 {
-    function index()
+    public function index()
     {
         $produksi = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')
             ->where('status_finishing', 0)
@@ -20,10 +20,11 @@ class ProduksiController extends Controller
             ->get();
         $bahanpakaiList = Bahanpakai::get();
         $itemstokbahans = Itemstokbahan::where('qty', '>', 0)->orderBy('id')->get();
+
         return Inertia::render('Produksi/Produksi', compact('produksi', 'bahanpakaiList', 'itemstokbahans'));
     }
 
-    function dataproduksi(Request $request)
+    public function dataproduksi(Request $request)
     {
         $search = $request->query('search');
         $tglAwal = $request->query('tgl_awal');
@@ -59,7 +60,7 @@ class ProduksiController extends Controller
         return Inertia::render('Admin/Dataproduksi', compact('produksi', 'tglAwal', 'tglAkhir'));
     }
 
-    function prosesProduksi(Request $request)
+    public function prosesProduksi(Request $request)
     {
         $ids = $request->input('ids', []);
         $paymentType = $request->input('payment_type');
@@ -72,7 +73,7 @@ class ProduksiController extends Controller
 
                 if (($customer->limit_akhir + $total) > $customer->limit) {
                     return back()->withErrors([
-                        'payment' => 'Limit customer tidak mencukupi. Sisa limit: Rp ' . number_format($customer->limit - $customer->limit_akhir),
+                        'payment' => 'Limit customer tidak mencukupi. Sisa limit: Rp '.number_format($customer->limit - $customer->limit_akhir),
                     ]);
                 }
 
@@ -81,19 +82,18 @@ class ProduksiController extends Controller
         }
 
         $displayIds = Produksi::with('bahan')->whereIn('id', $ids)
-            ->whereHas('bahan', fn($q) => $q->where('jenis_bahan', 'DISPLAY'))
+            ->whereHas('bahan', fn ($q) => $q->where('jenis_bahan', 'DISPLAY'))
             ->pluck('id');
 
         $nonDisplayIds = array_diff($ids, $displayIds->toArray());
 
-
         $eksternal = Produksi::with('bahan')->whereIn('id', $ids)
-            ->whereHas('bahan', fn($q) => $q->where('jenis', 'EKSTERNAL'))
+            ->whereHas('bahan', fn ($q) => $q->where('jenis', 'EKSTERNAL'))
             ->pluck('id');
 
         $nonEksternal = array_diff($ids, $eksternal->toArray());
 
-        if (!empty($nonDisplayIds) || !empty($nonEksternal)) {
+        if (! empty($nonDisplayIds) || ! empty($nonEksternal)) {
             Produksi::whereIn('id', array_merge($nonDisplayIds, $nonEksternal))->update([
                 'status_produksi' => 1,
                 'pembayaran' => $paymentType,
@@ -121,7 +121,7 @@ class ProduksiController extends Controller
         return back()->with('success', 'Status produksi berhasil diupdate');
     }
 
-    function proses(Request $request, $id)
+    public function proses(Request $request, $id)
     {
         $pr = Produksi::find($id);
         if ($pr->status_finishing == 1) {
@@ -135,24 +135,15 @@ class ProduksiController extends Controller
         $pr->kode_bahanpakai = $request->kode_bahanpakai;
         $pr->update();
 
-        $itemStokIds = $request->input('item_stok_ids', []);
-        if (empty($itemStokIds) && $request->id_item_stok) {
-            $itemStokIds = [$request->id_item_stok];
-        }
+        if ($request->id_item_stok) {
+            $stok = Itemstokbahan::find($request->id_item_stok);
 
-        if (!empty($itemStokIds)) {
-            $remainingNeed = (float) $request->total_all;
-            foreach ($itemStokIds as $stokId) {
-                if ($remainingNeed <= 0) break;
-                $stok = Itemstokbahan::find($stokId);
-                if (!$stok) continue;
-
-                $take = min((float) $stok->total, $remainingNeed);
-                $stok->total = max(0, (float) $stok->total - $take);
-                if ((float) $stok->total == 0) $stok->qty = 0;
+            if ($stok && $request->total_all) {
+                $stok->luas = max(0, (float) $stok->luas - (float) $request->total_all);
+                if ((float) $stok->luas == 0) {
+                    $stok->qty = 0;
+                }
                 $stok->save();
-
-                $remainingNeed -= $take;
             }
         }
 

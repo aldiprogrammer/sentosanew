@@ -84,7 +84,6 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
   const [qtyDiterima, setQtyDiterima] = useState('');
 
   const selectedBahan = bahanpakais.find((b) => b.id == data.id_bahan);
-  const isLembar = (selectedBahan?.satuan || '').toLowerCase() === 'lembar';
 
   const hitungLuas = (panjang, lebar) => {
     const p = parseFloat(panjang) || 0;
@@ -99,16 +98,15 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
   };
 
   const totalSemua = po.items.reduce((sum, item) => sum + parseFloat(item.total_harga || 0), 0);
-  const adaItemLembar = po.items.some((item) => (item.satuan || '').toLowerCase() === 'lembar');
+
+  const isLembar = (data.satuan || '').toLowerCase() === 'lembar';
 
   useEffect(() => {
-    if (!isLembar) {
-      const luas = hitungLuas(data.panjang, data.lebar);
-      setData("luas", luas);
-    }
+    const luas = isLembar ? (parseFloat(data.qty) || 0) : hitungLuas(data.panjang, data.lebar);
+    setData("luas", luas);
     const total = hitungTotal(data.qty, data.harga);
     setData("total_harga", total);
-  }, [data.panjang, data.lebar, data.qty, data.harga]);
+  }, [data.panjang, data.lebar, data.qty, data.harga, data.satuan]);
 
   useEffect(() => {
     if (selectedBahan) {
@@ -513,7 +511,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                     <th>Satuan</th>
                     <th>Panjang</th>
                     <th>Lebar</th>
-                    <th>{adaItemLembar ? 'Jumlah Kertas' : 'Luas'}</th>
+                    <th>Luas</th>
                     <th>Harga</th>
                     <th>Qty</th>
                     <th>Total Harga</th>
@@ -724,14 +722,17 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                     <input type="number" step="0.01" value={data.lebar} className="input input-bordered input-success w-full" onChange={(e) => setData("lebar", e.target.value)} />
                     {errors.lebar && <span className="text-error text-xs mt-1 block">{errors.lebar}</span>}
                   </label>
-                  <label className="form-control">
-                    <div className="label"><span className="label-text">{isLembar ? 'Jumlah Lembar' : 'Luas'}</span></div>
-                    {isLembar ? (
+                  {isLembar ? (
+                    <label className="form-control">
+                      <div className="label"><span className="label-text">Jumlah Lembar</span></div>
                       <input type="number" step="0.01" value={data.luas} className="input input-bordered input-success w-full" onChange={(e) => setData("luas", e.target.value)} />
-                    ) : (
+                    </label>
+                  ) : (
+                    <label className="form-control">
+                      <div className="label"><span className="label-text">Luas</span></div>
                       <input type="text" value={data.luas} className="input input-bordered w-full bg-base-200" readOnly />
-                    )}
-                  </label>
+                    </label>
+                  )}
                   <label className="form-control">
                     <div className="label"><span className="label-text">Qty</span></div>
                     <input type="number" step="0.01" value={data.qty} className="input input-bordered input-success w-full" onChange={(e) => setData("qty", e.target.value)} />
@@ -796,14 +797,17 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                     <input type="number" step="0.01" value={data.lebar} className="input input-bordered input-success w-full" onChange={(e) => setData("lebar", e.target.value)} />
                     {errors.lebar && <span className="text-error text-xs mt-1 block">{errors.lebar}</span>}
                   </label>
-                  <label className="form-control">
-                    <div className="label"><span className="label-text">{isLembar ? 'Jumlah Lembar' : 'Luas'}</span></div>
-                    {isLembar ? (
+                  {isLembar ? (
+                    <label className="form-control">
+                      <div className="label"><span className="label-text">Jumlah Lembar</span></div>
                       <input type="number" step="0.01" value={data.luas} className="input input-bordered input-success w-full" onChange={(e) => setData("luas", e.target.value)} />
-                    ) : (
+                    </label>
+                  ) : (
+                    <label className="form-control">
+                      <div className="label"><span className="label-text">Luas</span></div>
                       <input type="text" value={data.luas} className="input input-bordered w-full bg-base-200" readOnly />
-                    )}
-                  </label>
+                    </label>
+                  )}
                   <label className="form-control">
                     <div className="label"><span className="label-text">Qty</span></div>
                     <input type="number" step="0.01" value={data.qty} className="input input-bordered input-success w-full" onChange={(e) => setData("qty", e.target.value)} />

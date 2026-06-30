@@ -3,10 +3,8 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
 use App\Models\Desain;
 use App\Models\Produksi;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class LaporanPembukuanController extends Controller
@@ -49,7 +47,7 @@ class LaporanPembukuanController extends Controller
         $overdue = false;
 
         if ($item->customer && $item->customer->jatuh_tempo) {
-            $jatuhTempo = date('Y-m-d', strtotime($item->tanggal . ' + ' . $item->customer->jatuh_tempo . ' days'));
+            $jatuhTempo = date('Y-m-d', strtotime($item->tanggal.' + '.$item->customer->jatuh_tempo.' days'));
             $overdue = $item->pembayaran === 'utang' && strtotime($jatuhTempo) < strtotime(date('Y-m-d'));
         }
 

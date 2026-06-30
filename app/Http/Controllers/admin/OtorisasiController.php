@@ -16,9 +16,9 @@ class OtorisasiController extends Controller
         $otorisasi = Otorisasi::with('customer')
             ->when($search, function ($q, $search) {
                 $q->where('kode_spk', 'like', "%{$search}%")
-                  ->orWhereHas('customer', function ($q) use ($search) {
-                      $q->where('nama', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('customer', function ($q) use ($search) {
+                        $q->where('nama', 'like', "%{$search}%");
+                    });
             })
             ->orderBy('id', 'desc')
             ->paginate(10);
@@ -33,14 +33,14 @@ class OtorisasiController extends Controller
             ->where('kode_spk', $kode_spk)
             ->first();
 
-        if (!$produksi) {
+        if (! $produksi) {
             return response()->json(null);
         }
 
         return response()->json([
             'id_customer' => $produksi->id_customer,
-            'nama'        => $produksi->customer?->nama,
-            'no_hp'       => $produksi->customer?->no_hp,
+            'nama' => $produksi->customer?->nama,
+            'no_hp' => $produksi->customer?->no_hp,
             'total_harga' => $produksi->total_harga,
         ]);
     }

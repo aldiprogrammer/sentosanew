@@ -106,14 +106,14 @@ class MaterbahanController extends Controller
 
         Bahanpakai::whereIn('id', $currentIds->diff($bahanpakaiIds))->each(function ($bp) use ($kode) {
             $arr = $bp->id_master_bahan ?? [];
-            $arr = array_values(array_filter($arr, fn($v) => $v !== $kode));
+            $arr = array_values(array_filter($arr, fn ($v) => $v !== $kode));
             $bp->id_master_bahan = $arr ?: null;
             $bp->save();
         });
 
         Bahanpakai::whereIn('id', collect($bahanpakaiIds)->diff($currentIds))->each(function ($bp) use ($kode) {
             $arr = $bp->id_master_bahan ?? [];
-            if (!in_array($kode, $arr)) {
+            if (! in_array($kode, $arr)) {
                 $arr[] = $kode;
                 $bp->id_master_bahan = $arr;
                 $bp->save();
@@ -127,12 +127,12 @@ class MaterbahanController extends Controller
     {
         $cek = Materbahan::first();
         if ($cek == false) {
-            return 'MB-' . '00001';
+            return 'MB-'.'00001';
         }
         $ant = Materbahan::orderBy('id', 'desc')->first();
         $number = (int) substr($ant->kode_bahan_jual, 4);
         $number++;
 
-        return 'MB-' . str_pad($number, 5, '0', STR_PAD_LEFT);
+        return 'MB-'.str_pad($number, 5, '0', STR_PAD_LEFT);
     }
 }

@@ -16,8 +16,8 @@ class SuplayerController extends Controller
         $suplayer = Suplayer::with('rekening')
             ->when($search, function ($q, $search) {
                 $q->where('nama_suplayer', 'like', "%{$search}%")
-                  ->orWhere('produk', 'like', "%{$search}%")
-                  ->orWhere('nohp', 'like', "%{$search}%");
+                    ->orWhere('produk', 'like', "%{$search}%")
+                    ->orWhere('nohp', 'like', "%{$search}%");
             })
             ->orderBy('id', 'desc')
             ->paginate(10);

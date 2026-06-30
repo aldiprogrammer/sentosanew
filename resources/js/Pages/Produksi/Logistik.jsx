@@ -38,7 +38,7 @@ export default function Logistik({ produksi, kurir, bahanpakaiList, itemstokbaha
 
     const itemStokOptions = useMemo(() => {
         if (!selectedBahanpakai || !itemstokbahans) return []
-        return itemstokbahans.filter((s) => s.kode_bahan_pakai === selectedBahanpakai && parseFloat(s.total) > 0 && parseInt(s.qty) > 0)
+        return itemstokbahans.filter((s) => s.kode_bahan_pakai === selectedBahanpakai && parseFloat(s.luas) > 0 && parseInt(s.qty) > 0)
     }, [selectedBahanpakai, itemstokbahans])
 
     const qtyCount = parseInt(selected?.qty) || 1
@@ -56,7 +56,7 @@ export default function Logistik({ produksi, kurir, bahanpakaiList, itemstokbaha
         if (selectedItemStoks.length !== qtyCount) return false
         const totalAvailable = selectedItemStoks.reduce((sum, id) => {
             const s = itemstokbahans?.find((st) => st.id === id)
-            return sum + (s ? parseFloat(s.total) : 0)
+            return sum + (s ? parseFloat(s.luas) : 0)
         }, 0)
         return totalAvailable >= totalAll
     }, [selectedItemStoks, totalAll, qtyCount, itemstokbahans])
@@ -404,7 +404,7 @@ table.items tr:nth-child(even) { background: #f9f9f9; }
                                                         <option value="">Label ke-{i + 1}</option>
                                                         {currentOpts.map((s) => (
                                                             <option key={s.id} value={s.id}>
-                                                                {s.kode_label || s.keterangan || `Stok #${s.id}`} - Sisa: {s.total} {s.satuan}
+                                                                {s.kode_label || s.keterangan || `Stok #${s.id}`} - Sisa: {s.luas} {s.satuan}
                                                             </option>
                                                         ))}
                                                     </select>

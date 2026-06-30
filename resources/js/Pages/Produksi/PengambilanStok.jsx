@@ -1,356 +1,246 @@
 import AdminLayout from '@/Layouts/AdminLayout'
-import { Link, router, usePage } from '@inertiajs/react'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { router } from '@inertiajs/react'
+import React, { useMemo, useRef, useState, useCallback } from 'react'
+import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
 
-export default function PengambilanStok({ bahanpakaiList, itemstokbahans, riwayat }) {
-    const { auth } = usePage().props
-    const [kodeBahanPakai, setKodeBahanPakai] = useState('')
-    const [selectedItemStokIds, setSelectedItemStokIds] = useState([])
-    const bahanPakaiRef = useRef(null)
-
-    useEffect(() => {
-        const $el = window.jQuery(bahanPakaiRef.current)
-        $el.select2({
-            placeholder: 'Pilih atau cari Bahan Pakai',
-            allowClear: true,
-            width: '100%',
-        })
-        $el.on('select2:select', function (e) {
-            setKodeBahanPakai(e.params.data.id)
-            setSelectedItemStokIds([])
-        })
-        $el.on('select2:clear', function () {
-            setKodeBahanPakai('')
-            setSelectedItemStokIds([])
-        })
-        return () => { if ($el.data('select2')) $el.select2('destroy') }
-    }, [])
-
-    useEffect(() => {
-        window.jQuery(bahanPakaiRef.current).val(kodeBahanPakai).trigger('change.select2')
-    }, [kodeBahanPakai])
-    const [qtyDiambil, setQtyDiambil] = useState('')
-    const [satuanUkur, setSatuanUkur] = useState('M')
-    const [panjang, setPanjang] = useState('')
-    const [lebar, setLebar] = useState('')
+export default function PengambilanStok({ itemstokbahans, bahanpakaiList }) {
+    const [selectedBahanpakai, setSelectedBahanpakai] = useState('')
+    const [selectedItemStok, setSelectedItemStok] = useState('')
+    const [ambilLuas, setAmbilLuas] = useState('')
     const [keterangan, setKeterangan] = useState('')
-    const [loading, setLoading] = useState(false)
+    const [showPasswordModal, setShowPasswordModal] = useState(false)
+    const [pendingAction, setPendingAction] = useState(null)
 
     const itemStokOptions = useMemo(() => {
-        if (!kodeBahanPakai || !itemstokbahans) return []
-        return itemstokbahans.filter((s) => s.kode_bahan_pakai === kodeBahanPakai && parseFloat(s.total) > 0 && parseInt(s.qty) > 0)
-    }, [kodeBahanPakai, itemstokbahans])
-
-    const selectedSatuan = useMemo(() => {
-        if (!selectedItemStokIds.length || !itemstokbahans) return null
-        const first = itemstokbahans.find(s => s.id === selectedItemStokIds[0])
-        return first?.satuan || 'PCS'
-    }, [selectedItemStokIds, itemstokbahans])
-
-    const totalTersedia = useMemo(() => {
-        return selectedItemStokIds.reduce((sum, id) => {
-            const s = itemstokbahans.find(st => st.id === id)
-            return sum + (parseFloat(s?.total) || 0)
-        }, 0)
-    }, [selectedItemStokIds, itemstokbahans])
-
-    const totalQty = useMemo(() => {
-        if (selectedSatuan === 'M2') {
-            const p = parseFloat(panjang) || 0
-            const l = parseFloat(lebar) || 0
-            const luas = satuanUkur === 'CM' ? (p / 100) * (l / 100) : p * l
-            return luas
-        }
-        return parseFloat(qtyDiambil) || 0
-    }, [selectedSatuan, panjang, lebar, satuanUkur, qtyDiambil])
-
-    const isQtyKurang = totalQty > totalTersedia
-
-    const toggleStok = (id) => {
-        setSelectedItemStokIds(prev =>
-            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        if (!selectedBahanpakai || !itemstokbahans) return []
+        return itemstokbahans.filter(
+            (s) => s.kode_bahan_pakai === selectedBahanpakai && parseFloat(s.luas) > 0 && parseInt(s.qty) > 0
         )
-    }
+    }, [selectedBahanpakai, itemstokbahans])
 
-    const resetForm = () => {
-        setKodeBahanPakai('')
-        setSelectedItemStokIds([])
-        setQtyDiambil('')
-        setSatuanUkur('M')
-        setPanjang('')
-        setLebar('')
-        setKeterangan('')
-    }
+    const stokTerpilih = useMemo(() => {
+        if (!selectedItemStok || !itemstokbahans) return null
+        return itemstokbahans.find((s) => s.id === selectedItemStok) || null
+    }, [selectedItemStok, itemstokbahans])
 
-    const handleAmbil = () => {
-        if (!kodeBahanPakai || !selectedItemStokIds.length || !totalQty || isQtyKurang) return
-        setLoading(true)
-        router.post('/produksi/pengambilan-stok/proses', {
-            kode_bahan_pakai: kodeBahanPakai,
-            item_stok_ids: selectedItemStokIds,
-            total_qty: totalQty.toFixed(2),
-            keterangan,
+    const bahanPakaiCodes = useMemo(() => {
+        return [...new Set(itemstokbahans.map((s) => s.kode_bahan_pakai))]
+    }, [itemstokbahans])
+
+    const groupedByBahanPakai = useMemo(() => {
+        const map = {}
+        for (const code of bahanPakaiCodes) {
+            map[code] = itemstokbahans.filter((s) => s.kode_bahan_pakai === code)
+        }
+        return map
+    }, [itemstokbahans, bahanPakaiCodes])
+
+    const handleProses = () => {
+        if (!stokTerpilih) return
+        router.put(`/produksi/pengambilan-stok/${stokTerpilih.id}/proses`, {
+            ambil_luas: ambilLuas,
+            keterangan: keterangan,
+            kode_bahanpakai: selectedBahanpakai,
+            total_all: ambilLuas,
         }, {
             preserveScroll: true,
             onSuccess: () => {
-                resetForm()
-                setLoading(false)
+                setSelectedBahanpakai('')
+                setSelectedItemStok('')
+                setAmbilLuas('')
+                setKeterangan('')
             },
-            onError: () => setLoading(false),
-            onFinish: () => setLoading(false),
         })
     }
 
-    const renderQtyInput = () => {
-        if (selectedSatuan === 'M2') {
-            return (
-                <div className="space-y-3">
-                    <div className="form-control">
-                        <label className="label">
-                            <span className="label-text font-medium">Satuan Ukur</span>
-                        </label>
-                        <div className="flex gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setSatuanUkur('M')}
-                                className={`btn btn-sm flex-1 ${satuanUkur === 'M' ? 'btn-primary' : 'btn-outline'}`}
-                            >METER</button>
-                            <button
-                                type="button"
-                                onClick={() => setSatuanUkur('CM')}
-                                className={`btn btn-sm flex-1 ${satuanUkur === 'CM' ? 'btn-primary' : 'btn-outline'}`}
-                            >CM</button>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text font-medium">Panjang ({satuanUkur === 'CM' ? 'cm' : 'm'})</span>
-                            </label>
-                            <input
-                                type="number"
-                                value={panjang}
-                                onChange={(e) => setPanjang(e.target.value)}
-                                className="input input-bordered"
-                                placeholder="0"
-                                min="0"
-                                step="any"
-                            />
-                        </div>
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text font-medium">Lebar ({satuanUkur === 'CM' ? 'cm' : 'm'})</span>
-                            </label>
-                            <input
-                                type="number"
-                                value={lebar}
-                                onChange={(e) => setLebar(e.target.value)}
-                                className="input input-bordered"
-                                placeholder="0"
-                                min="0"
-                                step="any"
-                            />
-                        </div>
-                    </div>
-                    {totalQty > 0 && (
-                        <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
-                            <div className="flex justify-between text-sm">
-                                <span>Total Luas:</span>
-                                <span className="font-bold">{totalQty.toFixed(2)} m²</span>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )
-        }
+    const requestPassword = useCallback((action) => {
+        setPendingAction(action)
+        setShowPasswordModal(true)
+    }, [])
 
-        if (selectedSatuan === 'LEMBAR') {
-            return (
-                <div className="form-control">
-                    <label className="label">
-                        <span className="label-text font-medium">Jumlah Kertas</span>
-                    </label>
-                    <input
-                        type="number"
-                        value={qtyDiambil}
-                        onChange={(e) => setQtyDiambil(e.target.value)}
-                        className="input input-bordered"
-                        placeholder="0"
-                        min="0"
-                    />
-                </div>
-            )
+    const handlePasswordConfirmed = useCallback(() => {
+        setShowPasswordModal(false)
+        switch (pendingAction) {
+            case 'proses':
+                handleProses()
+                break
         }
+        setPendingAction(null)
+    }, [pendingAction, selectedItemStok, ambilLuas, keterangan, selectedBahanpakai])
 
-        return (
-            <div className="form-control">
-                <label className="label">
-                    <span className="label-text font-medium">QTY</span>
-                </label>
-                <input
-                    type="number"
-                    value={qtyDiambil}
-                    onChange={(e) => setQtyDiambil(e.target.value)}
-                    className="input input-bordered"
-                    placeholder="0"
-                    min="0"
-                />
-            </div>
-        )
-    }
+    const handlePasswordCancel = useCallback(() => {
+        setShowPasswordModal(false)
+        setPendingAction(null)
+    }, [])
 
     return (
         <AdminLayout>
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <div className="xl:col-span-2 card bg-base-100 shadow-md border border-base-300">
+            <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
+                <div className="card bg-base-100 shadow-md border border-base-300">
                     <div className="card-body">
-                        <h2 className="card-title mb-4">Halaman Pengambilan Stok</h2>
+                        <h2 className="card-title mb-4">Pengambilan Stok</h2>
 
-                        <div className="space-y-4">
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text font-medium">Kode Bahan Pakai</span>
-                                </label>
-                                <select ref={bahanPakaiRef} className="select select-bordered">
-                                    <option value=""></option>
-                                    {bahanpakaiList?.map((b) => (
-                                        <option key={b.kode_bahan} value={b.kode_bahan}>
-                                            {b.kode_bahan} - {b.keterangan}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label className="form-control">
+                                <span className="label-text text-sm font-medium">Kode Bahan Pakai</span>
+                                <select
+                                    value={selectedBahanpakai}
+                                    onChange={(e) => { setSelectedBahanpakai(e.target.value); setSelectedItemStok(''); setAmbilLuas('') }}
+                                    className="select select-bordered"
+                                >
+                                    <option value="">Pilih Bahan Pakai</option>
+                                    {bahanpakaiList.map((bb) => (
+                                        <option key={bb.kode_bahan} value={bb.kode_bahan}>
+                                            {bb.kode_bahan} - {bb.keterangan}
                                         </option>
                                     ))}
                                 </select>
-                            </div>
+                            </label>
 
-                            {kodeBahanPakai && (
-                                <div className="form-control">
-                                    <label className="label">
-                                        <span className="label-text font-medium">Pilih Label</span>
+                            {selectedBahanpakai && (
+                                <label className="form-control">
+                                    <span className="label-text text-sm font-medium">Pilih Label Stok</span>
+                                    <select
+                                        value={selectedItemStok}
+                                        onChange={(e) => { setSelectedItemStok(Number(e.target.value)); setAmbilLuas('') }}
+                                        className="select select-bordered"
+                                    >
+                                        <option value="">Pilih Label</option>
+                                        {itemStokOptions.map((s) => (
+                                            <option key={s.id} value={s.id}>
+                                                {s.kode_label || s.keterangan || `Stok #${s.id}`} - Sisa: {s.luas} {s.satuan}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+                            )}
+                        </div>
+
+                        {stokTerpilih && (
+                            <div className="mt-4 space-y-4">
+                                <div className="divider text-xs text-base-content/50">Detail Stok Terpilih</div>
+
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div className="p-3 bg-base-200 rounded-lg">
+                                        <span className="text-xs text-base-content/70">Kode Label</span>
+                                        <p className="font-semibold">{stokTerpilih.kode_label || '-'}</p>
+                                    </div>
+                                    <div className="p-3 bg-base-200 rounded-lg">
+                                        <span className="text-xs text-base-content/70">Ukuran</span>
+                                        <p className="font-semibold">{stokTerpilih.panjang || '-'} x {stokTerpilih.lebar || '-'} {stokTerpilih.satuan || ''}</p>
+                                    </div>
+                                    <div className="p-3 bg-base-200 rounded-lg">
+                                        <span className="text-xs text-base-content/70">Sisa Luas</span>
+                                        <p className="font-semibold">{stokTerpilih.luas} {stokTerpilih.satuan}</p>
+                                    </div>
+                                    <div className="p-3 bg-base-200 rounded-lg">
+                                        <span className="text-xs text-base-content/70">Keterangan</span>
+                                        <p className="font-semibold">{stokTerpilih.keterangan || '-'}</p>
+                                    </div>
+                                </div>
+
+                                <div className="divider text-xs text-base-content/50">Ambil Stok</div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <label className="form-control">
+                                        <span className="label-text text-sm font-medium">Luas yang akan diambil</span>
+                                        <input
+                                            type="number"
+                                            value={ambilLuas}
+                                            onChange={(e) => setAmbilLuas(e.target.value)}
+                                            className="input input-bordered"
+                                            placeholder="0"
+                                            min="0"
+                                            step="0.01"
+                                        />
                                     </label>
-                                    {itemStokOptions.length === 0 ? (
-                                        <div className="p-4 text-center text-base-content/50 text-sm bg-base-200 rounded-lg">
-                                            Tidak ada stok tersedia untuk bahan ini
+
+                                    <label className="form-control">
+                                        <span className="label-text text-sm font-medium">Keterangan pengambilan</span>
+                                        <textarea
+                                            value={keterangan}
+                                            onChange={(e) => setKeterangan(e.target.value)}
+                                            className="textarea textarea-bordered"
+                                            placeholder="Catatan pengambilan stok..."
+                                            rows="1"
+                                        />
+                                    </label>
+                                </div>
+
+                                {ambilLuas && parseFloat(ambilLuas) > parseFloat(stokTerpilih.luas) && (
+                                    <div className="alert alert-warning text-xs">
+                                        <i className="fas fa-exclamation-triangle"></i>
+                                        Luas yang diambil ({parseFloat(ambilLuas).toFixed(2)} {stokTerpilih.satuan}) melebihi sisa luas ({parseFloat(stokTerpilih.luas).toFixed(2)} {stokTerpilih.satuan})
+                                    </div>
+                                )}
+
+                                <button
+                                    className="btn btn-primary w-full"
+                                    disabled={!ambilLuas || parseFloat(ambilLuas) <= 0 || parseFloat(ambilLuas) > parseFloat(stokTerpilih.luas)}
+                                    onClick={() => requestPassword('proses')}
+                                >
+                                    <i className="fas fa-check"></i> Ambil Stok
+                                </button>
+                            </div>
+                        )}
+
+                        {!selectedBahanpakai && (
+                            <div className="mt-6">
+                                <div className="divider text-xs text-base-content/50">Daftar Stok Tersedia</div>
+                                <div className='grid lg:grid-cols-2 gap-4'>
+                                    {Object.entries(groupedByBahanPakai).length === 0 ? (
+                                        <div className="px-4 py-8 text-center text-base-content/50 text-xs">
+                                            Tidak ada data stok tersedia
                                         </div>
                                     ) : (
-                                        <div className="space-y-1 max-h-60 overflow-y-auto border border-base-300 rounded-lg p-2">
-                                            {itemStokOptions.map((s) => (
-                                                <label key={s.id} className="flex items-center gap-2 p-2 bg-base-200 rounded cursor-pointer hover:bg-base-300 transition-colors">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedItemStokIds.includes(s.id)}
-                                                        onChange={() => toggleStok(s.id)}
-                                                        className="checkbox checkbox-sm"
-                                                    />
-                                                    <div className="flex-1 flex justify-between items-center text-sm">
-                                                        <span className="font-medium">{s.kode_label || `Stok #${s.id}`}</span>
-                                                        <span className="text-base-content/70">
-                                                            Sisa: <strong>{s.total}</strong> {s.satuan || 'pcs'}
-                                                            {s.keterangan ? ` - ${s.keterangan}` : ''}
-                                                        </span>
+                                        Object.entries(groupedByBahanPakai).map(([kodeBP, items]) => (
+                                            <div key={kodeBP}>
+                                                <div className='bg-base-100 border border-base-300 rounded-xl shadow-sm overflow-hidden'>
+                                                    <div className='bg-primary px-4 py-3'>
+                                                        <h3 className='font-bold text-white text-sm tracking-wide'>{kodeBP}</h3>
                                                     </div>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {selectedItemStokIds.length > 0 && (
-                                        <div className="mt-2 p-3 bg-primary/5 rounded-lg border border-primary/20">
-                                            <div className="flex justify-between text-sm">
-                                                <span>Total tersedia:</span>
-                                                <span className="font-bold">{totalTersedia} {selectedSatuan || ''}</span>
+                                                    <div className="overflow-x-auto">
+                                                        <table className="table table-xs table-zebra w-full">
+                                                            <thead>
+                                                                <tr className="bg-base-200 text-base-content/70 text-[10px] tracking-wider">
+                                                                    <th className="py-3">Kode Label</th>
+                                                                    <th className="py-3 text-center">Panjang</th>
+                                                                    <th className="py-3 text-center">Lebar</th>
+                                                                    <th className="py-3 text-center">Luas</th>
+                                                                    <th className="py-3 text-center">Satuan</th>
+                                                                    <th className="py-3">Keterangan</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {items.map((item) => (
+                                                                    <tr key={item.id} className="hover:bg-base-200/70 transition-colors">
+                                                                        <td className="font-mono font-medium text-[10px]">{item.kode_label || '-'}</td>
+                                                                        <td className="text-[10px] text-center tabular-nums">{item.panjang || '-'}</td>
+                                                                        <td className="text-[10px] text-center tabular-nums">{item.lebar || '-'}</td>
+                                                                        <td className="text-[10px] text-center tabular-nums">{item.luas}</td>
+                                                                        <td className="text-[10px] text-center">{item.satuan || '-'}</td>
+                                                                        <td className="text-[10px] max-w-[120px] truncate">{item.keterangan || '-'}</td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
+                                        ))
                                     )}
                                 </div>
-                            )}
-
-                            {selectedItemStokIds.length > 0 && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="form-control">
-                                        {renderQtyInput()}
-                                        {isQtyKurang && (
-                                            <label className="label">
-                                                <span className="label-text-alt text-error">Jumlah melebihi total stok tersedia ({totalTersedia} {selectedSatuan})</span>
-                                            </label>
-                                        )}
-                                    </div>
-
-                                    <div className="form-control">
-                                        <label className="label">
-                                            <span className="label-text font-medium">Pengambil</span>
-                                        </label>
-                                        <div className="input input-bordered flex items-center gap-2">
-                                            <i className="fas fa-user text-base-content/50"></i>
-                                            <span className="font-medium">{auth?.user?.username || '-'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {selectedItemStokIds.length > 0 && (
-                                <div className="form-control">
-                                    <label className="label">
-                                        <span className="label-text font-medium">Keterangan</span>
-                                    </label>
-                                    <textarea
-                                        value={keterangan}
-                                        onChange={(e) => setKeterangan(e.target.value)}
-                                        className="textarea textarea-bordered"
-                                        placeholder="Catatan pengambilan stok..."
-                                        rows="3"
-                                    />
-                                </div>
-                            )}
-
-                            <button
-                                className="btn btn-primary w-full"
-                                onClick={handleAmbil}
-                                disabled={!kodeBahanPakai || !selectedItemStokIds.length || !totalQty || isQtyKurang || loading}
-                            >
-                                {loading ? <><span className="loading loading-spinner"></span> Memproses...</> : <><i className="fas fa-box-open"></i> Ambil Stok</>}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="card bg-base-100 shadow-md border border-base-300">
-                    <div className="card-body">
-                        <div className="flex items-center justify-between mb-3">
-                            <h3 className="card-title text-sm">Riwayat Pengambilan</h3>
-                            {riwayat?.length > 0 && (
-                                <Link href={route('riwayat-pengambilan-stok')} className="btn btn-ghost btn-xs text-primary">
-                                    Lihat Semua
-                                </Link>
-                            )}
-                        </div>
-                        <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                            {riwayat?.length === 0 ? (
-                                <p className="text-sm text-base-content/50 text-center py-8">Belum ada riwayat</p>
-                            ) : (
-                                riwayat?.map((r) => (
-                                    <div key={r.id} className="p-3 bg-base-200 rounded-lg text-xs space-y-1">
-                                        <div className="flex justify-between">
-                                            <span className="font-semibold">{r.kode_bahan_pakai}</span>
-                                            <span className="text-error font-bold">-{r.total_qty} {r.bahan_pakai?.satuan || ''}</span>
-                                        </div>
-                                        {r.item_stok_data?.map((d, i) => (
-                                            <div key={i} className="text-base-content/60 pl-2">
-                                                {d.kode_label || `Stok #${d.id}`}: {d.qty}
-                                            </div>
-                                        ))}
-                                        <div className="text-base-content/50 flex justify-between pt-1 border-t border-base-300">
-                                            <span>{r.user?.username || '-'}</span>
-                                            <span>{new Date(r.created_at).toLocaleDateString('id-ID')}</span>
-                                        </div>
-                                        {r.keterangan && (
-                                            <div className="italic text-base-content/60">"{r.keterangan}"</div>
-                                        )}
-                                    </div>
-                                ))
-                            )}
-                        </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
+
+            <KonfirmasiPassword
+                show={showPasswordModal}
+                onConfirmed={handlePasswordConfirmed}
+                onClose={handlePasswordCancel}
+            />
         </AdminLayout>
     )
 }

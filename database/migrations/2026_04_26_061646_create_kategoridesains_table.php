@@ -19,9 +19,9 @@ return new class extends Migration
             $table->string('harga', 11);
             $table->string('status_point', 11);
             $table->timestamps();
-        }); 
+        });
     }
- 
+
     /**
      * Reverse the migrations.
      */

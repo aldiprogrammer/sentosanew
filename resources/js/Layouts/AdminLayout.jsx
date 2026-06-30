@@ -229,7 +229,7 @@ export default function AdminLayout({ children }) {
                                 </details>
                             </li>
                         )}
-                        {(hasMenu('proses-produksi') || hasMenu('proses-finishing') || hasMenu('proses-logistik') || hasMenu('logistik') || hasMenu('pengambilan-stok') || hasMenu('riwayat-pengambilan-stok') || hasMenu('riwayat-pemakaian-bahan')) && (
+                        {(hasMenu('proses-produksi') || hasMenu('proses-finishing') || hasMenu('proses-logistik') || hasMenu('logistik') || hasMenu('pengambilan-stok')) && (
                             <li>
                                 <details>
                                     <summary className="rounded-xl">
@@ -247,7 +247,7 @@ export default function AdminLayout({ children }) {
                                                 <Link href="/produksi/finishing">Finishing</Link>
                                             </li>
                                         )}
-                                        {(hasMenu('proses-logistik') || hasMenu('logistik')) && (
+                                                        {(hasMenu('proses-logistik') || hasMenu('logistik')) && (
                                             <li>
                                                 <Link href="/produksi/logistik">Logistik</Link>
                                             </li>
@@ -255,16 +255,6 @@ export default function AdminLayout({ children }) {
                                         {hasMenu('pengambilan-stok') && (
                                             <li>
                                                 <Link href="/produksi/pengambilan-stok">Pengambilan Stok</Link>
-                                            </li>
-                                        )}
-                                        {hasMenu('riwayat-pengambilan-stok') && (
-                                            <li>
-                                                <Link href="/produksi/riwayat-pengambilan-stok">Riwayat Pengambilan Stok</Link>
-                                            </li>
-                                        )}
-                                        {hasMenu('riwayat-pemakaian-bahan') && (
-                                            <li>
-                                                <Link href="/produksi/riwayat-pemakaian-bahan">Riwayat Pemakaian Bahan</Link>
                                             </li>
                                         )}
                                     </ul>

@@ -12,7 +12,7 @@ use Inertia\Inertia;
 
 class LogistikController extends Controller
 {
-    function index()
+    public function index()
     {
         $produksi = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')
             ->where('status_logistik', 1)
@@ -22,10 +22,11 @@ class LogistikController extends Controller
         $kurir = Kurir::all();
         $bahanpakaiList = Bahanpakai::get();
         $itemstokbahans = Itemstokbahan::where('qty', '>', 0)->orderBy('id')->get();
+
         return Inertia::render('Produksi/Logistik', compact('produksi', 'kurir', 'bahanpakaiList', 'itemstokbahans'));
     }
 
-    function proses(Request $request, $id)
+    public function proses(Request $request, $id)
     {
         $pr = Produksi::find($id);
 
@@ -41,8 +42,10 @@ class LogistikController extends Controller
             foreach ($ids as $itemStokId) {
                 $stok = Itemstokbahan::find($itemStokId);
                 if ($stok) {
-                    $stok->total = max(0, (float) $stok->total - $perItem);
-                    if ((float) $stok->total == 0) $stok->qty = 0;
+                    $stok->luas = max(0, (float) $stok->luas - $perItem);
+                    if ((float) $stok->luas == 0) {
+                        $stok->qty = 0;
+                    }
                     $stok->save();
                 }
             }

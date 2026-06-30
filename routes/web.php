@@ -13,13 +13,13 @@ use App\Http\Controllers\admin\KategoriDesainController;
 use App\Http\Controllers\admin\KurirController;
 use App\Http\Controllers\admin\LaporanPembukuanController;
 use App\Http\Controllers\admin\MaterbahanController;
+use App\Http\Controllers\admin\OtorisasiController;
 use App\Http\Controllers\admin\PenggunaController;
-use App\Http\Controllers\admin\PoPembelianBahanController;
 use App\Http\Controllers\admin\PoEksternalController;
+use App\Http\Controllers\admin\PoPembelianBahanController;
 use App\Http\Controllers\admin\ProduksiController;
 use App\Http\Controllers\admin\SuplayerController;
 use App\Http\Controllers\admin\SuplayerPembelianBahanController;
-use App\Http\Controllers\admin\OtorisasiController;
 use App\Http\Controllers\produksi\FinishingController;
 use App\Http\Controllers\produksi\LogistikController;
 use App\Http\Controllers\produksi\PengambilanStokController;
@@ -156,10 +156,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/produksi/logistik', [LogistikController::class, 'index'])->name('logistik.logistik');
     Route::put('/logistik/logistik/{id}/proses', [LogistikController::class, 'proses'])->name('logistik.logistik');
 
-    Route::get('/produksi/pengambilan-stok', [PengambilanStokController::class, 'index'])->name('pengambilan-stok');
-    Route::post('/produksi/pengambilan-stok/proses', [PengambilanStokController::class, 'proses'])->name('pengambilan-stok.proses');
-    Route::get('/produksi/riwayat-pengambilan-stok', [PengambilanStokController::class, 'riwayat'])->name('riwayat-pengambilan-stok');
-    Route::get('/produksi/riwayat-pemakaian-bahan', [PengambilanStokController::class, 'riwayatPemakaian'])->name('riwayat-pemakaian-bahan');
+    Route::get('/produksi/pengambilan-stok', [PengambilanStokController::class, 'index'])->name('produksi.pengambilan-stok');
+    Route::put('/produksi/pengambilan-stok/{id}/proses', [PengambilanStokController::class, 'proses'])->name('produksi.pengambilan-stok');
 
     Route::get('/laporan-pembukuan', [LaporanPembukuanController::class, 'index'])->name('laporan-pembukuan');
 
@@ -189,6 +187,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/po-pembelian-bahan/item/{id}/update-stok', [PoPembelianBahanController::class, 'updateStokItem'])->name('update-stok-item.po-pembelian-bahan');
     Route::delete('/po-pembelian-bahan/item/{id}/tarik-stok', [PoPembelianBahanController::class, 'tarikStokItem'])->name('tarik-stok-item.po-pembelian-bahan');
     Route::get('/po-pembelian-bahan/{id}/cetak-label', [PoPembelianBahanController::class, 'cetakLabel'])->name('cetak-label.po-pembelian-bahan');
+
+    Route::get('/test-print', function () {
+        return Inertia::render('TestPrint');
+    })->name('test-print');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

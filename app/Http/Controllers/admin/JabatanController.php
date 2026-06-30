@@ -12,7 +12,7 @@ class JabatanController extends Controller
     public function index()
     {
         $jabatan = Jabatan::all();
-        $kode = 'JB-' . rand(0, 100000);
+        $kode = 'JB-'.rand(0, 100000);
 
         $daftarMenu = [
             ['key' => 'dashboard', 'label' => 'Dashboard', 'group' => 'Umum'],
