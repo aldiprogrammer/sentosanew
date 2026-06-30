@@ -385,7 +385,7 @@ table.items tr:nth-child(even) { background: #f9f9f9; }
                                     </label>
                                     {selectedBahanpakai && (
                                         <div className="space-y-2">
-                                            <span className="text-xs font-medium">Pilih Label ({qtyCount} item)</span>
+                                            <span className="text-xs font-medium">Pilih Kode Label ({qtyCount} item)</span>
                                             {Array.from({ length: qtyCount }).map((_, i) => {
                                                 const currentOpts = selectedItemStoks[i]
                                                     ? [itemstokbahans?.find((s) => s.id === selectedItemStoks[i]), ...availableOptions].filter(Boolean)
@@ -401,10 +401,10 @@ table.items tr:nth-child(even) { background: #f9f9f9; }
                                                         }}
                                                         className="select select-bordered select-sm text-xs w-full"
                                                     >
-                                                        <option value="">Label ke-{i + 1}</option>
+                                                        <option value="">Pilih kode label #{i + 1}</option>
                                                         {currentOpts.map((s) => (
                                                             <option key={s.id} value={s.id}>
-                                                                {s.kode_label || s.keterangan || `Stok #${s.id}`} - Sisa: {s.luas} {s.satuan}
+                                                                {s.kode_label || '-'} - Sisa: {s.luas} {s.satuan}
                                                             </option>
                                                         ))}
                                                     </select>
