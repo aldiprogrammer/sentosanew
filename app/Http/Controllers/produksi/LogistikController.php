@@ -33,8 +33,13 @@ class LogistikController extends Controller
         if ($request->kode_bahanpakai) {
             $pr->kode_bahanpakai = $request->kode_bahanpakai;
         }
+
+        echo $request->total_all;
+        die();
         $pr->status_selesai = 1;
         $pr->update();
+
+
 
         if ($request->id_item_stoks && $request->total_all) {
             $ids = $request->id_item_stoks;

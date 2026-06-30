@@ -20,6 +20,9 @@ export default function Logistik({ produksi, kurir, bahanpakaiList, itemstokbaha
 
     const totalAll = useMemo(() => {
         if (!selected) return 0
+        if (selected.bahan?.kategori_cetak === 'DISPLAY') {
+            return parseFloat(selected.qty) || 0
+        }
         const t = parseFloat(selected.tinggi) || 0
         const l = parseFloat(selected.lebar) || 0
         const qty = parseFloat(selected.qty) || 1
@@ -208,7 +211,7 @@ table.items tr:nth-child(even) { background: #f9f9f9; }
         router.put(`/logistik/logistik/${selected.id}/proses`, {
             kode_bahanpakai: selectedBahanpakai,
             id_item_stoks: selectedItemStoks.filter(Boolean),
-            total_all: totalAll.toFixed(2),
+            total_all: totalAll,
         }, {
             preserveScroll: true,
             onSuccess: () => {
