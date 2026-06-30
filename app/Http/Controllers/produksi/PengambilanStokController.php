@@ -4,66 +4,119 @@ namespace App\Http\Controllers\produksi;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bahanpakai;
+use App\Models\Databahan;
 use App\Models\Itemstokbahan;
+use App\Models\Materbahan;
+use App\Models\PengambilanStok;
+use App\Models\Produksi;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class PengambilanStokController extends Controller
 {
-    public function index()
+    function index()
     {
-        $itemstokbahans = Itemstokbahan::where('qty', '>', 0)
-            ->orderBy('id', 'desc')
-            ->get();
         $bahanpakaiList = Bahanpakai::get();
-
-        return Inertia::render('Produksi/PengambilanStok', compact('itemstokbahans', 'bahanpakaiList'));
+        $itemstokbahans = Itemstokbahan::where('qty', '>', 0)->orderBy('id')->get();
+        $riwayat = PengambilanStok::with('user', 'bahanPakai')->orderBy('id', 'desc')->limit(5)->get();
+        return Inertia::render('Produksi/PengambilanStok', compact('bahanpakaiList', 'itemstokbahans', 'riwayat'));
     }
 
-    public function proses(Request $request, $id)
+    function proses(Request $request)
     {
-        $stok = Itemstokbahan::find($id);
-        if (! $stok) {
-            return back()->with('error', 'Stok tidak ditemukan');
-        }
-
         $request->validate([
-            'ambil_luas' => 'required|numeric|min:0',
+            'kode_bahan_pakai' => 'required|string',
+            'item_stok_ids' => 'required|array|min:1',
+            'item_stok_ids.*' => 'integer|exists:itemstokbahans,id',
+            'total_qty' => 'required|numeric|min:0.01',
             'keterangan' => 'nullable|string',
         ]);
 
-        $ambilLuas = (float) $request->ambil_luas;
-        $sisa = (float) $stok->luas - $ambilLuas;
+        $remainingNeed = (float) $request->total_qty;
+        $itemStokData = [];
 
-        if ($ambilLuas <= 0) {
-            return back()->with('error', 'Jumlah luas yang diambil harus lebih dari 0');
+        foreach ($request->item_stok_ids as $stokId) {
+            if ($remainingNeed <= 0) break;
+
+            $stok = Itemstokbahan::find($stokId);
+            if (!$stok) continue;
+
+            $take = min((float) $stok->total, $remainingNeed);
+            $stok->total = max(0, (float) $stok->total - $take);
+            if ((float) $stok->total == 0) $stok->qty = 0;
+            $stok->save();
+
+            $itemStokData[] = [
+                'id' => $stok->id,
+                'kode_label' => $stok->kode_label,
+                'qty' => $take,
+            ];
+
+            $remainingNeed -= $take;
         }
 
-        if ($sisa < 0) {
-            return back()->with('error', 'Sisa stok tidak mencukupi');
-        }
+        PengambilanStok::create([
+            'kode_bahan_pakai' => $request->kode_bahan_pakai,
+            'item_stok_data' => $itemStokData,
+            'total_qty' => (string) $request->total_qty,
+            'user_id' => auth()->id(),
+            'keterangan' => $request->keterangan,
+        ]);
 
-        $stok->luas = max(0, $sisa);
-        if ((float) $stok->luas == 0) {
-            $stok->qty = 0;
-        }
-
-        if ($request->keterangan) {
-            $stok->keterangan = $request->keterangan;
-        }
-
-        $stok->save();
-
-        if ($request->kode_bahanpakai && $request->total_all) {
-            $bahan = Bahanpakai::where('kode_bahan', $request->kode_bahanpakai)->first();
-            if ($bahan) {
-                $totalAll = (float) $request->total_all;
-                $currentStok = (float) ($bahan->total_stok ?? 0);
-                $bahan->total_stok = max(0, $currentStok - $totalAll);
-                $bahan->save();
-            }
+        $bahan = Bahanpakai::where('kode_bahan', $request->kode_bahan_pakai)->first();
+        if ($bahan) {
+            $bahan->total_stok = max(0, (float) ($bahan->total_stok ?? 0) - (float) $request->total_qty);
+            $bahan->save();
         }
 
         return back()->with('success', 'Stok berhasil diambil');
+    }
+
+    function riwayat(Request $request)
+    {
+        $search = $request->query('search');
+        $riwayat = PengambilanStok::with('user', 'bahanPakai')
+            ->when($search, function ($q, $search) {
+                $q->where('kode_bahan_pakai', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($qq) use ($search) {
+                        $qq->where('username', 'like', "%{$search}%");
+                    });
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(20);
+        $riwayat->appends(['search' => $search]);
+
+        return Inertia::render('Produksi/RiwayatPengambilanStok', compact('riwayat', 'search'));
+    }
+
+    function riwayatPemakaian(Request $request)
+    {
+        $masterBahan = Materbahan::orderBy('kode_bahan_jual')->get()->map(function ($m) {
+            $m->total_stok = Bahanpakai::whereRaw('JSON_CONTAINS(id_master_bahan, \'["' . $m->kode_bahan_jual . '"]\')')
+                ->sum('total_stok');
+            return $m;
+        });
+        $kode = $request->query('kode');
+
+        $produksi = collect();
+        $totalProduksi = 0;
+        $totalStok = 0;
+
+        if ($kode) {
+            $databahanIds = Databahan::where('kode', $kode)->pluck('id');
+            $produksi = Produksi::with('customer', 'bahan')
+                ->whereIn('id_bahan', $databahanIds)
+                ->orderBy('id', 'desc')
+                ->paginate(20);
+            $produksi->appends(['kode' => $kode]);
+
+            $totalProduksi = Produksi::whereIn('id_bahan', $databahanIds)->count();
+
+            $totalStok = Bahanpakai::whereRaw('JSON_CONTAINS(id_master_bahan, \'["' . $kode . '"]\')')
+                ->sum('total_stok');
+        }
+
+        return Inertia::render('Produksi/RiwayatPemakaianBahan', compact('masterBahan', 'produksi', 'kode', 'totalProduksi', 'totalStok'));
     }
 }
