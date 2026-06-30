@@ -73,7 +73,7 @@ class ProduksiController extends Controller
 
                 if (($customer->limit_akhir + $total) > $customer->limit) {
                     return back()->withErrors([
-                        'payment' => 'Limit customer tidak mencukupi. Sisa limit: Rp '.number_format($customer->limit - $customer->limit_akhir),
+                        'payment' => 'Limit customer tidak mencukupi. Sisa limit: Rp ' . number_format($customer->limit - $customer->limit_akhir),
                     ]);
                 }
 
@@ -82,13 +82,13 @@ class ProduksiController extends Controller
         }
 
         $displayIds = Produksi::with('bahan')->whereIn('id', $ids)
-            ->whereHas('bahan', fn ($q) => $q->where('jenis_bahan', 'DISPLAY'))
+            ->whereHas('bahan', fn($q) => $q->where('jenis_bahan', 'DISPLAY'))
             ->pluck('id');
 
         $nonDisplayIds = array_diff($ids, $displayIds->toArray());
 
         $eksternal = Produksi::with('bahan')->whereIn('id', $ids)
-            ->whereHas('bahan', fn ($q) => $q->where('jenis', 'EKSTERNAL'))
+            ->whereHas('bahan', fn($q) => $q->where('jenis', 'EKSTERNAL'))
             ->pluck('id');
 
         $nonEksternal = array_diff($ids, $eksternal->toArray());

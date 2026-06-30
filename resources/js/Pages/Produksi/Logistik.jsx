@@ -401,10 +401,10 @@ table.items tr:nth-child(even) { background: #f9f9f9; }
                                                         }}
                                                         className="select select-bordered select-sm text-xs w-full"
                                                     >
-                                                        <option value="">Pilih kode label #{i + 1}</option>
+                                                        <option value="">Pilih</option>
                                                         {currentOpts.map((s) => (
                                                             <option key={s.id} value={s.id}>
-                                                                {s.kode_label || '-'} - Sisa: {s.luas} {s.satuan}
+                                                                {s.kode_label || '-'}
                                                             </option>
                                                         ))}
                                                     </select>
