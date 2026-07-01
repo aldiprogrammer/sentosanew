@@ -75,12 +75,12 @@ export default function TestPrint() {
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: 'Consolas', 'Lucida Console', monospace;
-    font-size: 13px; max-width: 76mm; margin: 0 auto; padding: 10mm; color: #000;
+    font-size: 13px; max-width: 76mm; margin: 0 auto; padding: 3mm; color: #000;
   }
   h1 { font-size: 18px; text-align: center; letter-spacing: 2px; margin-bottom: 2px; }
   .alamat { text-align: center; font-size: 11px; margin-bottom: 4px; }
   hr { border: none; border-top: 1px dashed #000; margin: 4px 0; }
-  table { width: 100%; font-size: 12px; border-collapse: collapse; }
+  table { width: 100%; font-size: 12px; border-collapse: collapse; margin-top : 5px }
   th { border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 3px 0; }
   th:nth-child(1) { text-align: left; }
   th:nth-child(2) { text-align: center; }
@@ -103,8 +103,8 @@ export default function TestPrint() {
   <div class="row"><span>Tanggal</span><span>${receiptData.tanggal}</span></div>
   <div class="row"><span>Kasir</span><span>${receiptData.kasir}</span></div>
   <div class="row"><span>Customer</span><span>${receiptData.customer}</span></div>
-  <hr>
-  <table><thead><tr><th>Item</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr></thead>
+  
+  <table><thead><tr><th>Item</th><th>Qty</th><th>Harga</th><th>Total</th></tr></thead>
   <tbody>${itemRows}</tbody></table>
   <hr>
   <div class="row"><span>Subtotal</span><span>${formatRp(receiptData.subtotal)}</span></div>
@@ -113,11 +113,10 @@ export default function TestPrint() {
   <div class="row"><span>Bayar</span><span>${formatRp(receiptData.bayar)}</span></div>
   <div class="row"><span>Kembali</span><span>${formatRp(receiptData.kembali)}</span></div>
   <hr>
-  <div class="footer" style="font-weight:bold;font-size:12px">--- Metode Pembayaran ---</div>
-  <div class="footer" style="font-weight:bold;font-size:13px">TUNAI</div>
-  <div class="footer" style="margin-top:5px;font-size:12px">Terima kasih sudah berbelanja!</div>
-  <div class="footer" style="color:#555;font-size:11px">Barang yang sudah dibeli tidak dapat ditukar</div>
-  <div class="footer" style="color:#555;font-size:11px">kembali kecuali ada kerusakan dari pabrik</div>
+  <div class="footer">--- Metode Pembayaran ---</div>
+  <div class="footer">TUNAI</div>
+  <div class="footer" style="margin-top:4px">Terima kasih sudah berbelanja!</div>
+ 
 </body></html>`
   }
 
@@ -148,15 +147,15 @@ export default function TestPrint() {
             <div className="flex justify-between"><span>Kasir</span><span>{receiptData.kasir}</span></div>
             <div className="flex justify-between"><span>Customer</span><span>{receiptData.customer}</span></div>
           </div>
-          <hr className="border-t border-dashed border-gray-400 my-2" />
 
-          <table className="w-full text-[11px]">
+
+          <table className="w-full text-[11px] mt-3">
             <thead>
               <tr className="border-t border-b border-dashed border-gray-400">
                 <th className="text-left py-[2px]">Item</th>
                 <th className="text-center py-[2px]">Qty</th>
                 <th className="text-right py-[2px]">Harga</th>
-                <th className="text-right py-[2px]">Subtotal</th>
+                <th className="text-right py-[2px]">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -183,12 +182,12 @@ export default function TestPrint() {
           </div>
           <hr className="border-t border-dashed border-gray-400 my-2" />
 
-          <div className="text-center space-y-[3px]">
-            <p className="font-bold text-[12px]">--- Metode Pembayaran ---</p>
-            <p className="font-bold text-[13px]">TUNAI</p>
-            <p className="mt-2 text-[12px]">Terima kasih sudah berbelanja!</p>
-            <p className="text-[11px] text-gray-600">Barang yang sudah dibeli tidak dapat ditukar</p>
-            <p className="text-[11px] text-gray-600">kembali kecuali ada kerusakan dari pabrik</p>
+          <div className="text-center text-[11px] space-y-[2px]">
+            <p className="font-medium">--- Metode Pembayaran ---</p>
+            <p>TUNAI</p>
+            <p className="mt-1">Terima kasih sudah berbelanja!</p>
+            <p className="text-[9px] text-gray-500">Barang yang sudah dibeli tidak dapat ditukar</p>
+            <p className="text-[9px] text-gray-500">kembali kecuali ada kerusakan dari pabrik</p>
           </div>
         </div>
 
