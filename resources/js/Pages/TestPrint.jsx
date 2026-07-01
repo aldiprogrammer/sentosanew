@@ -75,7 +75,7 @@ export default function TestPrint() {
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: 'Consolas', 'Lucida Console', monospace;
-    font-size: 13px; max-width: 76mm; margin: 0 auto; padding: 3mm; color: #000;
+    font-size: 13px; max-width: 76mm; margin: 0 auto; padding: 10mm; color: #000;
   }
   h1 { font-size: 18px; text-align: center; letter-spacing: 2px; margin-bottom: 2px; }
   .alamat { text-align: center; font-size: 11px; margin-bottom: 4px; }
@@ -113,11 +113,11 @@ export default function TestPrint() {
   <div class="row"><span>Bayar</span><span>${formatRp(receiptData.bayar)}</span></div>
   <div class="row"><span>Kembali</span><span>${formatRp(receiptData.kembali)}</span></div>
   <hr>
-  <div class="footer">--- Metode Pembayaran ---</div>
-  <div class="footer">TUNAI</div>
-  <div class="footer" style="margin-top:4px">Terima kasih sudah berbelanja!</div>
-  <div class="footer" style="color:#666;font-size:9px">Barang yang sudah dibeli tidak dapat ditukar</div>
-  <div class="footer" style="color:#666;font-size:9px">kembali kecuali ada kerusakan dari pabrik</div>
+  <div class="footer" style="font-weight:bold;font-size:12px">--- Metode Pembayaran ---</div>
+  <div class="footer" style="font-weight:bold;font-size:13px">TUNAI</div>
+  <div class="footer" style="margin-top:5px;font-size:12px">Terima kasih sudah berbelanja!</div>
+  <div class="footer" style="color:#555;font-size:11px">Barang yang sudah dibeli tidak dapat ditukar</div>
+  <div class="footer" style="color:#555;font-size:11px">kembali kecuali ada kerusakan dari pabrik</div>
 </body></html>`
   }
 
@@ -183,12 +183,12 @@ export default function TestPrint() {
           </div>
           <hr className="border-t border-dashed border-gray-400 my-2" />
 
-          <div className="text-center text-[11px] space-y-[2px]">
-            <p className="font-medium">--- Metode Pembayaran ---</p>
-            <p>TUNAI</p>
-            <p className="mt-1">Terima kasih sudah berbelanja!</p>
-            <p className="text-[9px] text-gray-500">Barang yang sudah dibeli tidak dapat ditukar</p>
-            <p className="text-[9px] text-gray-500">kembali kecuali ada kerusakan dari pabrik</p>
+          <div className="text-center space-y-[3px]">
+            <p className="font-bold text-[12px]">--- Metode Pembayaran ---</p>
+            <p className="font-bold text-[13px]">TUNAI</p>
+            <p className="mt-2 text-[12px]">Terima kasih sudah berbelanja!</p>
+            <p className="text-[11px] text-gray-600">Barang yang sudah dibeli tidak dapat ditukar</p>
+            <p className="text-[11px] text-gray-600">kembali kecuali ada kerusakan dari pabrik</p>
           </div>
         </div>
 
