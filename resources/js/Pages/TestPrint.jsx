@@ -61,7 +61,7 @@ export default function TestPrint() {
         <td style="padding:3px 0">${item.nama}</td>
         <td style="text-align:center;padding:3px 0">${item.qty}</td>
         <td style="text-align:right;padding:3px 0">${item.harga.toLocaleString('id-ID')}</td>
-        <td style="text-align:right;padding:3px 0">${(item.qty * item.harga).toLocaleString('id-ID')}</td>
+        <td style="text-align:right;padding:3px 0 3px 6px">${(item.qty * item.harga).toLocaleString('id-ID')}</td>
       </tr>`,
     )
     .join('')
@@ -155,7 +155,7 @@ export default function TestPrint() {
                 <th className="text-left py-[2px]">Item</th>
                 <th className="text-center py-[2px]">Qty</th>
                 <th className="text-right py-[2px]">Harga</th>
-                <th className="text-right py-[2px]">Total</th>
+                <th className="text-right py-[2px] pl-8">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -164,7 +164,7 @@ export default function TestPrint() {
                   <td className="py-[2px]">{item.nama}</td>
                   <td className="text-center py-[2px]">{item.qty}</td>
                   <td className="text-right py-[2px]">{item.harga.toLocaleString('id-ID')}</td>
-                  <td className="text-right py-[2px]">{(item.qty * item.harga).toLocaleString('id-ID')}</td>
+                  <td className="text-right py-[2px] pl-8">{(item.qty * item.harga).toLocaleString('id-ID')}</td>
                 </tr>
               ))}
             </tbody>
