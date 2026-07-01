@@ -44,10 +44,10 @@ class ProduksiController extends Controller
         $bahan = Databahan::with('hargaBahan')->get();
 
         do {
-            $kodespk = 'SPK-'.date('ymd').rand(0, 100000);
+            $kodespk = 'SPK-' . date('ymd') . rand(0, 100000);
         } while (Produksi::where('kode_spk', $kodespk)->exists());
         $kode_antrian = $this->kodeAntrianProduksiBerikutnya();
-        $kode_invoice = 'INVOICE-'.date('ymd').rand(100, 999);
+        $kode_invoice = 'INVOICE-' . date('ymd') . rand(100, 999);
         $existingInvoices = Produksi::select('no_invoice')
             ->whereNotNull('no_invoice')
             ->where('no_invoice', '!=', '')
@@ -90,7 +90,7 @@ class ProduksiController extends Controller
                 return $existing->no_invoice;
             }
 
-            return 'INVOICE-'.date('ymd').rand(100, 999);
+            return 'INVOICE-' . date('ymd') . rand(100, 999);
         })();
         $pr->id_customer = $request->id_customer;
         $pr->id_desain = $desain->id ?? $request->id_desain;
@@ -146,7 +146,7 @@ class ProduksiController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'kode_spk' => 'required|unique:produksis,kode_spk,'.$id,
+            'kode_spk' => 'required|unique:produksis,kode_spk,' . $id,
         ], [
             'kode_spk.unique' => 'Kode SPK sudah digunakan, silakan ganti dengan yang lain.',
         ]);
@@ -229,7 +229,7 @@ class ProduksiController extends Controller
         $panjangNomor = strlen($nomorTerakhir);
         $nomorBerikutnya = (int) $nomorTerakhir + 1;
 
-        return 'ANT-'.str_pad($nomorBerikutnya, $panjangNomor, '0', STR_PAD_LEFT);
+        return 'ANT-' . str_pad($nomorBerikutnya, $panjangNomor, '0', STR_PAD_LEFT);
     }
 
     private function hargaProduk(?Databahan $bahan, Request $request): float
@@ -252,7 +252,7 @@ class ProduksiController extends Controller
         $qty = (float) ($request->qty ?: 0);
         $sisi = trim((string) $request->sisi);
         $hargaBahan = Hargabahan::where('kode_bahan', $bahan->kode)->get();
-        $pakaiSisi = $hargaBahan->contains(fn ($harga) => trim((string) $harga->sisi) !== '');
+        $pakaiSisi = $hargaBahan->contains(fn($harga) => trim((string) $harga->sisi) !== '');
 
         if ($bahan->cara_perhitungan === 'QTY KHUSUS') {
             $harga = $hargaBahan
@@ -276,7 +276,7 @@ class ProduksiController extends Controller
 
                     return $sisiHarga === '';
                 })
-                ->sortByDesc(fn ($harga) => (float) ($harga->qty_min ?: 0))
+                ->sortByDesc(fn($harga) => (float) ($harga->qty_min ?: 0))
                 ->first();
         } else {
             $harga = $hargaBahan
@@ -289,7 +289,7 @@ class ProduksiController extends Controller
 
                     return $sisiHarga === '';
                 })
-                ->sortBy(fn ($harga) => (float) ($harga->qty_min ?: 0))
+                ->sortBy(fn($harga) => (float) ($harga->qty_min ?: 0))
                 ->first();
         }
 
@@ -307,7 +307,8 @@ class ProduksiController extends Controller
         }
 
         if (in_array($bahan->cara_perhitungan, ['QTY KHUSUS'])) {
-            return (float) $hargaProduk;
+            // return (float) $hargaProduk;
+            return (float) $request->qty * $hargaProduk;
         }
 
         if ($bahan->cara_perhitungan === 'LUAS') {

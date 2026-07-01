@@ -437,7 +437,7 @@ table.items tr:nth-child(even) { background: #f9f9f9; }
                         <button className="btn btn-secondary" onClick={() => requestPassword('cetak_surat')}>
                             <i className="fas fa-truck"></i> Cetak Surat Jalan
                         </button>
-                        <button className="btn btn-primary" disabled={isDisplay && (!semuaCukup || selectedItemStoks.filter(Boolean).length < qtyCount)} onClick={() => requestPassword('selesai')}>
+                        <button className="btn btn-primary" onClick={() => requestPassword('selesai')}>
                             <i className="fas fa-check"></i> Selesai Logistik
                         </button>
                     </div>

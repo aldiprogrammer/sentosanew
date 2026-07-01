@@ -118,8 +118,8 @@
                                 <div class="label-footer">#{{ $lb['no'] }}/{{ $lb['qty'] }}</div>
                                  <div style="font-weight: bold; font-style:italic">Dicetak pada : {{ date('Y-m-d') }}</div>
                             </td>
-
-                           
+                        @else
+                            <td style="border: none;"></td>
                         @endif
                     @endfor
                 </tr>

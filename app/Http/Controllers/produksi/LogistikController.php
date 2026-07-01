@@ -34,8 +34,8 @@ class LogistikController extends Controller
             $pr->kode_bahanpakai = $request->kode_bahanpakai;
         }
 
-        echo $request->total_all;
-        die();
+        // echo $request->total_all;
+        // die();
         $pr->status_selesai = 1;
         $pr->update();
 

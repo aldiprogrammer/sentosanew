@@ -102,8 +102,10 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
   const isLembar = (data.satuan || '').toLowerCase() === 'lembar';
 
   useEffect(() => {
-    const luas = isLembar ? (parseFloat(data.qty) || 0) : hitungLuas(data.panjang, data.lebar);
-    setData("luas", luas);
+    if (!isLembar) {
+      const luas = hitungLuas(data.panjang, data.lebar);
+      setData("luas", luas);
+    }
     const total = hitungTotal(data.qty, data.harga);
     setData("total_harga", total);
   }, [data.panjang, data.lebar, data.qty, data.harga, data.satuan]);
@@ -511,7 +513,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                     <th>Satuan</th>
                     <th>Panjang</th>
                     <th>Lebar</th>
-                    <th>Luas</th>
+                    <th>Total</th>
                     <th>Harga</th>
                     <th>Qty</th>
                     <th>Total Harga</th>
@@ -534,7 +536,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                         <td>{formatSatuan(item.satuan || item.bahan?.satuan)}</td>
                         <td>{item.panjang}</td>
                         <td>{item.lebar}</td>
-                        <td>{item.luas}</td>
+                        <td>{item.luas} {item.bahan?.satuan}</td>
                         <td>{formatRp(item.harga)}</td>
                         <td>{item.qty}</td>
                         <td>{formatRp(item.total_harga)}</td>
@@ -725,7 +727,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                   {isLembar ? (
                     <label className="form-control">
                       <div className="label"><span className="label-text">Jumlah Lembar</span></div>
-                      <input type="number" step="0.01" value={data.luas} className="input input-bordered input-success w-full" onChange={(e) => setData("luas", e.target.value)} />
+                      <input type="number" value={data.luas} className="input input-bordered input-success w-full" onChange={(e) => setData("luas", e.target.value)} />
                     </label>
                   ) : (
                     <label className="form-control">
