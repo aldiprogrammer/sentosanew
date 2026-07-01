@@ -2,9 +2,59 @@ import AdminLayout from "@/Layouts/AdminLayout";
 import NewCustomerModal from "@/Components/NewCustomerModal";
 import { useForm } from "@inertiajs/react";
 import axios from "axios";
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+
+function SearchableSelect({ options, value, onChange, placeholder }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef(null);
+  const selected = options.find(o => String(o.value) === String(value));
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtered = options.filter(o =>
+    o.label.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="relative" ref={ref}>
+      <div
+        className="input input-bordered input-success w-full flex items-center cursor-pointer justify-between h-auto min-h-[2.5rem] py-1.5"
+        onClick={() => { setOpen(!open); setSearch(''); }}
+      >
+        <span className={`text-xs ${selected ? '' : 'text-gray-400'}`}>{selected ? selected.label : placeholder}</span>
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={open ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} /></svg>
+      </div>
+      {open && (
+        <div className="absolute z-50 w-full mt-1 bg-base-100 border border-base-300 rounded-box shadow-lg max-h-60 overflow-auto">
+          <input
+            className="input input-bordered input-sm w-full mb-1 sticky top-0 bg-base-100"
+            placeholder="Cari customer..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            autoFocus
+          />
+          {filtered.length === 0 && <p className="p-2 text-sm text-gray-400">Tidak ditemukan</p>}
+          {filtered.map(o => (
+            <div
+              key={o.value}
+              className={`px-3 py-2 cursor-pointer text-sm hover:bg-base-300 ${String(o.value) === String(value) ? 'bg-base-300 font-semibold' : ''}`}
+              onClick={() => { onChange(o.value); setOpen(false); }}
+            >
+              {o.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Desain({
   customer,
@@ -216,19 +266,12 @@ export default function Desain({
                             <div className="label">
                               <span className="label-text">Customer</span>
                             </div>
-                            <select
-                              name=""
-                              id=""
+                            <SearchableSelect
+                              options={customer.map(cs => ({ value: cs.id, label: cs.nama }))}
                               value={data.id_customer}
-                              className="input input-bordered input-success"
-                              required
-                              onChange={(e) => handleCustomer(e.target.value)}
-                            >
-                              <option value="">-- Pilih Customer --</option>
-                              {customer.map((cs, index) => (
-                                <option value={cs.id}>{cs.nama}</option>
-                              ))}
-                            </select>
+                              onChange={(val) => handleCustomer(val)}
+                              placeholder="Pilih Customer"
+                            />
                           </label>
 
                           <label className="form-control w-full mt-2">
@@ -401,20 +444,12 @@ export default function Desain({
                             <div className="label">
                               <span className="label-text">Customer</span>
                             </div>
-                            <select
-                              name=""
-                              id=""
-                              className="input input-bordered input-success"
-                              required
-                              onChange={(e) => handleCustomer(e.target.value)}
-                            >
-                              <option value={data.id_customer}>
-                                {data.customer}
-                              </option>
-                              {customer.map((cs, index) => (
-                                <option value={cs.id}>{cs.nama}</option>
-                              ))}
-                            </select>
+                            <SearchableSelect
+                              options={customer.map(cs => ({ value: cs.id, label: cs.nama }))}
+                              value={data.id_customer}
+                              onChange={(val) => handleCustomer(val)}
+                              placeholder="Pilih Customer"
+                            />
                           </label>
 
                           <label className="form-control w-full mt-2">

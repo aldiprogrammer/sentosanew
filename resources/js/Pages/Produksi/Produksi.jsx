@@ -52,6 +52,16 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
         return itemstokbahans.find((s) => s.id === selectedItemStok) || null
     }, [selectedItemStok, itemstokbahans])
 
+    const selectedLabels = useMemo(() => {
+        if (selected?.bahan?.satuan == 'LEMBAR') {
+            return selectedItemStokIds
+                .map(id => itemstokbahans?.find(s => s.id === id)?.kode_label)
+                .filter(Boolean)
+                .join(', ')
+        }
+        return stokTerpilih?.kode_label || ''
+    }, [selected, selectedItemStokIds, itemstokbahans, stokTerpilih])
+
     const isSisaKurang = useMemo(() => {
         if (selected?.bahan?.satuan == 'LEMBAR') {
             if (!selectedItemStokIds.length) return true
@@ -69,7 +79,7 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
         const w = window.open('', '_blank', 'width=420,height=640')
         if (!w) return
         w.document.open()
-        w.document.write(buildFinishingReceiptHtml(item))
+        w.document.write(buildFinishingReceiptHtml(item, selectedLabels))
         w.document.close()
     }
 
@@ -77,7 +87,7 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
         const w = window.open('', '_blank', 'width=420,height=640')
         if (!w) return
         w.document.open()
-        w.document.write(buildFinishingReceiptHtml(item))
+        w.document.write(buildFinishingReceiptHtml(item, selectedLabels))
         w.document.close()
         w.addEventListener('load', () => {
             w.focus()
@@ -135,6 +145,7 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
             sisa_putih_total: String(totalAll),
             kode_bahanpakai: selectedBahanpakai,
             total_all: totalAll.toFixed(2),
+            no_label: selectedLabels,
         }
         if (selected?.bahan?.satuan == 'LEMBAR') {
             payload.item_stok_ids = selectedItemStokIds

@@ -1,6 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout'
 import { Link, router, usePage } from '@inertiajs/react'
-import React, { useRef } from 'react'
+import React, { useCallback, useRef } from 'react'
+import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
 import { buildDesainReceiptHtml } from './StrukDesainTemplate'
 
 export default function DataDesain({ desain, tglAwal, tglAkhir }) {
@@ -12,6 +13,8 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
     const [paymentError, setPaymentError] = React.useState(null)
     const [processing, setProcessing] = React.useState(false)
     const [printMode, setPrintMode] = React.useState('single')
+    const [showPasswordModal, setShowPasswordModal] = React.useState(false)
+    const [pendingAction, setPendingAction] = React.useState(null)
     const previewRef = useRef(null)
     const iframeRef = useRef(null)
     const paymentModalRef = useRef(null)
@@ -136,6 +139,34 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
             setTimeout(() => w.print(), 300)
         })
     }
+
+    const requestPassword = useCallback((action) => {
+        setPendingAction(action)
+        setShowPasswordModal(true)
+    }, [])
+
+    const handlePasswordConfirmed = useCallback(() => {
+        setShowPasswordModal(false)
+        switch (pendingAction) {
+            case 'review':
+                previewStruk()
+                paymentModalRef.current?.close()
+                break
+            case 'cetak':
+                cetakStrukLangsung()
+                paymentModalRef.current?.close()
+                break
+            case 'proses':
+                handlePaymentConfirm()
+                break
+        }
+        setPendingAction(null)
+    }, [pendingAction, selectedItems])
+
+    const handlePasswordCancel = useCallback(() => {
+        setShowPasswordModal(false)
+        setPendingAction(null)
+    }, [])
 
     const setPreview = (show) => {
         if (show && selectedItems.length > 0) {
@@ -341,12 +372,25 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
                                 <span className="font-semibold">{selectedItems.length}</span>
                             </div>
                             <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
+                                <span className="text-sm text-base-content/70">QTY</span>
+                                <span className="font-semibold">{totalQty}</span>
+                            </div>
+                            <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
                                 <span className="text-sm text-base-content/70">Total Harga</span>
                                 <span className="font-semibold text-success">Rp {totalHarga.toLocaleString('id-ID')}</span>
                             </div>
                             <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
                                 <span className="text-sm text-base-content/70">Customer</span>
                                 <span className="font-medium">{firstCustomer?.nama || '-'}</span>
+                            </div>
+                            <div className="p-3 bg-base-200 rounded-lg">
+                                <span className="text-sm text-base-content/70 block mb-2">Jenis Desain</span>
+                                {selectedItems.map((item, i) => (
+                                    <div key={item.id || i} className="flex justify-between text-sm py-0.5">
+                                        <span>{item.kategoridesain?.kategori || '-'}</span>
+                                        <span className="font-mono">x {item.qty || 0}</span>
+                                    </div>
+                                ))}
                             </div>
                             <div className="divider my-2"></div>
                             <p className="text-sm font-semibold mb-2">Status Pembayaran</p>
@@ -396,16 +440,16 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
                     )}
                     <div className="modal-action flex-col gap-2">
                         <div className="flex gap-2 w-full">
-                            <button className="btn btn-ghost flex-1" onClick={() => { previewStruk(); paymentModalRef.current?.close() }}>
+                            <button className="btn btn-ghost flex-1" onClick={() => requestPassword('review')}>
                                 <i className="fas fa-eye"></i> Review Struk
                             </button>
-                            <button className="btn btn-outline flex-1" onClick={() => { cetakStrukLangsung(); paymentModalRef.current?.close() }}>
+                            <button className="btn btn-outline flex-1" onClick={() => requestPassword('cetak')}>
                                 <i className="fas fa-print"></i> Cetak Struk
                             </button>
                         </div>
                         <button
                             className="btn btn-primary w-full"
-                            onClick={handlePaymentConfirm}
+                            onClick={() => requestPassword('proses')}
                             disabled={processing || (paymentType === 'utang' && wouldExceedLimit)}
                         >
                             {processing ? <><span className="loading loading-spinner"></span> Memproses...</> : <><i className="fas fa-check"></i> Proses & Cetak Struk</>}
@@ -416,6 +460,11 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
                     <button onClick={() => paymentModalRef.current?.close()}>close</button>
                 </form>
             </dialog>
+            <KonfirmasiPassword
+                show={showPasswordModal}
+                onConfirmed={handlePasswordConfirmed}
+                onClose={handlePasswordCancel}
+            />
         </AdminLayout>
     )
 }
