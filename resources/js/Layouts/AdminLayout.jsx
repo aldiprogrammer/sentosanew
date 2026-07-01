@@ -229,7 +229,7 @@ export default function AdminLayout({ children }) {
                                 </details>
                             </li>
                         )}
-                        {(hasMenu('proses-produksi') || hasMenu('proses-finishing') || hasMenu('proses-logistik') || hasMenu('logistik') || hasMenu('pengambilan-stok') || hasMenu('riwayat-pengambilan-stok') || hasMenu('riwayat-pemakaian-bahan')) && (
+                        {(hasMenu('proses-produksi') || hasMenu('proses-finishing') || hasMenu('proses-logistik') || hasMenu('logistik')) && (
                             <li>
                                 <details>
                                     <summary className="rounded-xl">
@@ -252,6 +252,18 @@ export default function AdminLayout({ children }) {
                                                 <Link href="/produksi/logistik">Logistik</Link>
                                             </li>
                                         )}
+                                    </ul>
+                                </details>
+                            </li>
+                        )}
+                        {(hasMenu('pengambilan-stok') || hasMenu('riwayat-pengambilan-stok') || hasMenu('riwayat-pemakaian-bahan')) && (
+                            <li>
+                                <details>
+                                    <summary className="rounded-xl">
+                                        <i className="fas fa-cubes"></i>
+                                        Stok
+                                    </summary>
+                                    <ul>
                                         {hasMenu('pengambilan-stok') && (
                                             <li>
                                                 <Link href="/produksi/pengambilan-stok">Pengambilan Stok</Link>

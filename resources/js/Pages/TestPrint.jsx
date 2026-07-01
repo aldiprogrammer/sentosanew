@@ -71,11 +71,11 @@ export default function TestPrint() {
 <html>
 <head><meta charset="utf-8">
 <style>
-  @page { margin: 0; size: 76mm 297mm; }
+  @page { size: 76mm 297mm; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: 'Courier New', 'Courier', monospace;
-    font-size: 12px; width: 72mm; padding: 2mm; color: #000;
+    font-size: 12px; max-width: 76mm; margin: 0 auto; padding: 3mm; color: #000;
   }
   h1 { font-size: 16px; text-align: center; letter-spacing: 2px; margin-bottom: 2px; }
   .alamat { text-align: center; font-size: 10px; margin-bottom: 4px; }
@@ -196,7 +196,7 @@ export default function TestPrint() {
 
         <style>{`
           .receipt {
-            max-width: 76mm; margin: 0 auto; background: white; padding: 3mm 2mm;
+            max-width: 76mm; margin: 0 auto; background: white; padding: 3mm;
             font-family: 'Courier New', Courier, monospace;
             border: 1px solid #ddd; box-shadow: 0 0 10px rgba(0,0,0,0.1);
           }
@@ -206,9 +206,10 @@ export default function TestPrint() {
             .min-h-screen { background: white !important; padding: 0 !important; }
             .receipt {
               max-width: 76mm !important; border: none !important;
-              box-shadow: none !important; padding: 2mm !important;
+              box-shadow: none !important; padding: 3mm !important;
+              margin: 0 auto !important;
             }
-            @page { margin: 0; size: 76mm 297mm; }
+            @page { size: 76mm 297mm; }
           }
         `}</style>
       </div>
