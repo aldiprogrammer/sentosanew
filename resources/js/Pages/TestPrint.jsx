@@ -74,13 +74,13 @@ export default function TestPrint() {
   @page { size: 76mm 297mm; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: 'Courier New', 'Courier', monospace;
-    font-size: 12px; max-width: 76mm; margin: 0 auto; padding: 3mm; color: #000;
+    font-family: 'Consolas', 'Lucida Console', monospace;
+    font-size: 13px; max-width: 76mm; margin: 0 auto; padding: 3mm; color: #000;
   }
-  h1 { font-size: 16px; text-align: center; letter-spacing: 2px; margin-bottom: 2px; }
-  .alamat { text-align: center; font-size: 10px; margin-bottom: 4px; }
+  h1 { font-size: 18px; text-align: center; letter-spacing: 2px; margin-bottom: 2px; }
+  .alamat { text-align: center; font-size: 11px; margin-bottom: 4px; }
   hr { border: none; border-top: 1px dashed #000; margin: 4px 0; }
-  table { width: 100%; font-size: 11px; border-collapse: collapse; }
+  table { width: 100%; font-size: 12px; border-collapse: collapse; }
   th { border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 3px 0; }
   th:nth-child(1) { text-align: left; }
   th:nth-child(2) { text-align: center; }
@@ -89,9 +89,9 @@ export default function TestPrint() {
   td:nth-child(1) { text-align: left; }
   td:nth-child(2) { text-align: center; }
   td:nth-child(3), td:nth-child(4) { text-align: right; }
-  .row { display: flex; justify-content: space-between; font-size: 11px; padding: 1px 0; }
-  .total { font-size: 14px; font-weight: bold; border-top: 2px double #000; padding-top: 3px; }
-  .footer { text-align: center; font-size: 10px; margin-top: 8px; }
+  .row { display: flex; justify-content: space-between; font-size: 12px; padding: 1px 0; }
+  .total { font-size: 15px; font-weight: bold; border-top: 2px double #000; padding-top: 3px; }
+  .footer { text-align: center; font-size: 11px; margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -197,7 +197,7 @@ export default function TestPrint() {
         <style>{`
           .receipt {
             max-width: 76mm; margin: 0 auto; background: white; padding: 3mm;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Consolas', 'Lucida Console', monospace;
             border: 1px solid #ddd; box-shadow: 0 0 10px rgba(0,0,0,0.1);
           }
           @media print {
