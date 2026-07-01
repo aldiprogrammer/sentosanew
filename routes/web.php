@@ -11,6 +11,7 @@ use App\Http\Controllers\admin\HomeController;
 use App\Http\Controllers\admin\JabatanController;
 use App\Http\Controllers\admin\KategoriDesainController;
 use App\Http\Controllers\admin\KurirController;
+use App\Http\Controllers\admin\LaporanFeeDesainController;
 use App\Http\Controllers\admin\LaporanPembukuanController;
 use App\Http\Controllers\admin\MaterbahanController;
 use App\Http\Controllers\admin\PenggunaController;
@@ -162,6 +163,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/produksi/riwayat-pemakaian-bahan', [PengambilanStokController::class, 'riwayatPemakaian'])->name('riwayat-pemakaian-bahan');
 
     Route::get('/laporan-pembukuan', [LaporanPembukuanController::class, 'index'])->name('laporan-pembukuan');
+
+    Route::get('/laporan-fee-desain', [LaporanFeeDesainController::class, 'index'])->name('laporan-fee-desain');
+    Route::put('/laporan-fee-desain/ambil', [LaporanFeeDesainController::class, 'ambilFee'])->name('laporan-fee-desain.ambil');
 
     Route::get('/po-eksternal', [PoEksternalController::class, 'index'])->name('po-eksternal');
     Route::post('/po-eksternal', [PoEksternalController::class, 'store'])->name('store.po-eksternal');

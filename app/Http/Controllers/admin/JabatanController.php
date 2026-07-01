@@ -30,6 +30,7 @@ class JabatanController extends Controller
             ['key' => 'riwayat-pengambilan-stok', 'label' => 'Riwayat Pengambilan Stok', 'group' => 'Stok'],
             ['key' => 'riwayat-pemakaian-bahan', 'label' => 'Riwayat Pemakaian Bahan', 'group' => 'Stok'],
             ['key' => 'laporan-pembukuan', 'label' => 'Laporan Pembukuan', 'group' => 'Umum'],
+            ['key' => 'laporan-fee-desain', 'label' => 'Laporan Fee Desain', 'group' => 'Umum'],
             ['key' => 'pengguna', 'label' => 'Pengguna', 'group' => 'Master Data'],
             ['key' => 'distributor', 'label' => 'Distributor', 'group' => 'Master Data'],
             ['key' => 'kurir', 'label' => 'Kurir', 'group' => 'Master Data'],

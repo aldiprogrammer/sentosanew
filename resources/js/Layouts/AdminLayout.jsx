@@ -299,6 +299,14 @@ export default function AdminLayout({ children }) {
                                 </Link>
                             </li>
                         )}
+                        {hasMenu('laporan-fee-desain') && (
+                            <li>
+                                <Link href={route('laporan-fee-desain')} className="rounded-xl">
+                                    <i className="fas fa-money-bill-wave"></i>
+                                    Laporan Fee Desain
+                                </Link>
+                            </li>
+                        )}
                         {hasMenu('po-eksternal') && (
                             <li>
                                 <Link href={route('po-eksternal')} className="rounded-xl">

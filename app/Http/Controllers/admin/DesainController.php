@@ -5,6 +5,7 @@ namespace App\Http\Controllers\admin;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Desain;
+use App\Models\FeeDesainTransaksi;
 use App\Models\Kategoridesain;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -137,6 +138,22 @@ class DesainController extends Controller
         }
 
         Desain::whereIn('id', $ids)->update(['pembayaran' => $paymentType]);
+
+        $desains = Desain::with('kategoridesain')->whereIn('id', $ids)->get();
+        $today = now()->toDateString();
+        foreach ($desains as $d) {
+            $fee = ($d->kategoridesain->fee ?? 0) * ($d->qty ?? 1);
+            if ($fee > 0) {
+                FeeDesainTransaksi::create([
+                    'desain_id' => $d->id,
+                    'pengguna_id' => $d->id_desain,
+                    'kategori_desain_id' => $d->id_kategori_desain,
+                    'fee' => $fee,
+                    'tanggal' => $today,
+                    'status' => 'belum_diambil',
+                ]);
+            }
+        }
 
         return back()->with('success', 'Pembayaran berhasil diproses');
     }
