@@ -144,12 +144,13 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
                                         <th>Total Harga</th>
                                         <th>Pembayaran</th>
                                         <th>Tgl Kirim</th>
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody className="text-xs">
                                     {produksi.data.length === 0 ? (
                                         <tr>
-                                            <td colSpan={10} className="text-center py-8 text-base-content/50">Tidak ada data produksi</td>
+                                            <td colSpan={11} className="text-center py-8 text-base-content/50">Tidak ada data produksi</td>
                                         </tr>
                                     ) : (
                                         produksi.data.map((item, index) => (
@@ -172,6 +173,15 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
                                                     )}
                                                 </td>
                                                 <td>{item.tgl_kirim}</td>
+                                                <td>
+                                                    {(() => {
+                                                        if (item.status_selesai == 1) return <span className="text-success font-semibold">Selesai</span>
+                                                        if (item.status_logistik == 1) return <span className="text-info font-semibold">Proses Logistik</span>
+                                                        if (item.status_finishing == 1) return <span className="text-warning font-semibold">Proses Finishing</span>
+                                                        if (item.status_produksi == 1) return <span className="text-error font-semibold">Proses Produksi</span>
+                                                        return '-'
+                                                    })()}
+                                                </td>
                                             </tr>
                                         ))
                                     )}

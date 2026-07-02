@@ -532,16 +532,17 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
                             </div>
                         )}
                         <div className="flex gap-2 w-full">
-                            <button className="btn btn-ghost flex-1" disabled={isSisaKurang} onClick={() => requestPassword('review')}>
+                            <button className="btn btn-success flex-1" disabled={isSisaKurang} onClick={() => requestPassword('review')}>
                                 <i className="fas fa-eye"></i> Review Struk
                             </button>
-                            <button className="btn btn-outline flex-1" disabled={isSisaKurang} onClick={() => requestPassword('cetak')}>
-                                <i className="fas fa-print"></i> Cetak Struk
+                            <button className="btn btn-primary flex-1" disabled={isSisaKurang} onClick={() => requestPassword('proses')}>
+                                <i className="fas fa-check"></i> Proses & Cetak Struk
                             </button>
+                            {/* <button className="btn btn-outline flex-1" disabled={isSisaKurang} onClick={() => requestPassword('cetak')}>
+                                <i className="fas fa-print"></i> Cetak Struk
+                            </button> */}
                         </div>
-                        <button className="btn btn-primary w-full" disabled={isSisaKurang} onClick={() => requestPassword('proses')}>
-                            <i className="fas fa-check"></i> Proses & Cetak Struk
-                        </button>
+
                     </div>
                 </div>
                 <form method="dialog" className="modal-backdrop">

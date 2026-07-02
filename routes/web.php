@@ -163,6 +163,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/produksi/riwayat-pemakaian-bahan', [PengambilanStokController::class, 'riwayatPemakaian'])->name('riwayat-pemakaian-bahan');
 
     Route::get('/laporan-pembukuan', [LaporanPembukuanController::class, 'index'])->name('laporan-pembukuan');
+    Route::get('/laporan-pembukuan/pdf', [LaporanPembukuanController::class, 'pdf'])->name('laporan-pembukuan.pdf');
 
     Route::get('/laporan-fee-desain', [LaporanFeeDesainController::class, 'index'])->name('laporan-fee-desain');
     Route::put('/laporan-fee-desain/ambil', [LaporanFeeDesainController::class, 'ambilFee'])->name('laporan-fee-desain.ambil');

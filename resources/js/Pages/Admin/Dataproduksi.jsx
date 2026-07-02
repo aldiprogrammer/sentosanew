@@ -447,20 +447,19 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                     )}
                     <div className="modal-action flex-col gap-2">
                         <div className="flex gap-2 w-full">
-                            <button className="btn btn-ghost flex-1" onClick={() => requestPassword('review')}>
+                            <button className="btn btn-success flex-1" onClick={() => requestPassword('review')}>
                                 <i className="fas fa-eye"></i> Review Struk
                             </button>
-                            <button className="btn btn-outline flex-1" onClick={() => requestPassword('cetak')}>
-                                <i className="fas fa-print"></i> Cetak Struk
+
+                            <button
+                                className="btn btn-primary flex-1"
+                                onClick={() => requestPassword('proses')}
+                                disabled={processing || (paymentType === 'utang' && wouldExceedLimit)}
+                            >
+                                {processing ? <><span className="loading loading-spinner"></span> Memproses...</> : <><i className="fas fa-check"></i> Proses & Cetak Struk</>}
                             </button>
                         </div>
-                        <button
-                            className="btn btn-primary w-full"
-                            onClick={() => requestPassword('proses')}
-                            disabled={processing || (paymentType === 'utang' && wouldExceedLimit)}
-                        >
-                            {processing ? <><span className="loading loading-spinner"></span> Memproses...</> : <><i className="fas fa-check"></i> Proses & Cetak Struk</>}
-                        </button>
+
                     </div>
                 </div>
                 <form method="dialog" className="modal-backdrop">
