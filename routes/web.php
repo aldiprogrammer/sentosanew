@@ -166,6 +166,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/laporan-pembukuan/pdf', [LaporanPembukuanController::class, 'pdf'])->name('laporan-pembukuan.pdf');
 
     Route::get('/laporan-fee-desain', [LaporanFeeDesainController::class, 'index'])->name('laporan-fee-desain');
+    Route::get('/laporan-fee-desain/pdf', [LaporanFeeDesainController::class, 'pdf'])->name('laporan-fee-desain.pdf');
     Route::put('/laporan-fee-desain/ambil', [LaporanFeeDesainController::class, 'ambilFee'])->name('laporan-fee-desain.ambil');
 
     Route::get('/po-eksternal', [PoEksternalController::class, 'index'])->name('po-eksternal');

@@ -291,20 +291,26 @@ export default function AdminLayout({ children }) {
                                 </Link>
                             </li>
                         )}
-                        {hasMenu('laporan-pembukuan') && (
+                        {(hasMenu('laporan-pembukuan') || hasMenu('laporan-fee-desain')) && (
                             <li>
-                                <Link href={route('laporan-pembukuan')} className="rounded-xl">
-                                    <i className="fas fa-book"></i>
-                                    Laporan Pembukuan
-                                </Link>
-                            </li>
-                        )}
-                        {hasMenu('laporan-fee-desain') && (
-                            <li>
-                                <Link href={route('laporan-fee-desain')} className="rounded-xl">
-                                    <i className="fas fa-money-bill-wave"></i>
-                                    Laporan Fee Desain
-                                </Link>
+                                <details>
+                                    <summary className="rounded-xl">
+                                        <i className="fas fa-book"></i>
+                                        Laporan Keuangan
+                                    </summary>
+                                    <ul>
+                                        {hasMenu('laporan-pembukuan') && (
+                                            <li>
+                                                <Link href={route('laporan-pembukuan')}>Laporan Pembukuan</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('laporan-fee-desain') && (
+                                            <li>
+                                                <Link href={route('laporan-fee-desain')}>Laporan Fee Desain</Link>
+                                            </li>
+                                        )}
+                                    </ul>
+                                </details>
                             </li>
                         )}
                         {hasMenu('po-eksternal') && (

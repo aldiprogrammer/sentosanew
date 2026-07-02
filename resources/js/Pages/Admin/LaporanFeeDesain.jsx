@@ -17,6 +17,16 @@ export default function LaporanFeeDesain({
 
     const isDesainer = auth?.user?.role === 'Desainer'
 
+    function exportPDF() {
+        const params = new URLSearchParams()
+        if (filterPegawai) params.set('pengguna_id', filterPegawai)
+        if (filterBulan) params.set('bulan', filterBulan)
+        if (filterTahun) params.set('tahun', filterTahun)
+        if (filterTglAwal) params.set('tgl_awal', filterTglAwal)
+        if (filterTglAkhir) params.set('tgl_akhir', filterTglAkhir)
+        window.open(`/laporan-fee-desain/pdf?${params.toString()}`, '_blank')
+    }
+
     const applyFilter = () => {
         router.get(route('laporan-fee-desain'), {
             pengguna_id: filterPegawai,
@@ -135,6 +145,8 @@ export default function LaporanFeeDesain({
                                 <input type="date" className="input input-bordered input-sm" value={filterTglAkhir} onChange={(e) => setFilterTglAkhir(e.target.value)} />
                             </div>
                             <button className="btn btn-primary btn-sm" onClick={applyFilter}>Filter</button>
+                            <button className="btn btn-accent btn-sm" onClick={exportPDF}><i className='fas fa-file'></i>Export PDF</button>
+                            <a href="/laporan-fee-desain" className='btn btn-sm btn-warning'><i className='fas fa-rotate'> </i>Refresh</a>
                         </div>
 
                         {(selected.length > 0 || transaksis.data.some(t => t.status === 'belum_diambil')) && (

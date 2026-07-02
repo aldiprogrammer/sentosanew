@@ -5,6 +5,7 @@ namespace App\Http\Controllers\admin;
 use App\Http\Controllers\Controller;
 use App\Models\FeeDesainTransaksi;
 use App\Models\Pengguna;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -76,5 +77,47 @@ class LaporanFeeDesainController extends Controller
         ]);
 
         return back()->with('success', $updated . ' fee berhasil diambil');
+    }
+
+    public function pdf(Request $request)
+    {
+        $data = $this->getFilteredData($request);
+
+        $totalBelumDiambil = collect($data)->where('status', 'belum_diambil')->sum('fee');
+        $totalDiambil = collect($data)->where('status', 'diambil')->sum('fee');
+        $grandTotal = $totalBelumDiambil + $totalDiambil;
+
+        $filters = $request->only(['pengguna_id', 'bulan', 'tahun', 'tgl_awal', 'tgl_akhir']);
+
+        $pdf = Pdf::loadView('pdf.laporan-fee-desain', compact(
+            'data', 'totalBelumDiambil', 'totalDiambil', 'grandTotal', 'filters'
+        ))->setPaper('a4', 'landscape');
+
+        return $pdf->stream('laporan-fee-desain.pdf');
+    }
+
+    private function getFilteredData(Request $request)
+    {
+        $pengguna_id = $request->query('pengguna_id');
+        $bulan = $request->query('bulan', date('m'));
+        $tahun = $request->query('tahun', date('Y'));
+        $tgl_awal = $request->query('tgl_awal');
+        $tgl_akhir = $request->query('tgl_akhir');
+
+        $query = FeeDesainTransaksi::with(['desain.customer', 'pengguna', 'kategoriDesain']);
+
+        if (auth()->user()->role === 'Desainer') {
+            $query->where('pengguna_id', auth()->id());
+        } elseif ($pengguna_id) {
+            $query->where('pengguna_id', $pengguna_id);
+        }
+
+        if ($tgl_awal && $tgl_akhir) {
+            $query->whereBetween('tanggal', [$tgl_awal, $tgl_akhir]);
+        } elseif ($bulan && $tahun) {
+            $query->whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun);
+        }
+
+        return $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->get();
     }
 }
