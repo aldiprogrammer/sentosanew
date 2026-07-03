@@ -60,6 +60,11 @@ const jenisBahanOptions = [
   'DISPLAY',
   'UV',
 ];
+const sisiOptions = [
+  { value: '', label: 'TANPA SISI' },
+  { value: '1 SISI', label: '1 SISI' },
+  { value: '2 SISI', label: '2 SISI' },
+];
 const perhitunganOptions = ['QTY', 'LUAS', 'QTY KHUSUS'];
 
 const getHargaRows = (item) => item?.harga_bahan || item?.hargaBahan || [];
@@ -71,7 +76,81 @@ const formatRp = (value) => {
   return `Rp ${number.toLocaleString('id-ID')}`;
 };
 
-export default function Bahan({ databahan, kode }) {
+function SearchableSelect({ options, value, onChange, placeholder }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef(null);
+  const selected = options.find((o) => String(o.value) === String(value));
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtered = options.filter((o) =>
+    o.label.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  return (
+    <div className="relative" ref={ref}>
+      <div
+        className="input input-bordered input-success w-full flex cursor-pointer items-center justify-between py-1.5"
+        onClick={() => {
+          setOpen(!open);
+          setSearch('');
+        }}
+      >
+        <span className={`text-sm ${selected ? '' : 'text-gray-400'}`}>
+          {selected ? selected.label : placeholder}
+        </span>
+        <svg
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d={open ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'}
+          />
+        </svg>
+      </div>
+      {open && (
+        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-box border border-base-300 bg-base-100 shadow-lg">
+          <input
+            className="input input-bordered input-sm sticky top-0 mb-1 w-full bg-base-100"
+            placeholder="Cari..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            autoFocus
+          />
+          {filtered.length === 0 && (
+            <p className="p-2 text-sm text-gray-400">Tidak ditemukan</p>
+          )}
+          {filtered.map((o) => (
+            <div
+              key={o.value}
+              className={`cursor-pointer px-3 py-2 text-sm hover:bg-base-300 ${String(o.value) === String(value) ? 'bg-base-300 font-semibold' : ''}`}
+              onClick={() => {
+                onChange(o.value);
+                setOpen(false);
+              }}
+            >
+              {o.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Bahan({ databahan, kode, materbahans }) {
   const [search, setSearch] = useState(
     new URLSearchParams(window.location.search).get('search') || '',
   );
@@ -95,6 +174,12 @@ export default function Bahan({ databahan, kode }) {
 
   const setBahanValue = (field, value) => bahanForm.setData(field, value);
   const setHargaValue = (field, value) => hargaForm.setData(field, value);
+
+  const handleKodeChange = (val) => {
+    setBahanValue('kode', val);
+    const m = (materbahans || []).find((x) => x.kode_bahan_jual === val);
+    if (m?.satuan) setBahanValue('satuan', m.satuan);
+  };
 
   const fillBahan = (item, includeHarga = false) => {
     const hb = includeHarga ? getHargaRows(item)[0] || {} : {};
@@ -122,7 +207,7 @@ export default function Bahan({ databahan, kode }) {
   };
 
   const openTambahBahan = () => {
-    bahanForm.setData({ ...initialBahan, kode });
+    bahanForm.setData({ ...initialBahan, kode: '' });
     tambahBahanRef.current.showModal();
   };
 
@@ -198,7 +283,7 @@ export default function Bahan({ databahan, kode }) {
   };
 
   const duplicateBahan = () => {
-    const source = { ...bahanForm.data, id: '', kode };
+    const source = { ...bahanForm.data, id: '', kode: '' };
     closeEditBahan();
     bahanForm.setData(source);
     tambahBahanRef.current.showModal();
@@ -301,11 +386,11 @@ export default function Bahan({ databahan, kode }) {
         onChange={(e) => setter(field, e.target.value)}
       >
         <option value="">-- Pilih {label} --</option>
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
+        {options.map((option) => {
+          const val = option.value ?? option;
+          const lbl = option.label ?? option;
+          return <option key={val} value={val}>{lbl}</option>;
+        })}
       </select>
     </label>
   );
@@ -336,44 +421,33 @@ export default function Bahan({ databahan, kode }) {
 
   const renderBahanFields = (includeHarga = false) => (
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-      {renderText('Kode', 'kode', bahanForm, setBahanValue, true)}
+      <label className="form-control">
+        <div className="label">
+          <span className="label-text">Kode</span>
+        </div>
+        <SearchableSelect
+          options={(materbahans || []).map((m) => ({
+            value: m.kode_bahan_jual,
+            label: m.kode_bahan_jual,
+          }))}
+          value={bahanForm.data.kode}
+          onChange={handleKodeChange}
+          placeholder="-- Pilih Kode --"
+        />
+      </label>
       {renderText('Nama Bahan', 'bahan', bahanForm, setBahanValue, true)}
-      {renderSelect(
-        'Kategori',
-        'kategori',
-        kategoriOptions,
-        bahanForm,
-        setBahanValue,
-      )}
+      {renderSelect('Kategori', 'kategori', kategoriOptions, bahanForm, setBahanValue)}
       {renderSelect('Satuan', 'satuan', satuanOptions, bahanForm, setBahanValue)}
       {renderSelect('Jenis', 'jenis', jenisOptions, bahanForm, setBahanValue)}
-      {renderSelect(
-        'Kategori Cetak',
-        'kategori_cetak',
-        kategoriCetakOptions,
-        bahanForm,
-        setBahanValue,
-      )}
-      {renderSelect(
-        'Jenis Bahan',
-        'jenis_bahan',
-        jenisBahanOptions,
-        bahanForm,
-        setBahanValue,
-      )}
-      {renderSelect(
-        'Cara Perhitungan',
-        'cara_perhitungan',
-        perhitunganOptions,
-        bahanForm,
-        setBahanValue,
-      )}
+      {renderSelect('Kategori Cetak', 'kategori_cetak', kategoriCetakOptions, bahanForm, setBahanValue)}
+      {renderSelect('Jenis Bahan', 'jenis_bahan', jenisBahanOptions, bahanForm, setBahanValue)}
+      {renderSelect('Cara Perhitungan', 'cara_perhitungan', perhitunganOptions, bahanForm, setBahanValue)}
       {renderText('Klik', 'klik', bahanForm, setBahanValue, true)}
 
       {includeHarga && (
         <>
           <div className="divider col-span-full my-1">Harga Awal</div>
-          {renderText('Sisi', 'sisi', bahanForm, setBahanValue)}
+          {renderSelect('Sisi', 'sisi', sisiOptions, bahanForm, setBahanValue, false)}
           {renderText('Qty Min', 'qty_min', bahanForm, setBahanValue, false, true)}
           {renderText('Qty Max', 'qty_max', bahanForm, setBahanValue, false, true)}
           {renderText('Harga PO', 'harga_po', bahanForm, setBahanValue, false, true)}
@@ -428,7 +502,7 @@ export default function Bahan({ databahan, kode }) {
           required
         />
       </label>
-      {renderText('Sisi', 'sisi', hargaForm, setHargaValue)}
+      {renderSelect('Sisi', 'sisi', sisiOptions, hargaForm, setHargaValue, false)}
       {renderText('Qty Min', 'qty_min', hargaForm, setHargaValue, false, true)}
       {renderText('Qty Max', 'qty_max', hargaForm, setHargaValue, false, true)}
       {renderText('Harga PO', 'harga_po', hargaForm, setHargaValue, false, true)}

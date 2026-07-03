@@ -5,6 +5,7 @@ namespace App\Http\Controllers\admin;
 use App\Http\Controllers\Controller;
 use App\Models\Databahan;
 use App\Models\Hargabahan;
+use App\Models\Materbahan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -29,15 +30,16 @@ class BahanController extends Controller
                 });
             })->orderBy('id', 'desc')->paginate(10);
         $databahan->appends(['search' => $search]);
-        $kode = 'BH-'.rand(0, 100000);
+        $kode = 'BH-' . rand(0, 100000);
+        $materbahans = Materbahan::orderBy('kode_bahan_jual')->get(['id', 'kode_bahan_jual', 'keterangan', 'satuan']);
 
-        return Inertia::render('Admin/Bahan', compact('databahan', 'kode'));
+        return Inertia::render('Admin/Bahan', compact('databahan', 'kode', 'materbahans'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'kode' => ['required', 'string', 'max:30'],
+            'kode' => ['required', 'string', 'max:30', 'unique:databahans,kode'],
             'bahan' => ['required', 'string', 'max:35'],
             'kategori' => ['required', 'string', 'max:35'],
         ]);
@@ -56,7 +58,7 @@ class BahanController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'kode' => ['required', 'string', 'max:30'],
+            'kode' => ['required', 'string', 'max:30', 'unique:databahans,kode,' . $id],
             'bahan' => ['required', 'string', 'max:35'],
             'kategori' => ['required', 'string', 'max:35'],
         ]);
@@ -127,14 +129,14 @@ class BahanController extends Controller
     {
         return [
             'kode_bahan' => $kode,
-            'sisi' => $request->sisi,
+            'sisi' => $request->sisi ?: null,
             'qty_min' => $this->cleanNumber($request->qty_min),
             'qty_max' => $this->cleanNumber($request->qty_max),
             'harga_po' => $this->cleanNumber($request->harga_po ?? $request->harga_beli),
             'harga_umum' => $this->cleanNumber($request->harga_umum),
             'harga_khusus' => $this->cleanNumber($request->harga_khusus),
             'harga_member' => $this->cleanNumber($request->harga_member),
-            'harga_custome' => $this->cleanNumber($request->harga_custome ?? $request->harga_custom),
+            'harga_custom' => $this->cleanNumber($request->harga_custome ?? $request->harga_custom),
         ];
     }
 
@@ -151,7 +153,7 @@ class BahanController extends Controller
             'harga_member',
             'harga_custome',
             'harga_custom',
-        ])->contains(fn ($field) => filled($request->input($field)));
+        ])->contains(fn($field) => filled($request->input($field)));
     }
 
     private function cleanNumber($value): ?string

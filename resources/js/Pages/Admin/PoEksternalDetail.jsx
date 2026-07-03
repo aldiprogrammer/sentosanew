@@ -78,7 +78,11 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
     const nilaiHarga = parseFloat(harga) || 0;
 
     if (caraPerhitungan === "LUAS") return Math.round(nilaiLuas * nilaiHarga);
-    if (caraPerhitungan === "QTY KHUSUS") return Math.round(nilaiHarga);
+    if (caraPerhitungan === "QTY KHUSUS") {
+      const satuan = String(bahan?.satuan || "").toUpperCase();
+      if (["PCS", "QTY"].includes(satuan)) return Math.round(nilaiQty * nilaiHarga);
+      return Math.round(nilaiHarga);
+    }
 
     return Math.round(nilaiQty * nilaiHarga);
   };

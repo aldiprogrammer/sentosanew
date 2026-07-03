@@ -242,6 +242,9 @@ export default function Materbahan({ mater, kode }) {
                   <option value="LEMBAR">LEMBAR</option>
                   <option value="ROLL">ROLL</option>
                   <option value="BOCK">BOCK</option>
+                  <option value="BLOK">BLOK</option>
+                  <option value="RIM">RIM</option>
+                  <option value="KOTAK">KOTAK</option>
                 </select>
               </label>
 
@@ -315,6 +318,11 @@ export default function Materbahan({ mater, kode }) {
                   <option value="LEMBAR">LEMBAR</option>
                   <option value="ROLL">ROLL</option>
                   <option value="BOCK">BOCK</option>
+                  <option value="BLOK">BLOK</option>
+                  <option value="RIM">RIM</option>
+                  <option value="KOTAK">KOTAK</option>
+
+
                 </select>
               </label>
 

@@ -379,6 +379,12 @@ class PoEksternalController extends Controller
         }
 
         if ($caraPerhitungan === 'QTY KHUSUS') {
+            $satuan = strtoupper((string) $bahan?->satuan);
+
+            if (in_array($satuan, ['PCS', 'QTY'])) {
+                return round($qty * $harga);
+            }
+
             return round($harga);
         }
 

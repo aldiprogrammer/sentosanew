@@ -303,12 +303,19 @@ class ProduksiController extends Controller
         }
 
         if (in_array($bahan->cara_perhitungan, ['QTY'])) {
+
             return (float) $request->qty * $hargaProduk;
         }
 
         if (in_array($bahan->cara_perhitungan, ['QTY KHUSUS'])) {
             // return (float) $hargaProduk;
-            return (float) $request->qty * $hargaProduk;
+            if (in_array($bahan->satuan, ['PCS'])) {
+                return (float) $request->qty * $hargaProduk;
+            } elseif (in_array($bahan->satuan, ['QTY'])) {
+                return (float) $request->qty * $hargaProduk;
+            } else {
+                return (float) $hargaProduk;
+            }
         }
 
         if ($bahan->cara_perhitungan === 'LUAS') {
