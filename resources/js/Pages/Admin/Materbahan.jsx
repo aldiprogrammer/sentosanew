@@ -4,8 +4,20 @@ import React, { useEffect, useRef, useState } from 'react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+const colors = [
+  '#e8f5e9', '#e3f2fd', '#fff3e0', '#f3e5f5', '#e0f7fa',
+  '#fbe9e7', '#f1f8e9', '#e8eaf6', '#fffde7', '#fce4ec',
+  '#e0f2f1', '#efebe9', '#f9fbe7', '#ede7f6', '#ffebee',
+];
+
 export default function Materbahan({ mater, kode }) {
   const [search, setSearch] = useState('');
+
+  const uniqueKodes = [...new Set(mater.data.map((i) => i.kode_bahan_jual))];
+  const colorMap = {};
+  uniqueKodes.forEach((k, idx) => {
+    colorMap[k] = colors[idx % colors.length];
+  });
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -156,7 +168,8 @@ export default function Materbahan({ mater, kode }) {
                     <tr
                       key={item.id}
                       onClick={() => openModalEdit(item.id)}
-                      className="cursor-pointer hover:bg-base-200"
+                      className="cursor-pointer hover:brightness-95"
+                      style={{ backgroundColor: colorMap[item.kode_bahan_jual] }}
                     >
                       <td>{mater.from + index}</td>
                       <td>{item.kode_bahan_jual}</td>
@@ -241,7 +254,6 @@ export default function Materbahan({ mater, kode }) {
                   <option value="LITER">LITER</option>
                   <option value="LEMBAR">LEMBAR</option>
                   <option value="ROLL">ROLL</option>
-                  <option value="BOCK">BOCK</option>
                   <option value="BLOK">BLOK</option>
                   <option value="RIM">RIM</option>
                   <option value="KOTAK">KOTAK</option>
@@ -317,7 +329,6 @@ export default function Materbahan({ mater, kode }) {
                   <option value="LITER">LITER</option>
                   <option value="LEMBAR">LEMBAR</option>
                   <option value="ROLL">ROLL</option>
-                  <option value="BOCK">BOCK</option>
                   <option value="BLOK">BLOK</option>
                   <option value="RIM">RIM</option>
                   <option value="KOTAK">KOTAK</option>

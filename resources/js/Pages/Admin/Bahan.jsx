@@ -39,7 +39,7 @@ const initialHarga = {
 };
 
 const kategoriOptions = ['DIGITAL', 'OFFSET'];
-const satuanOptions = ['BLOCK', 'BOX', 'LEMBAR', 'M2', 'PCS', 'RIM'];
+const satuanOptions = ['BLOK', 'KOTAK', 'LEMBAR', 'M2', 'PCS', 'RIM', 'LITER'];
 const jenisOptions = ['INTERNAL', 'EKSTERNAL'];
 const kategoriCetakOptions = [
   'INDOOR',
@@ -60,12 +60,13 @@ const jenisBahanOptions = [
   'DISPLAY',
   'UV',
 ];
-const sisiOptions = [
-  { value: '', label: 'TANPA SISI' },
-  { value: '1 SISI', label: '1 SISI' },
-  { value: '2 SISI', label: '2 SISI' },
-];
 const perhitunganOptions = ['QTY', 'LUAS', 'QTY KHUSUS'];
+
+const colors = [
+  '#e8f5e9', '#e3f2fd', '#fff3e0', '#f3e5f5', '#e0f7fa',
+  '#fbe9e7', '#f1f8e9', '#e8eaf6', '#fffde7', '#fce4ec',
+  '#e0f2f1', '#efebe9', '#f9fbe7', '#ede7f6', '#ffebee',
+];
 
 const getHargaRows = (item) => item?.harga_bahan || item?.hargaBahan || [];
 const cleanNumber = (value) => String(value || '').replace(/\D/g, '');
@@ -76,86 +77,18 @@ const formatRp = (value) => {
   return `Rp ${number.toLocaleString('id-ID')}`;
 };
 
-function SearchableSelect({ options, value, onChange, placeholder }) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  const ref = useRef(null);
-  const selected = options.find((o) => String(o.value) === String(value));
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  const filtered = options.filter((o) =>
-    o.label.toLowerCase().includes(search.toLowerCase()),
-  );
-
-  return (
-    <div className="relative" ref={ref}>
-      <div
-        className="input input-bordered input-success w-full flex cursor-pointer items-center justify-between py-1.5"
-        onClick={() => {
-          setOpen(!open);
-          setSearch('');
-        }}
-      >
-        <span className={`text-sm ${selected ? '' : 'text-gray-400'}`}>
-          {selected ? selected.label : placeholder}
-        </span>
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d={open ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'}
-          />
-        </svg>
-      </div>
-      {open && (
-        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-box border border-base-300 bg-base-100 shadow-lg">
-          <input
-            className="input input-bordered input-sm sticky top-0 mb-1 w-full bg-base-100"
-            placeholder="Cari..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            autoFocus
-          />
-          {filtered.length === 0 && (
-            <p className="p-2 text-sm text-gray-400">Tidak ditemukan</p>
-          )}
-          {filtered.map((o) => (
-            <div
-              key={o.value}
-              className={`cursor-pointer px-3 py-2 text-sm hover:bg-base-300 ${String(o.value) === String(value) ? 'bg-base-300 font-semibold' : ''}`}
-              onClick={() => {
-                onChange(o.value);
-                setOpen(false);
-              }}
-            >
-              {o.label}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default function Bahan({ databahan, kode, materbahans }) {
+export default function Bahan({ databahan, kode }) {
   const [search, setSearch] = useState(
     new URLSearchParams(window.location.search).get('search') || '',
   );
   const [selectedBahan, setSelectedBahan] = useState(null);
   const [hargaMode, setHargaMode] = useState('create');
+
+  const uniqueKodes = [...new Set(databahan.data.map((i) => i.kode))];
+  const colorMap = {};
+  uniqueKodes.forEach((k, idx) => {
+    colorMap[k] = colors[idx % colors.length];
+  });
 
   const tambahBahanRef = useRef(null);
   const editBahanRef = useRef(null);
@@ -174,12 +107,6 @@ export default function Bahan({ databahan, kode, materbahans }) {
 
   const setBahanValue = (field, value) => bahanForm.setData(field, value);
   const setHargaValue = (field, value) => hargaForm.setData(field, value);
-
-  const handleKodeChange = (val) => {
-    setBahanValue('kode', val);
-    const m = (materbahans || []).find((x) => x.kode_bahan_jual === val);
-    if (m?.satuan) setBahanValue('satuan', m.satuan);
-  };
 
   const fillBahan = (item, includeHarga = false) => {
     const hb = includeHarga ? getHargaRows(item)[0] || {} : {};
@@ -207,7 +134,7 @@ export default function Bahan({ databahan, kode, materbahans }) {
   };
 
   const openTambahBahan = () => {
-    bahanForm.setData({ ...initialBahan, kode: '' });
+    bahanForm.setData({ ...initialBahan, kode });
     tambahBahanRef.current.showModal();
   };
 
@@ -283,7 +210,7 @@ export default function Bahan({ databahan, kode, materbahans }) {
   };
 
   const duplicateBahan = () => {
-    const source = { ...bahanForm.data, id: '', kode: '' };
+    const source = { ...bahanForm.data, id: '', kode };
     closeEditBahan();
     bahanForm.setData(source);
     tambahBahanRef.current.showModal();
@@ -386,11 +313,11 @@ export default function Bahan({ databahan, kode, materbahans }) {
         onChange={(e) => setter(field, e.target.value)}
       >
         <option value="">-- Pilih {label} --</option>
-        {options.map((option) => {
-          const val = option.value ?? option;
-          const lbl = option.label ?? option;
-          return <option key={val} value={val}>{lbl}</option>;
-        })}
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
       </select>
     </label>
   );
@@ -421,33 +348,44 @@ export default function Bahan({ databahan, kode, materbahans }) {
 
   const renderBahanFields = (includeHarga = false) => (
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-      <label className="form-control">
-        <div className="label">
-          <span className="label-text">Kode</span>
-        </div>
-        <SearchableSelect
-          options={(materbahans || []).map((m) => ({
-            value: m.kode_bahan_jual,
-            label: m.kode_bahan_jual,
-          }))}
-          value={bahanForm.data.kode}
-          onChange={handleKodeChange}
-          placeholder="-- Pilih Kode --"
-        />
-      </label>
+      {renderText('Kode', 'kode', bahanForm, setBahanValue, true)}
       {renderText('Nama Bahan', 'bahan', bahanForm, setBahanValue, true)}
-      {renderSelect('Kategori', 'kategori', kategoriOptions, bahanForm, setBahanValue)}
+      {renderSelect(
+        'Kategori',
+        'kategori',
+        kategoriOptions,
+        bahanForm,
+        setBahanValue,
+      )}
       {renderSelect('Satuan', 'satuan', satuanOptions, bahanForm, setBahanValue)}
       {renderSelect('Jenis', 'jenis', jenisOptions, bahanForm, setBahanValue)}
-      {renderSelect('Kategori Cetak', 'kategori_cetak', kategoriCetakOptions, bahanForm, setBahanValue)}
-      {renderSelect('Jenis Bahan', 'jenis_bahan', jenisBahanOptions, bahanForm, setBahanValue)}
-      {renderSelect('Cara Perhitungan', 'cara_perhitungan', perhitunganOptions, bahanForm, setBahanValue)}
+      {renderSelect(
+        'Kategori Cetak',
+        'kategori_cetak',
+        kategoriCetakOptions,
+        bahanForm,
+        setBahanValue,
+      )}
+      {renderSelect(
+        'Jenis Bahan',
+        'jenis_bahan',
+        jenisBahanOptions,
+        bahanForm,
+        setBahanValue,
+      )}
+      {renderSelect(
+        'Cara Perhitungan',
+        'cara_perhitungan',
+        perhitunganOptions,
+        bahanForm,
+        setBahanValue,
+      )}
       {renderText('Klik', 'klik', bahanForm, setBahanValue, true)}
 
       {includeHarga && (
         <>
           <div className="divider col-span-full my-1">Harga Awal</div>
-          {renderSelect('Sisi', 'sisi', sisiOptions, bahanForm, setBahanValue, false)}
+          {renderText('Sisi', 'sisi', bahanForm, setBahanValue)}
           {renderText('Qty Min', 'qty_min', bahanForm, setBahanValue, false, true)}
           {renderText('Qty Max', 'qty_max', bahanForm, setBahanValue, false, true)}
           {renderText('Harga PO', 'harga_po', bahanForm, setBahanValue, false, true)}
@@ -502,7 +440,7 @@ export default function Bahan({ databahan, kode, materbahans }) {
           required
         />
       </label>
-      {renderSelect('Sisi', 'sisi', sisiOptions, hargaForm, setHargaValue, false)}
+      {renderText('Sisi', 'sisi', hargaForm, setHargaValue)}
       {renderText('Qty Min', 'qty_min', hargaForm, setHargaValue, false, true)}
       {renderText('Qty Max', 'qty_max', hargaForm, setHargaValue, false, true)}
       {renderText('Harga PO', 'harga_po', hargaForm, setHargaValue, false, true)}
@@ -569,7 +507,7 @@ export default function Bahan({ databahan, kode, materbahans }) {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="table table-zebra table-sm">
+              <table className="table table-sm">
                 <thead>
                   <tr>
                     <th>No</th>
@@ -590,71 +528,82 @@ export default function Bahan({ databahan, kode, materbahans }) {
                     <th>Harga Khusus</th>
                     <th>Harga Member</th>
                     <th>Harga Custom</th>
-                    <th>Aksi</th>
+                    <th className="sticky right-0 z-10 bg-base-100 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.1)]">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="text-xs">
                   {databahan.data.map((item, index) => {
                     const hargaRows = getHargaRows(item);
                     const rows = hargaRows.length ? hargaRows : [{}];
+                    const isLastItem = index === databahan.data.length - 1;
+                    const bgColor = colorMap[item.kode];
 
-                    return rows.map((hb, hargaIndex) => (
-                      <tr key={`${item.id}-${hb.id || 'kosong'}-${hargaIndex}`}>
-                        {hargaIndex === 0 && (
-                          <>
-                            <td rowSpan={rows.length}>{databahan.from + index}</td>
-                            <td rowSpan={rows.length}>{item.kode}</td>
-                            <td rowSpan={rows.length}>{item.bahan}</td>
-                            <td rowSpan={rows.length}>{item.satuan}</td>
-                            <td rowSpan={rows.length}>{item.kategori}</td>
-                            <td rowSpan={rows.length}>{item.jenis}</td>
-                            <td rowSpan={rows.length}>{item.kategori_cetak}</td>
-                            <td rowSpan={rows.length}>{item.jenis_bahan}</td>
-                            <td rowSpan={rows.length}>{item.klik}</td>
-                            <td rowSpan={rows.length}>{item.cara_perhitungan}</td>
-                          </>
-                        )}
-                        <td>{hb.sisi || '-'}</td>
-                        <td>{hb.qty_min || '-'}</td>
-                        <td>{hb.qty_max || '-'}</td>
-                        <td>{formatRp(hb.harga_po)}</td>
-                        <td>{formatRp(hb.harga_umum)}</td>
-                        <td>{formatRp(hb.harga_khusus)}</td>
-                        <td>{formatRp(hb.harga_member)}</td>
-                        <td>{formatRp(hb.harga_custome)}</td>
-                        <td>
-                          <div className="flex min-w-52 flex-wrap gap-1">
-                            {hargaIndex === 0 && (
-                              <>
+                    return rows.map((hb, hargaIndex) => {
+                      const isLastRow = hargaIndex === rows.length - 1;
+
+                      return (
+                        <tr
+                          key={`${item.id}-${hb.id || 'kosong'}-${hargaIndex}`}
+                          className={`hover:brightness-95${!isLastItem && isLastRow ? ' border-b-2 border-b-base-content/20' : ''}`}
+                          style={{ backgroundColor: bgColor }}>
+                          {hargaIndex === 0 && (
+                            <>
+                              <td rowSpan={rows.length}>{databahan.from + index}</td>
+                              <td rowSpan={rows.length} className="font-semibold">{item.kode}</td>
+                              <td rowSpan={rows.length}>{item.bahan}</td>
+                              <td rowSpan={rows.length}>{item.satuan}</td>
+                              <td rowSpan={rows.length}>{item.kategori}</td>
+                              <td rowSpan={rows.length}>{item.jenis}</td>
+                              <td rowSpan={rows.length}>{item.kategori_cetak}</td>
+                              <td rowSpan={rows.length}>{item.jenis_bahan}</td>
+                              <td rowSpan={rows.length}>{item.klik}</td>
+                              <td rowSpan={rows.length}>{item.cara_perhitungan}</td>
+                            </>
+                          )}
+                          <td>{hb.sisi || '-'}</td>
+                          <td>{hb.qty_min || '-'}</td>
+                          <td>{hb.qty_max || '-'}</td>
+                          <td>{formatRp(hb.harga_po)}</td>
+                          <td>{formatRp(hb.harga_umum)}</td>
+                          <td>{formatRp(hb.harga_khusus)}</td>
+                          <td>{formatRp(hb.harga_member)}</td>
+                          <td>{formatRp(hb.harga_custome)}</td>
+                          <td
+                            className="sticky right-0 z-10 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.1)]"
+                            style={{ backgroundColor: bgColor }}>
+                            <div className="flex min-w-44 flex-wrap gap-1">
+                              {hargaIndex === 0 && (
+                                <>
+                                  <button
+                                    type="button"
+                                    className="btn btn-warning btn-xs"
+                                    onClick={() => openEditBahan(item)}
+                                  >
+                                    <i className="fas fa-pen"></i> Bahan
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn btn-success btn-xs"
+                                    onClick={() => openTambahHarga(item)}
+                                  >
+                                    <i className="fas fa-plus"></i> Harga
+                                  </button>
+                                </>
+                              )}
+                              {hb.id && (
                                 <button
                                   type="button"
-                                  className="btn btn-warning btn-xs"
-                                  onClick={() => openEditBahan(item)}
+                                  className="btn btn-info btn-xs"
+                                  onClick={() => openEditHarga(item, hb)}
                                 >
-                                  <i className="fas fa-pen"></i> Bahan
+                                  <i className="fas fa-tags"></i> Harga
                                 </button>
-                                <button
-                                  type="button"
-                                  className="btn btn-success btn-xs"
-                                  onClick={() => openTambahHarga(item)}
-                                >
-                                  <i className="fas fa-plus"></i> Harga
-                                </button>
-                              </>
-                            )}
-                            {hb.id && (
-                              <button
-                                type="button"
-                                className="btn btn-info btn-xs"
-                                onClick={() => openEditHarga(item, hb)}
-                              >
-                                <i className="fas fa-tags"></i> Edit Harga
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ));
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    });
                   })}
                 </tbody>
               </table>
