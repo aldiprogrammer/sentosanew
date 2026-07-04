@@ -4,6 +4,58 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import React, { useEffect, useRef, useState } from 'react';
 
+function SearchableSelect({ options, value, onChange, placeholder }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef(null);
+  const selected = options.find(o => String(o.value) === String(value));
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtered = options.filter(o =>
+    o.label.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="relative" ref={ref}>
+      <div
+        className="input input-bordered input-success w-full flex items-center cursor-pointer justify-between h-auto min-h-[2.5rem] py-1.5"
+        onClick={() => { setOpen(!open); setSearch(''); }}
+      >
+        <span className={`text-xs ${selected ? '' : 'text-gray-400'}`}>{selected ? selected.label : placeholder}</span>
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={open ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} />
+        </svg>
+      </div>
+      {open && (
+        <div className="absolute z-50 w-full mt-1 bg-base-100 border border-base-300 rounded-box shadow-lg max-h-60 overflow-auto">
+          <input
+            className="input input-bordered input-sm w-full mb-1 sticky top-0 bg-base-100"
+            placeholder="Cari kode bahan..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            autoFocus
+          />
+          {filtered.length === 0 && <p className="p-2 text-sm text-gray-400">Tidak ditemukan</p>}
+          {filtered.map(o => (
+            <div
+              key={o.value}
+              className={`px-3 py-2 cursor-pointer text-sm hover:bg-base-300 ${String(o.value) === String(value) ? 'bg-base-300 font-semibold' : ''}`}
+              onClick={() => { onChange(o.value); setOpen(false); }}
+            >
+              {o.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const initialBahan = {
   id: '',
   kode: '',
@@ -77,7 +129,7 @@ const formatRp = (value) => {
   return `Rp ${number.toLocaleString('id-ID')}`;
 };
 
-export default function Bahan({ databahan, kode }) {
+export default function Bahan({ databahan, kode, materbahans }) {
   const [search, setSearch] = useState(
     new URLSearchParams(window.location.search).get('search') || '',
   );
@@ -134,7 +186,7 @@ export default function Bahan({ databahan, kode }) {
   };
 
   const openTambahBahan = () => {
-    bahanForm.setData({ ...initialBahan, kode });
+    bahanForm.setData(initialBahan);
     tambahBahanRef.current.showModal();
   };
 
@@ -346,9 +398,29 @@ export default function Bahan({ databahan, kode }) {
     </label>
   );
 
+  const kodeOptions = (materbahans || []).map(m => ({
+    value: m.kode_bahan_jual,
+    label: m.kode_bahan_jual,
+    satuan: m.satuan,
+  }));
+
   const renderBahanFields = (includeHarga = false) => (
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-      {renderText('Kode', 'kode', bahanForm, setBahanValue, true)}
+      <label className="form-control">
+        <div className="label">
+          <span className="label-text">Kode</span>
+        </div>
+        <SearchableSelect
+          options={kodeOptions}
+          value={bahanForm.data.kode}
+          onChange={(val) => {
+            setBahanValue('kode', val);
+            const m = (materbahans || []).find(x => x.kode_bahan_jual === val);
+            if (m) setBahanValue('satuan', m.satuan || '');
+          }}
+          placeholder="Pilih Kode Bahan"
+        />
+      </label>
       {renderText('Nama Bahan', 'bahan', bahanForm, setBahanValue, true)}
       {renderSelect(
         'Kategori',
