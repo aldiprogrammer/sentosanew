@@ -209,6 +209,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/test-print', function () {
         return Inertia::render('TestPrint');
     })->name('test-print');
+
+    Route::get('/test-print-produksi', function () {
+        return Inertia::render('Admin/TestPrintProduksi');
+    })->name('test-print-produksi');
 });
 
 require __DIR__ . '/auth.php';
