@@ -148,25 +148,22 @@ table.items tr:nth-child(even) { background: #f9f9f9; }
 <div class="info">
     <table>
         <tr><td style="width:100px"><strong>No Invoice</strong></td><td>: ${item.no_invoice || '-'}</td></tr>
-        <tr><td><strong>Tanggal</strong></td><td>: ${tgl}</td></tr>
+        <tr><td><strong>Tanggal Produksi</strong></td><td>: ${item.tanggal ? new Date(item.tanggal).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }) : '-'}</td></tr>
+        <tr><td><strong>Tanggal Antar</strong></td><td>: ${item.tgl_kirim ? new Date(item.tgl_kirim).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }) : '-'}</td></tr>
         <tr><td><strong>Customer</strong></td><td>: ${item.customer?.nama || '-'}</td></tr>
     </table>
 </div>
 <table class="items">
     <tr>
         <th style="width:30px">No</th>
-        <th>Kode Bahan</th>
+        <th>Bahan produksi</th>
         <th style="width:50px">Qty</th>
-        <th style="width:90px">Harga</th>
-        <th style="width:100px">Total Harga</th>
         <th>Keterangan</th>
     </tr>
     <tr>
         <td style="text-align:center">1</td>
-        <td>${item.bahan?.kode || '-'}</td>
+        <td>${item.bahan?.bahan || '-'}</td>
         <td style="text-align:center">${item.qty}</td>
-        <td style="text-align:right">${formatRp(item.harga_bahan)}</td>
-        <td style="text-align:right">${formatRp(item.total_harga)}</td>
         <td>${item.keterangan || '-'}</td>
     </tr>
 </table>

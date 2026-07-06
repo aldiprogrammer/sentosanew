@@ -474,6 +474,7 @@ export default function Customer({ customer, kode }) {
                                                     <option value={data.kategori}>{data.kategori}</option>
                                                     <option value="Khusus">Khusus</option>
                                                     <option value="Umum">Umum</option>
+                                                    <option value="Member">Member</option>
                                                 </select>
                                             </label>
 
@@ -602,7 +603,7 @@ export default function Customer({ customer, kode }) {
                                             <td>{item.jatuh_tempo || '-'}</td>
                                         </tr>
                                     ))}
-                                    </tbody>
+                                </tbody>
                             </table>
 
                             {customer.links && (

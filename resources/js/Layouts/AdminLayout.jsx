@@ -283,15 +283,29 @@ export default function AdminLayout({ children }) {
                                 </details>
                             </li>
                         )}
-                        {hasMenu('data-order') && (
+                        {(hasMenu('data-order') || hasMenu('laporan-order')) && (
                             <li>
-                                <Link href={route('data-order')} className="rounded-xl">
-                                    <i className="fas fa-clipboard-list"></i>
-                                    Data Order
-                                </Link>
+                                <details>
+                                    <summary className="rounded-xl">
+                                        <i className="fas fa-clipboard-list"></i>
+                                        Order
+                                    </summary>
+                                    <ul>
+                                        {hasMenu('data-order') && (
+                                            <li>
+                                                <Link href={route('data-order')}>Data Order</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('laporan-order') && (
+                                            <li>
+                                                <Link href={route('laporan-order')}>Laporan Order</Link>
+                                            </li>
+                                        )}
+                                    </ul>
+                                </details>
                             </li>
                         )}
-                        {(hasMenu('laporan-pembukuan') || hasMenu('laporan-fee-desain')) && (
+                        {(hasMenu('laporan-pembukuan') || hasMenu('laporan-fee-desain') || hasMenu('laporan-fee-cs')) && (
                             <li>
                                 <details>
                                     <summary className="rounded-xl">
@@ -307,6 +321,11 @@ export default function AdminLayout({ children }) {
                                         {hasMenu('laporan-fee-desain') && (
                                             <li>
                                                 <Link href={route('laporan-fee-desain')}>Laporan Fee Desain</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('laporan-fee-cs') && (
+                                            <li>
+                                                <Link href={route('laporan-fee-cs')}>Laporan Fee CS</Link>
                                             </li>
                                         )}
                                     </ul>

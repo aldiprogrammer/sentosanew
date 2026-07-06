@@ -11,7 +11,9 @@ use App\Http\Controllers\admin\HomeController;
 use App\Http\Controllers\admin\JabatanController;
 use App\Http\Controllers\admin\KategoriDesainController;
 use App\Http\Controllers\admin\KurirController;
+use App\Http\Controllers\admin\LaporanFeeCsController;
 use App\Http\Controllers\admin\LaporanFeeDesainController;
+use App\Http\Controllers\admin\LaporanOrderController;
 use App\Http\Controllers\admin\LaporanPembukuanController;
 use App\Http\Controllers\admin\MaterbahanController;
 use App\Http\Controllers\admin\PenggunaController;
@@ -168,6 +170,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/laporan-fee-desain', [LaporanFeeDesainController::class, 'index'])->name('laporan-fee-desain');
     Route::get('/laporan-fee-desain/pdf', [LaporanFeeDesainController::class, 'pdf'])->name('laporan-fee-desain.pdf');
     Route::put('/laporan-fee-desain/ambil', [LaporanFeeDesainController::class, 'ambilFee'])->name('laporan-fee-desain.ambil');
+
+    Route::get('/laporan-fee-cs', [LaporanFeeCsController::class, 'index'])->name('laporan-fee-cs');
+    Route::get('/laporan-fee-cs/pdf', [LaporanFeeCsController::class, 'pdf'])->name('laporan-fee-cs.pdf');
+    Route::put('/laporan-fee-cs/ambil', [LaporanFeeCsController::class, 'ambilFee'])->name('laporan-fee-cs.ambil');
+
+    Route::get('/laporan-order', [LaporanOrderController::class, 'index'])->name('laporan-order');
+    Route::get('/laporan-order/pdf-desain', [LaporanOrderController::class, 'pdfDesain'])->name('laporan-order.pdf-desain');
+    Route::get('/laporan-order/pdf-produksi', [LaporanOrderController::class, 'pdfProduksi'])->name('laporan-order.pdf-produksi');
 
     Route::get('/po-eksternal', [PoEksternalController::class, 'index'])->name('po-eksternal');
     Route::post('/po-eksternal', [PoEksternalController::class, 'store'])->name('store.po-eksternal');

@@ -5,8 +5,8 @@
     <title>Label Bahan {{ $po->no_po }}</title>
     <style>
         @page {
-            size: A4 portrait;
-            margin: 10mm;
+            size: 155mm 195mm;
+            margin: 2mm;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -14,27 +14,24 @@
             font-size: 8px;
             color: #000;
         }
-        .page-wrap {
-            width: 190mm;
-            margin: 0 auto;
-        }
         table.grid {
             border-collapse: separate;
-            border-spacing: 5mm;
-            width: 170mm;
+            border-spacing: 1mm;
+            width: 149mm;
             margin: 0 auto;
         }
         table.grid td {
-            width: 80mm;
-            height: 40mm;
-            border: 2px solid #000;
-            padding: 3mm 4mm;
+            width: 70mm;
+            height: 35mm;
+            border: 1px solid #000;
+            padding: 2mm;
             vertical-align: top;
-            border-radius: 1mm;
+            overflow: hidden;
+            word-break: break-word;
         }
         .label-header {
-            font-size: 8px;
-            color: #888;
+            font-size: 15px;
+            color: black;
             letter-spacing: 0.3px;
             text-transform: uppercase;
             border-bottom: 1px dashed #ccc;
@@ -69,7 +66,7 @@
 <body>
     @php
         $cols = 2;
-        $rowsPerPage = 6;
+        $rowsPerPage = 5;
         $labelsPerPage = $cols * $rowsPerPage;
         $allLabels = [];
         $localSeq = $labelStart ?? [];
@@ -112,11 +109,11 @@
                         @if (isset($pageLabels[$li]))
                             @php $lb = $pageLabels[$li]; @endphp
                             <td>
-                                <div class="label-header" style="font-size: 20px">{{ $po->no_po }} | {{ $lb['kodeLabel'] }}</div>
+                                <div class="label-header">{{ $po->no_po }} | {{ $lb['kodeLabel'] }}</div>
                                 <div class="label-code">{{ $lb['kodeBahan'] }}</div>
                                 <div class="label-desc">{{ $lb['keterangan'] }}</div>
                                 <div class="label-footer">#{{ $lb['no'] }}/{{ $lb['qty'] }}</div>
-                                 <div style="font-weight: bold; font-style:italic">Dicetak pada : {{ date('Y-m-d') }}</div>
+                                 <div style="font-size:7px;font-weight:bold;font-style:italic">Dicetak pada : {{ date('Y-m-d') }}</div>
                             </td>
                         @else
                             <td style="border: none;"></td>

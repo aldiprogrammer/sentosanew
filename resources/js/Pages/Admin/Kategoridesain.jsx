@@ -12,8 +12,8 @@ export default function Kategoridesain({ kategori, kode }) {
         harga: '',
         qty: '',
         fee: '',
+        fee_cs: '',
         status_point: 0,
-
     });
     const modalRef = useRef(null);
     const openModal = () => {
@@ -35,6 +35,7 @@ export default function Kategoridesain({ kategori, kode }) {
             'harga': item.harga,
             'qty': item.qty,
             'fee': item.fee,
+            'fee_cs': item.fee_cs,
             'status_point': item.status_point,
         })
     }
@@ -87,8 +88,8 @@ export default function Kategoridesain({ kategori, kode }) {
             doc.text("Data Kategori Desain", 14, 20);
             doc.setFontSize(10);
             doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
-            const rows = kategori.map((item, index) => [index + 1, item.kode, item.kategori, item.harga ? "Rp " + formatRupiah(String(item.harga)) : "-", item.qty || '-', item.fee ? "Rp " + formatRupiah(String(item.fee)) : "-", item.status_point == 1 ? "Aktif" : "Tidak Aktif"]);
-            autoTable(doc, { startY: 32, head: [["No", "Kode", "Kategori", "Harga", "Qty", "Fee", "Status Point"]], body: rows, styles: { fontSize: 8 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
+            const rows = kategori.map((item, index) => [index + 1, item.kode, item.kategori, item.harga ? "Rp " + formatRupiah(String(item.harga)) : "-", item.qty || '-', item.fee ? "Rp " + formatRupiah(String(item.fee)) : "-", item.fee_cs ? "Rp " + formatRupiah(String(item.fee_cs)) : "-", item.status_point == 1 ? "Aktif" : "Tidak Aktif"]);
+            autoTable(doc, { startY: 32, head: [["No", "Kode", "Kategori", "Harga", "Qty", "Fee", "Fee CS", "Status Point"]], body: rows, styles: { fontSize: 8 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
             doc.save("data_kategori_desain.pdf");
         } catch (error) {
             console.error("Gagal export PDF:", error);
@@ -216,6 +217,19 @@ export default function Kategoridesain({ kategori, kode }) {
                                                     className="input input-bordered input-success w-full"
                                                     placeholder="Rp 0"
                                                     onChange={(e) => setData("fee", e.target.value.replace(/\D/g, ''))}
+                                                />
+                                            </label>
+
+                                            <label className="form-control w-full mt-2">
+                                                <div className="label">
+                                                    <span className="label-text">Fee CS</span>
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={data.fee_cs ? formatRupiah(String(data.fee_cs)) : ''}
+                                                    className="input input-bordered input-success w-full"
+                                                    placeholder="Rp 0"
+                                                    onChange={(e) => setData("fee_cs", e.target.value.replace(/\D/g, ''))}
                                                 />
                                             </label>
 
@@ -372,6 +386,19 @@ export default function Kategoridesain({ kategori, kode }) {
 
                                             <label className="form-control w-full mt-2">
                                                 <div className="label">
+                                                    <span className="label-text">Fee CS</span>
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={data.fee_cs ? formatRupiah(String(data.fee_cs)) : ''}
+                                                    className="input input-bordered input-success w-full"
+                                                    placeholder="Rp 0"
+                                                    onChange={(e) => setData("fee_cs", e.target.value.replace(/\D/g, ''))}
+                                                />
+                                            </label>
+
+                                            <label className="form-control w-full mt-2">
+                                                <div className="label">
                                                     <span className="label-text">Status Point</span>
                                                 </div>
                                                 <div className="flex gap-4">
@@ -440,6 +467,7 @@ export default function Kategoridesain({ kategori, kode }) {
                                         <th>Harga</th>
                                         <th>Qty</th>
                                         <th>Fee</th>
+                                        <th>Fee CS</th>
                                         <th>Status Point</th>
                                     </tr>
                                 </thead>
@@ -456,6 +484,7 @@ export default function Kategoridesain({ kategori, kode }) {
                                             <td>{Number(item.harga).toLocaleString('id-ID')}</td>
                                             <td>{item.qty || '-'}</td>
                                             <td>{item.fee ? 'Rp ' + Number(item.fee).toLocaleString('id-ID') : '-'}</td>
+                                            <td>{item.fee_cs ? 'Rp ' + Number(item.fee_cs).toLocaleString('id-ID') : '-'}</td>
                                             <td>
                                                 {item.status_point == 1 ? (
                                                     <span className="badge badge-success">Aktif</span>

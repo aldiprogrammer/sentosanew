@@ -12,6 +12,7 @@ class Kategoridesain extends Model
         'harga',
         'qty',
         'fee',
+        'fee_cs',
         'status_point',
     ];
 }

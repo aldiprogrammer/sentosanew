@@ -5,6 +5,7 @@ namespace App\Http\Controllers\admin;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Desain;
+use App\Models\FeeCsTransaksi;
 use App\Models\FeeDesainTransaksi;
 use App\Models\Kategoridesain;
 use Illuminate\Http\Request;
@@ -144,14 +145,32 @@ class DesainController extends Controller
         foreach ($desains as $d) {
             $fee = ($d->kategoridesain->fee ?? 0) * ($d->qty ?? 1);
             if ($fee > 0) {
-                FeeDesainTransaksi::create([
-                    'desain_id' => $d->id,
-                    'pengguna_id' => $d->id_desain,
-                    'kategori_desain_id' => $d->id_kategori_desain,
-                    'fee' => $fee,
-                    'tanggal' => $today,
-                    'status' => 'belum_diambil',
-                ]);
+                $sudahAda = FeeDesainTransaksi::where('desain_id', $d->id)->exists();
+                if (!$sudahAda) {
+                    FeeDesainTransaksi::create([
+                        'desain_id' => $d->id,
+                        'pengguna_id' => $d->id_desain,
+                        'kategori_desain_id' => $d->id_kategori_desain,
+                        'fee' => $fee,
+                        'tanggal' => $today,
+                        'status' => 'belum_diambil',
+                    ]);
+                }
+            }
+
+            $feeCs = ($d->kategoridesain->fee_cs ?? 0) * ($d->qty ?? 1);
+            if ($feeCs > 0) {
+                $sudahAdaCs = FeeCsTransaksi::where('desain_id', $d->id)->exists();
+                if (!$sudahAdaCs) {
+                    FeeCsTransaksi::create([
+                        'desain_id' => $d->id,
+                        'pengguna_id' => auth()->id(),
+                        'kategori_desain_id' => $d->id_kategori_desain,
+                        'fee_cs' => $feeCs,
+                        'tanggal' => $today,
+                        'status' => 'belum_diambil',
+                    ]);
+                }
             }
         }
 

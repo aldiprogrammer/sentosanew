@@ -20,7 +20,8 @@ class JabatanController extends Controller
             ['key' => 'otorisasi', 'label' => 'Otorisasi', 'group' => 'Umum'],
             ['key' => 'tambah-desain', 'label' => 'Tambah Desain', 'group' => 'Umum'],
             ['key' => 'data-desain', 'label' => 'Data Desain', 'group' => 'Umum'],
-            ['key' => 'data-order', 'label' => 'Data Order', 'group' => 'Umum'],
+            ['key' => 'data-order', 'label' => 'Data Order', 'group' => 'Order'],
+            ['key' => 'laporan-order', 'label' => 'Laporan Order', 'group' => 'Order'],
             ['key' => 'tambah-produksi', 'label' => 'Tambah Produksi', 'group' => 'Umum'],
             ['key' => 'data-produksi', 'label' => 'Data Produksi', 'group' => 'Umum'],
             ['key' => 'proses-produksi', 'label' => 'Proses Produksi - Produksi', 'group' => 'Proses Produksi'],
@@ -31,6 +32,8 @@ class JabatanController extends Controller
             ['key' => 'riwayat-pemakaian-bahan', 'label' => 'Riwayat Pemakaian Bahan', 'group' => 'Stok'],
             ['key' => 'laporan-pembukuan', 'label' => 'Laporan Pembukuan', 'group' => 'Laporan Keuangan'],
             ['key' => 'laporan-fee-desain', 'label' => 'Laporan Fee Desain', 'group' => 'Laporan Keuangan'],
+            ['key' => 'laporan-fee-cs', 'label' => 'Laporan Fee CS', 'group' => 'Laporan Keuangan'],
+
             ['key' => 'pengguna', 'label' => 'Pengguna', 'group' => 'Master Data'],
             ['key' => 'distributor', 'label' => 'Distributor', 'group' => 'Master Data'],
             ['key' => 'kurir', 'label' => 'Kurir', 'group' => 'Master Data'],
