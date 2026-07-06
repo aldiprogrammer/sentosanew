@@ -41,50 +41,145 @@ const formatMoney = (value) =>
     Number(value || 0).toLocaleString('id-ID')
 
 const receiptStyles = `
-    @page { size: 73mm 297mm; margin: 0; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-        font-family: 'Consolas', 'Lucida Console', monospace;
-        font-size: 13px; width: 73mm; margin: 0; padding: 1.5mm; color: #000;
-    }
-    .receipt { width: 100%; padding: 0; }
-    .header { text-align: center; margin-bottom: 4px; }
-    .brand-row { display: flex; flex-direction: column; justify-content: center; align-items: center; }
-    .logo-img { max-width: 100%; height: auto; display: block; margin: 0 auto 3px; }
-    .brand { font-size: 20px; font-weight: 900; letter-spacing: 0; line-height: 1; }
-    .sub { font-size: 10px; font-weight: 700; letter-spacing: 2px; margin-top: 1px; }
-    .contact { font-size: 13px; font-weight: 700; margin-top: 2px; letter-spacing: 0; }
-    .topline { display: flex; justify-content: space-between; gap: 4px; margin-top: 2px; font-size: 12px; }
-    .invoice { font-size: 13px; font-weight: 800; margin-top: 1px; }
-    .title { font-size: 13px; font-weight: 800; margin-bottom: 4px; letter-spacing: 1px; text-align: center; }
-    .block { margin-top: 2px; }
-    .label { display: block; font-size: 11px; }
-    .name { font-size: 14px; margin-top: 2px; }
-    .address { min-height: 18px; overflow-wrap: anywhere; font-size: 12px; }
-    .pay-row { display: grid; grid-template-columns: 1fr 1fr; margin: 5px 0 3px; text-align: center; font-size: 12px; }
-    .line { border-top: 2px solid #000; margin: 4px 0; }
-    table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; }
-    th, td { padding: 3px 2px; text-align: left; vertical-align: middle; overflow-wrap: anywhere; }
-    th { border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: 900; text-align: center; font-size: 12px; }
-    td { padding-top: 4px; padding-bottom: 4px; }
-    .bahan { width: 18mm; text-align: left; }
-    .ukuran { width: 20mm; text-align: center; font-variant-numeric: tabular-nums; }
-    .qty { width: 10mm; text-align: center; font-variant-numeric: tabular-nums; }
-    .amount { width: 18mm; text-align: right; font-variant-numeric: tabular-nums; }
-    .alt td { background: #eee; }
-    .muted { color: #000; }
-    .keterangan-row td { padding-top: 0; padding-bottom: 4px; font-size: 11px; }
-    .summary { border-top: 3px solid #000; margin-top: 5px; padding-top: 4px; }
-    .summary-row { display: flex; justify-content: space-between; margin-bottom: 2px; font-size: 12px; }
-    .summary-row span:last-child { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
-    .notes { margin-top: 20px; }
-    .notes ul { list-style: none; padding: 0; margin: 0; }
-    .notes li { font-size: 11px; line-height: 1.5; margin-bottom: 2px; padding-left: 4mm; }
-    .notes li::before { content: '* '; margin-left: -4mm; }
-    .signatures { display: flex; justify-content: space-between; margin-top: 7px; text-align: center; font-size: 12px; }
-    .signatures > div { width: 48%; }
-    .sign-name { margin-top: 28px; min-height: 14px; font-size: 13px; font-weight: bold; }
-    .printed { display: flex; justify-content: space-between; margin-top: 3px; font-size: 10px; }
+@page{
+    size:76mm auto;
+    margin:0;
+}
+
+html{
+    margin:0;
+    padding:0;
+}
+
+body{
+    width:72mm;
+    margin:0 auto;
+    padding:2mm;
+    color:#000;
+    font-family:"Courier New", monospace;
+    font-size:11px;
+    line-height:1.25;
+}
+
+.receipt{
+    width:100%;
+}
+
+.header{
+    text-align:center;
+    margin-bottom:5px;
+}
+
+.brand{
+    font-size:22px;
+    font-weight:bold;
+}
+
+.title{
+    text-align:center;
+    font-size:13px;
+    font-weight:bold;
+    margin:4px 0;
+}
+
+.topline{
+    width:100%;
+    overflow:hidden;
+    margin-bottom:4px;
+}
+
+.topline .left{
+    float:left;
+}
+
+.topline .right{
+    float:right;
+}
+
+.clear{
+    clear:both;
+}
+
+.block{
+    margin-bottom:5px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+}
+
+th{
+    border-top:1px solid #000;
+    border-bottom:1px solid #000;
+    padding:3px 1px;
+    font-size:11px;
+}
+
+td{
+    padding:2px 1px;
+    font-size:11px;
+}
+
+.bahan{
+    width:22%;
+}
+
+.ukuran{
+    width:34%;
+    text-align:center;
+}
+
+.qty{
+    width:12%;
+    text-align:center;
+}
+
+.amount{
+    width:32%;
+    text-align:right;
+}
+
+.summary{
+    margin-top:6px;
+    border-top:1px solid #000;
+}
+
+.summary table{
+    width:100%;
+}
+
+.summary td{
+    padding:2px 0;
+}
+
+.notes{
+    margin-top:10px;
+    font-size:10px;
+}
+
+.notes div{
+    margin-bottom:3px;
+}
+
+.signatures{
+    margin-top:18px;
+    width:100%;
+}
+
+.signatures table{
+    width:100%;
+}
+
+.sign-name{
+    height:40px;
+}
+
+.printed{
+    margin-top:8px;
+    font-size:10px;
+}
 `
 
 export const buildProductionReceiptHtml = ({ items, auth, paymentType }) => {
@@ -131,9 +226,17 @@ export const buildProductionReceiptHtml = ({ items, auth, paymentType }) => {
         </div>
 
         <div class="topline">
-            <span class="invoice">${invoiceNumber}</span>
-            <span>${formatReceiptDateShort(printedAt)}</span>
-        </div>
+    <div class="left">
+        <strong>${invoiceNumber}</strong>
+    </div>
+
+    <div class="right">
+        ${formatReceiptDateShort(printedAt)}
+    </div>
+
+    <div class="clear"></div>
+</div>
+
 
         <div class="title">FAKTUR</div>
         <div class="block">
