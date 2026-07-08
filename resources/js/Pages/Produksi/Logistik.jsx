@@ -115,23 +115,23 @@ export default function Logistik({ produksi, kurir, bahanpakaiList, itemstokbaha
 <html>
 <head><meta charset="utf-8"><title>Surat Jalan</title>
 <style>
-body { font-family: Arial, sans-serif; font-size: 12px; margin: 0; padding: 20px; }
-.header { display: flex; align-items: center; gap: 20px; border-bottom: 2px solid #16a34a; padding-bottom: 12px; margin-bottom: 18px; }
-.header img { width: 90px; }
+body { font-family: Arial, sans-serif; font-size: 13px; margin: 0; padding: 20px; font-weight: 700; }
+.header { display: flex; align-items: center; gap: 20px; border-bottom: 3px solid #16a34a; padding-bottom: 12px; margin-bottom: 18px; }
+.header img { width: 140px; }
 .header .title { flex: 1; text-align: center; }
-.header .title h1 { margin: 0; font-size: 20px; color: #16a34a; letter-spacing: 2px; }
-.header .title p { margin: 3px 0; font-size: 11px; color: #555; }
+.header .title h1 { margin: 0; font-size: 24px; color: #16a34a; letter-spacing: 3px; font-weight: 900; }
+.header .title p { margin: 3px 0; font-size: 12px; color: #333; font-weight: 700; }
 .info { margin-bottom: 15px; }
-.info table { width: 100%; font-size: 11px; }
-.info td { padding: 3px 5px; }
-table.items { width: 100%; border-collapse: collapse; font-size: 10px; }
-table.items th { background: #16a34a; color: #fff; padding: 7px 4px; text-align: center; }
-table.items td { padding: 5px 4px; border: 1px solid #ddd; }
-table.items tr:nth-child(even) { background: #f9f9f9; }
+.info table { width: 100%; font-size: 12px; }
+.info td { padding: 4px 5px; font-weight: 700; }
+table.items { width: 100%; border-collapse: collapse; font-size: 11px; }
+table.items th { background: #16a34a; color: #fff; padding: 8px 6px; text-align: center; font-weight: 900; font-size: 12px; }
+table.items td { padding: 6px 6px; border: 2px solid #999; font-weight: 700; }
+table.items tr:nth-child(even) { background: #f0fdf4; }
 .signatures { margin-top: 50px; display: flex; justify-content: space-between; text-align: center; }
 .signatures .sig-block { width: 30%; }
-.signatures .sig-block p.label { font-size: 11px; font-weight: bold; margin: 0 0 8px 0; }
-.signatures .sig-block .line { margin-top: 35px; border-top: 1px solid #000; padding-top: 8px; font-size: 12px; font-weight: bold; letter-spacing: 1px; }
+.signatures .sig-block p.label { font-size: 12px; font-weight: 900; margin: 0 0 8px 0; text-transform: uppercase; }
+.signatures .sig-block .line { margin-top: 35px; border-top: 2px solid #000; padding-top: 8px; font-size: 13px; font-weight: 900; letter-spacing: 1px; }
 .total-row { font-weight: bold; background: #e8f5e9 !important; }
 @media print { body { padding: 10px; } @page { margin: 10mm; } }
 </style>
@@ -149,7 +149,7 @@ table.items tr:nth-child(even) { background: #f9f9f9; }
     <table>
         <tr><td style="width:100px"><strong>No Invoice</strong></td><td>: ${item.no_invoice || '-'}</td></tr>
         <tr><td><strong>Tanggal Produksi</strong></td><td>: ${item.tanggal ? new Date(item.tanggal).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }) : '-'}</td></tr>
-        <tr><td><strong>Tanggal Antar</strong></td><td>: ${item.tgl_kirim ? new Date(item.tgl_kirim).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }) : '-'}</td></tr>
+        <tr><td><strong>Tanggal Antar</strong></td><td>: ${tgl}</td></tr>
         <tr><td><strong>Customer</strong></td><td>: ${item.customer?.nama || '-'}</td></tr>
     </table>
 </div>
