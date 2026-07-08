@@ -23,7 +23,7 @@
         table.grid td {
             width: 70mm;
             height: 35mm;
-            border: 1px solid #000;
+            border: 0px solid #000;
             padding: 2mm;
             vertical-align: top;
             overflow: hidden;
@@ -109,12 +109,15 @@
                         @if (isset($pageLabels[$li]))
                             @php $lb = $pageLabels[$li]; @endphp
                             <td>
+                                <div style="margin-left: 7px; margin-top: 15px">
                                 <div class="label-header">{{ $po->no_po }} | {{ $lb['kodeLabel'] }}</div>
                                 <div class="label-code">{{ $lb['kodeBahan'] }}</div>
                                 <div class="label-desc">{{ $lb['keterangan'] }}</div>
                                 <div class="label-footer">#{{ $lb['no'] }}/{{ $lb['qty'] }}</div>
                                  <div style="font-size:7px;font-weight:bold;font-style:italic">Dicetak pada : {{ date('Y-m-d') }}</div>
-                            </td>
+                            </div>
+                            
+                                </td>
                         @else
                             <td style="border: none;"></td>
                         @endif
