@@ -17,7 +17,7 @@ class DesainController extends Controller
     {
         if (auth()->user()->role === 'Desainer') {
             $id = auth()->id();
-            $desain = Desain::with('customer', 'kategoridesain', 'desainer')->where('id_desain', $id)->get();
+            $desain = Desain::with('customer', 'kategoridesain', 'desainer')->where('id_desain', $id)->whereNull('pembayaran')->get();
         } else {
             $desain = Desain::with('customer', 'kategoridesain', 'desainer')->get();
         }
@@ -50,7 +50,7 @@ class DesainController extends Controller
 
         $desain = Desain::with('customer', 'kategoridesain', 'desainer')
             ->when(auth()->user()->role === 'Desainer', function ($q) {
-                $q->where('id_desain', auth()->id());
+                $q->where('id_desain', auth()->id())->whereNull('pembayaran');
             })
             ->when($search, function ($q, $search) {
                 $q->where(function ($qq) use ($search) {
@@ -102,17 +102,22 @@ class DesainController extends Controller
 
     public function update(Request $request, $id)
     {
+        $desain = Desain::find($id);
+
+        if (auth()->user()->role === 'Desainer' && $desain->pembayaran) {
+            return redirect()->back()->with('error', 'Data tidak dapat diubah karena pembayaran sudah diproses');
+        }
+
         $kategori = Kategoridesain::find($request->id_kategori_desain);
         $harga = $kategori->harga ?? 0;
         $total_harga = $harga * $request->qty;
 
-        $cs = Desain::find($id);
-        $cs->id_customer = $request->id_customer;
-        $cs->id_kategori_desain = $request->id_kategori_desain;
-        $cs->qty = $request->qty;
-        $cs->total_harga = $total_harga;
-        $cs->id_desain = auth()->id();
-        $cs->update();
+        $desain->id_customer = $request->id_customer;
+        $desain->id_kategori_desain = $request->id_kategori_desain;
+        $desain->qty = $request->qty;
+        $desain->total_harga = $total_harga;
+        $desain->id_desain = auth()->id();
+        $desain->update();
 
         return redirect()->back()->with('success', 'Data berhasil diubah');
     }
@@ -146,7 +151,7 @@ class DesainController extends Controller
             $fee = ($d->kategoridesain->fee ?? 0) * ($d->qty ?? 1);
             if ($fee > 0) {
                 $sudahAda = FeeDesainTransaksi::where('desain_id', $d->id)->exists();
-                if (!$sudahAda) {
+                if (! $sudahAda) {
                     FeeDesainTransaksi::create([
                         'desain_id' => $d->id,
                         'pengguna_id' => $d->id_desain,
@@ -161,7 +166,7 @@ class DesainController extends Controller
             $feeCs = ($d->kategoridesain->fee_cs ?? 0) * ($d->qty ?? 1);
             if ($feeCs > 0) {
                 $sudahAdaCs = FeeCsTransaksi::where('desain_id', $d->id)->exists();
-                if (!$sudahAdaCs) {
+                if (! $sudahAdaCs) {
                     FeeCsTransaksi::create([
                         'desain_id' => $d->id,
                         'pengguna_id' => auth()->id(),
@@ -179,9 +184,14 @@ class DesainController extends Controller
 
     public function delete($id)
     {
-        $cs = Desain::find($id);
-        $cs->delete();
+        $desain = Desain::find($id);
 
-        return redirect()->back()->with('success', 'Data berhasil diubah');
+        if (auth()->user()->role === 'Desainer' && $desain->pembayaran) {
+            return redirect()->back()->with('error', 'Data tidak dapat dihapus karena pembayaran sudah diproses');
+        }
+
+        $desain->delete();
+
+        return redirect()->back()->with('success', 'Data berhasil dihapus');
     }
 }

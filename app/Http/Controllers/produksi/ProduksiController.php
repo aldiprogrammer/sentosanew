@@ -32,7 +32,7 @@ class ProduksiController extends Controller
 
         $produksi = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')
             ->when(auth()->user()->role === 'Desainer', function ($q) {
-                $q->where('id_desainer', auth()->id());
+                $q->where('id_desainer', auth()->id())->whereNull('pembayaran');
             })
             ->when($search, function ($q, $search) {
                 $q->where(function ($qq) use ($search) {

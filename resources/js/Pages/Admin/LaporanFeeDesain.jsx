@@ -149,7 +149,7 @@ export default function LaporanFeeDesain({
                             <a href="/laporan-fee-desain" className='btn btn-sm btn-warning'><i className='fas fa-rotate'> </i>Refresh</a>
                         </div>
 
-                        {(selected.length > 0 || transaksis.data.some(t => t.status === 'belum_diambil')) && (
+                        {!isDesainer && (selected.length > 0 || transaksis.data.some(t => t.status === 'belum_diambil')) && (
                             <div className="flex gap-2 mb-2">
                                 {selected.length > 0 && (
                                     <button className="btn btn-success btn-sm" onClick={() => handleAmbilFee(selected)} disabled={processing}>

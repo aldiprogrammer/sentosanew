@@ -19,21 +19,25 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
     const iframeRef = useRef(null)
     const paymentModalRef = useRef(null)
     const { auth } = usePage().props
+    const isCs = auth?.user?.role === 'Customer Service'
 
+    const selectableIds = desain.data.filter((item) => !(isCs && item.pembayaran)).map((item) => item.id)
     const allIds = desain.data.map((item) => item.id)
     const allSelected = allIds.length > 0 && selected.length === allIds.length
 
     const toggleSelect = (id) => {
+        const item = desain.data.find((d) => d.id === id)
+        if (isCs && item?.pembayaran) return
         setSelected((prev) =>
             prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
         )
     }
 
     const toggleSelectAll = () => {
-        setSelected(allSelected ? [] : [...allIds])
+        setSelected(allSelected ? [] : [...selectableIds])
     }
 
-    const selectedItems = desain.data.filter((item) => selected.includes(item.id))
+    const selectedItems = desain.data.filter((item) => selected.includes(item.id) && !(isCs && item.pembayaran))
     const totalHarga = selectedItems.reduce((sum, item) => sum + Number(item.total_harga || 0), 0)
     const totalQty = selectedItems.reduce((sum, item) => sum + Number(item.qty || 0), 0)
     const firstCustomer = selectedItems.length > 0 ? selectedItems[0].customer : null
@@ -292,7 +296,7 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
                                             desain.data.map((item, index) => (
                                                 <tr key={item.id} className={`hover:bg-base-200 ${item.pembayaran === 'utang' ? 'bg-red-50 text-red-700' : item.pembayaran === 'lunas' ? 'bg-green-50 text-green-700' : ''}`}>
                                                     <td>
-                                                        <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={selected.includes(item.id)} onChange={() => toggleSelect(item.id)} />
+                                                        <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={selected.includes(item.id)} onChange={() => toggleSelect(item.id)} disabled={isCs && item.pembayaran} />
                                                     </td>
                                                     <td>{desain.from + index}</td>
                                                     <td>{item.tanggal}</td>

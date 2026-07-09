@@ -43,9 +43,10 @@ class LaporanFeeDesainController extends Controller
             COALESCE(SUM(CASE WHEN status = "diambil" THEN fee ELSE 0 END), 0) as total_diambil,
             COALESCE(SUM(fee), 0) as total_semua
         ')
-            ->when($pengguna_id, fn($q) => $q->where('pengguna_id', $pengguna_id))
-            ->when($tgl_awal && $tgl_akhir, fn($q) => $q->whereBetween('tanggal', [$tgl_awal, $tgl_akhir]))
-            ->when(!$tgl_awal && $bulan && $tahun, fn($q) => $q->whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun))
+            ->when(auth()->user()->role === 'Desainer', fn ($q) => $q->where('pengguna_id', auth()->id()))
+            ->when(auth()->user()->role !== 'Desainer' && $pengguna_id, fn ($q) => $q->where('pengguna_id', $pengguna_id))
+            ->when($tgl_awal && $tgl_akhir, fn ($q) => $q->whereBetween('tanggal', [$tgl_awal, $tgl_akhir]))
+            ->when(! $tgl_awal && $bulan && $tahun, fn ($q) => $q->whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun))
             ->first();
 
         return Inertia::render('Admin/LaporanFeeDesain', compact(
@@ -59,13 +60,15 @@ class LaporanFeeDesainController extends Controller
         $ids = $request->input('ids', []);
         $pengguna_id = $request->input('pengguna_id');
 
-        if (empty($ids) && !$pengguna_id) {
+        if (empty($ids) && ! $pengguna_id) {
             return back()->with('error', 'Pilih fee yang akan diambil');
         }
 
         $query = FeeDesainTransaksi::where('status', 'belum_diambil');
 
-        if (!empty($ids)) {
+        if (auth()->user()->role === 'Desainer') {
+            $query->where('pengguna_id', auth()->id());
+        } elseif (! empty($ids)) {
             $query->whereIn('id', $ids);
         } elseif ($pengguna_id) {
             $query->where('pengguna_id', $pengguna_id);
@@ -76,7 +79,7 @@ class LaporanFeeDesainController extends Controller
             'diambil_at' => now(),
         ]);
 
-        return back()->with('success', $updated . ' fee berhasil diambil');
+        return back()->with('success', $updated.' fee berhasil diambil');
     }
 
     public function pdf(Request $request)

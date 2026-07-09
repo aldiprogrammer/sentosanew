@@ -1,6 +1,6 @@
 import AdminLayout from "@/Layouts/AdminLayout";
 import NewCustomerModal from "@/Components/NewCustomerModal";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { jsPDF } from "jspdf";
@@ -64,6 +64,9 @@ export default function Desain({
   tanggal,
   desain,
 }) {
+  const { auth } = usePage().props;
+  const isDesainer = auth.user?.role === 'Desainer';
+
   const {
     data,
     setData,
@@ -84,6 +87,7 @@ export default function Desain({
     harga: "",
     qty: 0,
     tanggal: tanggal,
+    pembayaran: "",
   });
   const modalRef = useRef(null);
   const customerModalRef = useRef(null);
@@ -117,6 +121,7 @@ export default function Desain({
     harga,
     qty,
     total_harga,
+    pembayaran,
   ) => {
     editmodalRef.current.showModal();
     setData({
@@ -131,6 +136,7 @@ export default function Desain({
       harga: harga,
       qty: qty,
       total_harga: total_harga,
+      pembayaran: pembayaran,
     });
   };
 
@@ -531,27 +537,35 @@ export default function Desain({
                         </div>
 
                         <div className="mt-4 flex gap-2">
-                          <button
-                            type="submit"
-                            disabled={processing}
-                            className="btn btn-success"
-                          >
-                            Edit data
-                          </button>
+                          {isDesainer && data.pembayaran ? (
+                            <div className="alert alert-warning w-full">
+                              Data ini tidak dapat diubah/dihapus karena pembayaran sudah diproses
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                type="submit"
+                                disabled={processing}
+                                className="btn btn-success"
+                              >
+                                <i className="fas fa-file"></i> Edit data
+                              </button>
 
+                              <button
+                                type="button"
+                                onClick={() => hapus(data.id)}
+                                className="btn btn-error"
+                              >
+                                <i className="fas fa-trash"></i> Hapus
+                              </button>
+                            </>
+                          )}
                           <button
                             type="button"
                             onClick={closeModalEdit}
                             className="btn btn-warning"
                           >
                             Batal
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => hapus(data.id)}
-                            className="btn btn-error"
-                          >
-                            <i className="fas fa-trash"></i> Hapus
                           </button>
                         </div>
                       </form>
@@ -579,8 +593,8 @@ export default function Desain({
                     {desain.map((item, index) => (
                       <tr
                         key={item.id}
-                        onClick={() => openModalEdit(item.id, item.tanggal, item.no_antrian, item.kode_spk, item.id_customer, item.customer.nama, item.id_kategori_desain, item.kategoridesain.kategori, item.kategoridesain.harga, item.qty, item.total_harga)}
-                        className="cursor-pointer hover:bg-base-200"
+                        onClick={() => openModalEdit(item.id, item.tanggal, item.no_antrian, item.kode_spk, item.id_customer, item.customer.nama, item.id_kategori_desain, item.kategoridesain.kategori, item.kategoridesain.harga, item.qty, item.total_harga, item.pembayaran)}
+                        className={isDesainer && item.pembayaran ? 'cursor-default' : 'cursor-pointer hover:bg-base-200'}
                       >
                         <td>{index + 1}</td>
                         <td>{item.tanggal}</td>

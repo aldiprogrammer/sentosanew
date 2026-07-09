@@ -7,6 +7,7 @@ import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
 export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
     const { auth } = usePage().props;
     const isDesainer = auth.user?.role === 'Desainer';
+    const isCs = auth.user?.role === 'Customer Service';
     const [search, setSearch] = React.useState('')
     const [tgl_awal, setTglAwal] = React.useState(tglAwal || '')
     const [tgl_akhir, setTglAkhir] = React.useState(tglAkhir || '')
@@ -21,20 +22,23 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
     const iframeRef = useRef(null)
     const paymentModalRef = useRef(null)
 
+    const selectableIds = produksi.data.filter((item) => !(isCs && item.pembayaran)).map((item) => item.id)
     const allIds = produksi.data.map((item) => item.id)
     const allSelected = allIds.length > 0 && selected.length === allIds.length
 
     const toggleSelect = (id) => {
+        const item = produksi.data.find((d) => d.id === id)
+        if (isCs && item?.pembayaran) return
         setSelected((prev) =>
             prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
         )
     }
 
     const toggleSelectAll = () => {
-        setSelected(allSelected ? [] : [...allIds])
+        setSelected(allSelected ? [] : [...selectableIds])
     }
 
-    const selectedItems = produksi.data.filter((item) => selected.includes(item.id))
+    const selectedItems = produksi.data.filter((item) => selected.includes(item.id) && !(isCs && item.pembayaran))
     const totalHarga = selectedItems.reduce((sum, item) => sum + Number(item.total_harga || 0), 0)
     const totalQty = selectedItems.reduce((sum, item) => sum + Number(item.qty || 0), 0)
     const firstCustomer = selectedItems.length > 0 ? selectedItems[0].customer : null
@@ -287,8 +291,8 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                             <th>Lebar</th>
                                             <th>Qty</th>
                                             <th>Sisi</th>
-                                            {!isDesainer && <th>Harga</th>}
-                                            {!isDesainer && <th>Total Harga</th>}
+                                            <th>Harga</th>
+                                            <th>Total Harga</th>
                                             <th>Pembayaran</th>
                                             <th>Metode P</th>
                                             <th>Tgl Kirim</th>
@@ -297,7 +301,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                     <tbody className="text-xs">
                                         {produksi.data.length === 0 ? (
                                             <tr>
-                                                <td colSpan={isDesainer ? 13 : 15} className="text-center py-8 text-base-content/50">
+                                                <td colSpan={15} className="text-center py-8 text-base-content/50">
                                                     Tidak ada data produksi
                                                 </td>
                                             </tr>
@@ -305,7 +309,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                             produksi.data.map((item, index) => (
                                                 <tr key={item.id} className={`hover:bg-base-200 ${item.pembayaran === 'utang' ? 'bg-red-50 text-red-700' : item.pembayaran === 'lunas' ? 'bg-green-50 text-green-700' : item.status_selesai == 1 ? 'bg-success/20' : ''}`}>
                                                     <td>
-                                                        <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={selected.includes(item.id)} onChange={() => toggleSelect(item.id)} />
+                                                        <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={selected.includes(item.id)} onChange={() => toggleSelect(item.id)} disabled={isCs && item.pembayaran} />
                                                     </td>
                                                     <td>{produksi.from + index}</td>
                                                     <td>{item.no_invoice}</td>
@@ -317,8 +321,8 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                                     <td className="tabular-nums">{item.lebar} {item.satuan}</td>
                                                     <td className="tabular-nums text-center">{item.qty}</td>
                                                     <td className="text-center">{item.sisi}</td>
-                                                    {!isDesainer && <td className="tabular-nums">{Number(item.harga_bahan).toLocaleString('id-ID')}</td>}
-                                                    {!isDesainer && <td className="tabular-nums">{Number(item.total_harga).toLocaleString('id-ID')}</td>}
+                                                    <td className={'tabular-nums' + (isDesainer && item.harga_bahan ? ' blur-sm select-none' : '')}>{isDesainer && item.harga_bahan ? '••••••' : (item.harga_bahan ? Number(item.harga_bahan).toLocaleString('id-ID') : '-')}</td>
+                                                    <td className={'tabular-nums' + (isDesainer && item.total_harga ? ' blur-sm select-none' : '')}>{isDesainer && item.total_harga ? '••••••' : (item.total_harga ? Number(item.total_harga).toLocaleString('id-ID') : '-')}</td>
                                                     <td>
                                                         {item.pembayaran ? (
                                                             <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : 'badge-warning'}`}>

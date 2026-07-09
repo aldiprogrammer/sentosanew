@@ -207,6 +207,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       catatan: "",
     },
     mata_ayam: [],
+    pembayaran: "",
   });
 
   const modalRef = useRef(null);
@@ -275,6 +276,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
           ...(pd.mata_ayam.kanan ? ["Kanan"] : []),
         ]
         : [],
+      pembayaran: pd.pembayaran || "",
     });
   };
 
@@ -677,60 +679,58 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 />
                               </label>
 
-                              {!isDesainer && (
-                                <label className="form-control w-full">
-                                  <div className="label">
-                                    <span className="label-text">Harga</span>
-                                  </div>
-                                  <input
-                                    type="text"
-                                    className="input input-bordered input-success w-full"
-                                    value={data.harga_tampil ? 'Rp ' + Number(data.harga_tampil).toLocaleString('id-ID') : ''}
-                                    placeholder={data.id_bahan ? 'Pilih harga' : 'Pilih Bahan'}
-                                    readOnly
-                                  />
-                                  {data.kategori_customer ? (
-                                    <div className="mt-2">
-                                      <div className="flex gap-3">
-                                        <label className="flex items-center gap-1 cursor-pointer">
-                                          <input
-                                            type="radio"
-                                            name="pilihan_harga_tambah"
-                                            className="radio radio-success radio-xs"
-                                            checked={data.pilihan_harga === data.kategori_customer}
-                                            onChange={() => handlePilihanHarga(data.kategori_customer)}
-                                          />
-                                          <span className="text-sm">{data.kategori_customer}</span>
-                                        </label>
-                                        <label className="flex items-center gap-1 cursor-pointer">
-                                          <input
-                                            type="radio"
-                                            name="pilihan_harga_tambah"
-                                            className="radio radio-warning radio-xs"
-                                            checked={data.pilihan_harga === 'Custom'}
-                                            onChange={() => handlePilihanHarga('Custom')}
-                                          />
-                                          <span className="text-sm">Custom</span>
-                                        </label>
-                                      </div>
-                                      {data.pilihan_harga === 'Custom' && (
-                                        <div className="mt-1">
-                                          <input
-                                            type="text"
-                                            className="input input-bordered input-success w-full input-sm"
-                                            placeholder="Rp 0"
-                                            value={data.harga_manual ? Number(data.harga_manual).toLocaleString('id-ID') : ''}
-                                            onChange={(e) => {
-                                              const numeric = e.target.value.replace(/\D/g, '');
-                                              setData((prev) => ({ ...prev, harga_manual: numeric, harga_tampil: numeric }));
-                                            }}
-                                          />
-                                        </div>
-                                      )}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Harga</span>
+                                </div>
+                                <input
+                                  type="text"
+                                  className="input input-bordered input-success w-full"
+                                  value={isDesainer && data.harga_tampil ? 'Rp ••••••' : (data.harga_tampil ? 'Rp ' + Number(data.harga_tampil).toLocaleString('id-ID') : '')}
+                                  placeholder={data.id_bahan ? 'Pilih harga' : 'Pilih Bahan'}
+                                  readOnly
+                                />
+                                {!isDesainer && data.kategori_customer ? (
+                                  <div className="mt-2">
+                                    <div className="flex gap-3">
+                                      <label className="flex items-center gap-1 cursor-pointer">
+                                        <input
+                                          type="radio"
+                                          name="pilihan_harga_tambah"
+                                          className="radio radio-success radio-xs"
+                                          checked={data.pilihan_harga === data.kategori_customer}
+                                          onChange={() => handlePilihanHarga(data.kategori_customer)}
+                                        />
+                                        <span className="text-sm">{data.kategori_customer}</span>
+                                      </label>
+                                      <label className="flex items-center gap-1 cursor-pointer">
+                                        <input
+                                          type="radio"
+                                          name="pilihan_harga_tambah"
+                                          className="radio radio-warning radio-xs"
+                                          checked={data.pilihan_harga === 'Custom'}
+                                          onChange={() => handlePilihanHarga('Custom')}
+                                        />
+                                        <span className="text-sm">Custom</span>
+                                      </label>
                                     </div>
-                                  ) : null}
-                                </label>
-                              )}
+                                    {data.pilihan_harga === 'Custom' && (
+                                      <div className="mt-1">
+                                        <input
+                                          type="text"
+                                          className="input input-bordered input-success w-full input-sm"
+                                          placeholder="Rp 0"
+                                          value={data.harga_manual ? Number(data.harga_manual).toLocaleString('id-ID') : ''}
+                                          onChange={(e) => {
+                                            const numeric = e.target.value.replace(/\D/g, '');
+                                            setData((prev) => ({ ...prev, harga_manual: numeric, harga_tampil: numeric }));
+                                          }}
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : null}
+                              </label>
 
                               {/* Satuan Ukuran */}
                               <label className="form-control w-full">
@@ -1172,60 +1172,58 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                 />
                               </label>
 
-                              {!isDesainer && (
-                                <label className="form-control w-full">
-                                  <div className="label">
-                                    <span className="label-text">Harga</span>
-                                  </div>
-                                  <input
-                                    type="text"
-                                    className="input input-bordered input-success w-full"
-                                    value={data.harga_tampil ? 'Rp ' + Number(data.harga_tampil).toLocaleString('id-ID') : ''}
-                                    placeholder={data.id_bahan ? 'Pilih harga' : 'Pilih Bahan'}
-                                    readOnly
-                                  />
-                                  {data.kategori_customer ? (
-                                    <div className="mt-2">
-                                      <div className="flex gap-3">
-                                        <label className="flex items-center gap-1 cursor-pointer">
-                                          <input
-                                            type="radio"
-                                            name="pilihan_harga_edit"
-                                            className="radio radio-success radio-xs"
-                                            checked={data.pilihan_harga === data.kategori_customer}
-                                            onChange={() => handlePilihanHarga(data.kategori_customer)}
-                                          />
-                                          <span className="text-sm">{data.kategori_customer}</span>
-                                        </label>
-                                        <label className="flex items-center gap-1 cursor-pointer">
-                                          <input
-                                            type="radio"
-                                            name="pilihan_harga_edit"
-                                            className="radio radio-warning radio-xs"
-                                            checked={data.pilihan_harga === 'Custom'}
-                                            onChange={() => handlePilihanHarga('Custom')}
-                                          />
-                                          <span className="text-sm">Custom</span>
-                                        </label>
-                                      </div>
-                                      {data.pilihan_harga === 'Custom' && (
-                                        <div className="mt-1">
-                                          <input
-                                            type="text"
-                                            className="input input-bordered input-success w-full input-sm"
-                                            placeholder="Rp 0"
-                                            value={data.harga_manual ? Number(data.harga_manual).toLocaleString('id-ID') : ''}
-                                            onChange={(e) => {
-                                              const numeric = e.target.value.replace(/\D/g, '');
-                                              setData((prev) => ({ ...prev, harga_manual: numeric, harga_tampil: numeric }));
-                                            }}
-                                          />
-                                        </div>
-                                      )}
+                              <label className="form-control w-full">
+                                <div className="label">
+                                  <span className="label-text">Harga</span>
+                                </div>
+                                <input
+                                  type="text"
+                                  className="input input-bordered input-success w-full"
+                                  value={isDesainer && data.harga_tampil ? 'Rp ••••••' : (data.harga_tampil ? 'Rp ' + Number(data.harga_tampil).toLocaleString('id-ID') : '')}
+                                  placeholder={data.id_bahan ? 'Pilih harga' : 'Pilih Bahan'}
+                                  readOnly
+                                />
+                                {!isDesainer && data.kategori_customer ? (
+                                  <div className="mt-2">
+                                    <div className="flex gap-3">
+                                      <label className="flex items-center gap-1 cursor-pointer">
+                                        <input
+                                          type="radio"
+                                          name="pilihan_harga_edit"
+                                          className="radio radio-success radio-xs"
+                                          checked={data.pilihan_harga === data.kategori_customer}
+                                          onChange={() => handlePilihanHarga(data.kategori_customer)}
+                                        />
+                                        <span className="text-sm">{data.kategori_customer}</span>
+                                      </label>
+                                      <label className="flex items-center gap-1 cursor-pointer">
+                                        <input
+                                          type="radio"
+                                          name="pilihan_harga_edit"
+                                          className="radio radio-warning radio-xs"
+                                          checked={data.pilihan_harga === 'Custom'}
+                                          onChange={() => handlePilihanHarga('Custom')}
+                                        />
+                                        <span className="text-sm">Custom</span>
+                                      </label>
                                     </div>
-                                  ) : null}
-                                </label>
-                              )}
+                                    {data.pilihan_harga === 'Custom' && (
+                                      <div className="mt-1">
+                                        <input
+                                          type="text"
+                                          className="input input-bordered input-success w-full input-sm"
+                                          placeholder="Rp 0"
+                                          value={data.harga_manual ? Number(data.harga_manual).toLocaleString('id-ID') : ''}
+                                          onChange={(e) => {
+                                            const numeric = e.target.value.replace(/\D/g, '');
+                                            setData((prev) => ({ ...prev, harga_manual: numeric, harga_tampil: numeric }));
+                                          }}
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : null}
+                              </label>
 
                               {/* Satuan Ukuran */}
                               <label className="form-control w-full">
@@ -1412,27 +1410,35 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                         </div>
 
                         <div className="mt-4 flex gap-2">
-                          <button
-                            type="submit"
-                            disabled={processing}
-                            className="btn btn-success"
-                          >
-                            <i className="fas fa-save"></i> Update
-                          </button>
+                          {(isDesainer || auth?.user?.role === 'Customer Service') && data.pembayaran ? (
+                            <div className="alert alert-warning w-full">
+                              Data ini tidak dapat diubah/dihapus karena pembayaran sudah diproses
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                type="submit"
+                                disabled={processing}
+                                className="btn btn-success"
+                              >
+                                <i className="fas fa-save"></i> Update
+                              </button>
 
+                              <button
+                                type="button"
+                                onClick={() => hapus(data.id)}
+                                className="btn btn-error"
+                              >
+                                <i className="fas fa-trash"></i> Hapus
+                              </button>
+                            </>
+                          )}
                           <button
                             type="button"
                             onClick={closeModalEdit}
                             className="btn btn-warning"
                           >
                             Batal
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => hapus(data.id)}
-                            className="btn btn-error"
-                          >
-                            <i className="fas fa-trash"></i> Hapus
                           </button>
                         </div>
                       </form>
@@ -1468,8 +1474,8 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                         <th>Lebar</th>
                         <th>Qty</th>
                         <th>Sisi</th>
-                        {!isDesainer && <th>Harga</th>}
-                        {!isDesainer && <th>Total Harga</th>}
+                        <th>Harga</th>
+                        <th>Total Harga</th>
                         <th>Metode P</th>
                         <th>Tgl Kirim /Ambil</th>
                         <th>Catatan</th>
@@ -1492,8 +1498,8 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                           <td>{item.lebar} {item.satuan}</td>
                           <td>{item.qty} {item.bahan.satuan}</td>
                           <td>{item.sisi}</td>
-                          {!isDesainer && <td>{Number(item.harga_bahan).toLocaleString('id-ID')}</td>}
-                          {!isDesainer && <td>{Number(item.total_harga).toLocaleString('id-ID')}</td>}
+                          <td className={isDesainer && item.harga_bahan ? 'blur-sm select-none' : ''}>{isDesainer && item.harga_bahan ? '••••••' : (item.harga_bahan ? Number(item.harga_bahan).toLocaleString('id-ID') : '-')}</td>
+                          <td className={isDesainer && item.total_harga ? 'blur-sm select-none' : ''}>{isDesainer && item.total_harga ? '••••••' : (item.total_harga ? Number(item.total_harga).toLocaleString('id-ID') : '-')}</td>
                           <td>{item.metode_pengantaran}</td>
                           <td>{item.tgl_kirim}</td>
                           <td>{item.pinising?.catatan || ''}</td>

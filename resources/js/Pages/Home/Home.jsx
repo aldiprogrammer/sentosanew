@@ -1,11 +1,11 @@
 import { Head, Link } from '@inertiajs/react'
 
 const menus = [
-    { name: 'Customer Service', icon: 'fas fa-headset', route: 'customer', desc: 'Kelola data pelanggan' },
-    { name: 'Desain', icon: 'fas fa-palette', route: 'desain', desc: 'Manajemen desain grafis' },
-    { name: 'Produksi', icon: 'fas fa-industry', route: 'produksi', desc: 'Proses produksi, finishing & logistik percetakan' },
-    { name: 'Admin', icon: 'fas fa-user-shield', route: 'home', desc: 'Panel administrasi' },
-    { name: 'Super Admin', icon: 'fas fa-crown', route: 'pengguna', desc: 'Manajemen pengguna sistem' },
+    { name: 'Customer Service', icon: 'fas fa-headset', route: 'login', desc: 'Kelola data pelanggan' },
+    { name: 'Desain', icon: 'fas fa-palette', route: 'login', desc: 'Manajemen desain grafis' },
+    { name: 'Produksi', icon: 'fas fa-industry', route: 'login', desc: 'Proses produksi, finishing & logistik percetakan' },
+    { name: 'Admin', icon: 'fas fa-user-shield', route: 'login', desc: 'Panel administrasi' },
+    { name: 'Super Admin', icon: 'fas fa-crown', route: 'login', desc: 'Manajemen pengguna sistem' },
 ]
 
 export default function Home() {

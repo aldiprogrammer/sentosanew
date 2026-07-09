@@ -116,17 +116,16 @@ export default function Logistik({ produksi, kurir, bahanpakaiList, itemstokbaha
 <head><meta charset="utf-8"><title>Surat Jalan</title>
 <style>
 body { font-family: Arial, sans-serif; font-size: 13px; margin: 0; padding: 20px; font-weight: 700; }
-.header { display: flex; align-items: center; gap: 20px; border-bottom: 3px solid #16a34a; padding-bottom: 12px; margin-bottom: 18px; }
-.header img { width: 140px; }
-.header .title { flex: 1; text-align: center; }
+.header { text-align: center; border-bottom: 3px solid #16a34a; padding-bottom: 12px; margin-bottom: 18px; }
+.header .title { text-align: center; }
 .header .title h1 { margin: 0; font-size: 24px; color: #16a34a; letter-spacing: 3px; font-weight: 900; }
 .header .title p { margin: 3px 0; font-size: 12px; color: #333; font-weight: 700; }
 .info { margin-bottom: 15px; }
 .info table { width: 100%; font-size: 12px; }
 .info td { padding: 4px 5px; font-weight: 700; }
 table.items { width: 100%; border-collapse: collapse; font-size: 11px; }
-table.items th { background: #16a34a; color: #fff; padding: 8px 6px; text-align: center; font-weight: 900; font-size: 12px; }
-table.items td { padding: 6px 6px; border: 2px solid #999; font-weight: 700; }
+table.items th { background: #16a34a; color: #000; padding: 8px 6px; text-align: center; font-weight: 900; font-size: 12px; }
+table.items td { padding: 6px 6px; border: 2px solid #000; font-weight: 700; }
 table.items tr:nth-child(even) { background: #f0fdf4; }
 .signatures { margin-top: 50px; display: flex; justify-content: space-between; text-align: center; }
 .signatures .sig-block { width: 30%; }
@@ -138,7 +137,6 @@ table.items tr:nth-child(even) { background: #f0fdf4; }
 </head>
 <body>
 <div class="header">
-    <img src="/logo.png" alt="Logo">
     <div class="title">
         <h1>SURAT JALAN</h1>
         <p>SENTOSA PRINTING & DIGITAL SOLUTIONS</p>
