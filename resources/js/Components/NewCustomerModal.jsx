@@ -20,12 +20,19 @@ function formatRupiah(value) {
 
 export default function NewCustomerModal({ modalRef, onCancel, onSuccess }) {
   const [kodeCustomer, setKodeCustomer] = useState(generateKodeCustomer);
+  const capitalizeFirst = (str) => {
+    return str.replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
   const { data, setData, post, processing, reset, transform } = useForm({
+    sapaan: '',
     nama: '',
     alamat: '',
     nohp: '',
     kategori: '',
     limit: '',
+    limit_akhir: '',
+    jatuh_tempo: '',
   });
 
   const closeModal = () => {
@@ -85,9 +92,39 @@ export default function NewCustomerModal({ modalRef, onCancel, onSuccess }) {
               value={data.nama}
               className="input input-bordered input-success w-full"
               required
-              onChange={(e) => setData('nama', e.target.value)}
+              onChange={(e) => setData('nama', capitalizeFirst(e.target.value))}
             />
           </label>
+
+          <div className="form-control w-full mt-2">
+            <div className="label">
+              <span className="label-text">Sapaan</span>
+            </div>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="sapaan"
+                  className="radio radio-success"
+                  value="Bapak"
+                  checked={data.sapaan === 'Bapak'}
+                  onChange={(e) => setData('sapaan', e.target.value)}
+                />
+                Bapak
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="sapaan"
+                  className="radio radio-success"
+                  value="Ibu"
+                  checked={data.sapaan === 'Ibu'}
+                  onChange={(e) => setData('sapaan', e.target.value)}
+                />
+                Ibu
+              </label>
+            </div>
+          </div>
 
           <label className="form-control w-full mt-2">
             <div className="label">
@@ -115,6 +152,7 @@ export default function NewCustomerModal({ modalRef, onCancel, onSuccess }) {
               <option value="">-- Pilih Kategori --</option>
               <option value="Khusus">Khusus</option>
               <option value="Umum">Umum</option>
+              <option value="Member">Member</option>
             </select>
           </label>
 
@@ -139,6 +177,31 @@ export default function NewCustomerModal({ modalRef, onCancel, onSuccess }) {
               value={data.limit ? formatRupiah(String(data.limit)) : ''}
               className="input input-bordered input-success w-full"
               onChange={(e) => setData('limit', e.target.value.replace(/\D/g, ''))}
+            />
+          </label>
+
+          <label className="form-control w-full mt-2">
+            <div className="label">
+              <span className="label-text">Limit Akhir</span>
+            </div>
+            <input
+              type="text"
+              value={data.limit_akhir ? formatRupiah(String(data.limit_akhir)) : ''}
+              className="input input-bordered input-success w-full"
+              onChange={(e) => setData('limit_akhir', e.target.value.replace(/\D/g, ''))}
+            />
+          </label>
+
+          <label className="form-control w-full mt-2">
+            <div className="label">
+              <span className="label-text">Jatuh Tempo</span>
+            </div>
+            <input
+              type="number"
+              value={data.jatuh_tempo}
+              className="input input-bordered input-success w-full"
+              placeholder="Jumlah hari"
+              onChange={(e) => setData('jatuh_tempo', e.target.value)}
             />
           </label>
 

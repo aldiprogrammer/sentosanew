@@ -54,7 +54,7 @@ class ProduksiController extends Controller
                 $q->where('tanggal', '<=', $tglAkhir);
             })
             ->orderBy('id', 'desc')
-            ->paginate(10);
+            ->paginate(20);
         $produksi->appends(['search' => $search, 'tgl_awal' => $tglAwal, 'tgl_akhir' => $tglAkhir]);
 
         return Inertia::render('Admin/Dataproduksi', compact('produksi', 'tglAwal', 'tglAkhir'));

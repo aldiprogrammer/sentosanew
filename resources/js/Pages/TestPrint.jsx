@@ -75,7 +75,11 @@ export default function TestPrint() {
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: 'Consolas', 'Lucida Console', monospace;
-    font-size: 13px; max-width: 76mm; margin: 0 auto; padding: 3mm; color: #000;
+    font-size: 13px;
+    max-width: 76mm;
+    margin: 0 auto;
+    padding: 3mm;
+    color: #000;
   }
   h1 { font-size: 18px; text-align: center; letter-spacing: 2px; margin-bottom: 2px; }
   .alamat { text-align: center; font-size: 11px; margin-bottom: 4px; }

@@ -15,7 +15,6 @@ export default function Home() {
 
             <div className="relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-green-700 via-green-600 to-green-800 overflow-hidden">
 
-
                 <div className="relative z-10 text-center mb-12 px-4 mt-10">
                     <img src="logonew.png" alt="" className='h-[100px]' />
                 </div>
