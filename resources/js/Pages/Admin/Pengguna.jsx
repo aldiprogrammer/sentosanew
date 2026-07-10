@@ -20,8 +20,8 @@ export default function Pengguna({ pengguna, jabatan }) {
   });
   const modalRef = useRef(null);
   const openModal = () => {
+    reset();
     modalRef.current.showModal();
-    setData("kode", kode);
   };
 
   const closeModal = () => {
@@ -139,12 +139,13 @@ export default function Pengguna({ pengguna, jabatan }) {
                           name=""
                           className="input input-bordered iput-success"
                           id=""
+                          value={data.role}
                           required
                           onChange={(e) => setData("role", e.target.value)}
                         >
-                          <option>-- Pilih Role --</option>
+                          <option value="">-- Pilih Role --</option>
                           {jabatan.map((rr, index) => (
-                            <option>{rr.jabatan}</option>
+                            <option key={index} value={rr.jabatan}>{rr.jabatan}</option>
                           ))}
                         </select>
                       </label>
