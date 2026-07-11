@@ -10,20 +10,27 @@ export default function DataSaya({ produksi, tglAwal, tglAkhir }) {
     const previewRef = useRef(null)
     const iframeRef = useRef(null)
 
-    const allIds = produksi.data.map((item) => item.id)
-    const allSelected = allIds.length > 0 && selected.length === allIds.length
+    const allSelected = produksi.data.length > 0 && produksi.data.every(item => selected.some(s => s.id === item.id))
 
-    const toggleSelect = (id) => {
-        setSelected((prev) =>
-            prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-        )
+    const toggleSelect = (item) => {
+        setSelected((prev) => {
+            const exists = prev.find(x => x.id === item.id)
+            return exists ? prev.filter(x => x.id !== item.id) : [...prev, item]
+        })
     }
 
     const toggleSelectAll = () => {
-        setSelected(allSelected ? [] : [...allIds])
+        if (allSelected) {
+            const currentIds = new Set(produksi.data.map(item => item.id))
+            setSelected(prev => prev.filter(item => !currentIds.has(item.id)))
+        } else {
+            const existingIds = new Set(selected.map(item => item.id))
+            const newItems = produksi.data.filter(item => !existingIds.has(item.id))
+            setSelected(prev => [...prev, ...newItems])
+        }
     }
 
-    const selectedItems = produksi.data.filter((item) => selected.includes(item.id))
+    const selectedItems = selected
     const totalHarga = selectedItems.reduce((sum, item) => sum + Number(item.total_harga || 0), 0)
     const totalQty = selectedItems.reduce((sum, item) => sum + Number(item.qty || 0), 0)
 
@@ -358,8 +365,8 @@ export default function DataSaya({ produksi, tglAwal, tglAkhir }) {
                                                         <input
                                                             type="checkbox"
                                                             className="checkbox checkbox-sm checkbox-success"
-                                                            checked={selected.includes(item.id)}
-                                                            onChange={() => toggleSelect(item.id)}
+                                                            checked={selected.some(s => s.id === item.id)}
+                                                            onChange={() => toggleSelect(item)}
                                                         />
                                                     </td>
                                                     <td>{produksi.from + index}</td>
@@ -391,7 +398,6 @@ export default function DataSaya({ produksi, tglAwal, tglAkhir }) {
                                             className={`btn btn-sm join-item ${link.active ? 'btn-success' : ''} ${!link.url ? 'btn-disabled' : ''}`}
                                             preserveState
                                             replace
-                                            onClick={() => setSelected([])}
                                             dangerouslySetInnerHTML={{ __html: link.label }}
                                         />
                                     ))}

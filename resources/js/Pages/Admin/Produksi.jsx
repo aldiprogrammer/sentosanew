@@ -242,7 +242,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       no_invoice: pd.no_invoice,
       id_customer: pd.id_customer,
       id_kategori_desain: pd.id_kategori_desain,
-      customer: pd.customer.nama,
+      customer: pd.customer?.nama,
       kategori_customer: pd.customer?.kategori || "",
       pilihan_harga: pd.customer?.kategori || "",
       harga_manual: "",
@@ -420,7 +420,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       doc.text("Data Produksi", 14, 20);
       doc.setFontSize(10);
       doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
-      const rows = produksi.data.map((item, index) => [produksi.from + index, item.kode_spk, item.customer.nama, item.bahan.bahan, item.keterangan, item.satuan, item.tinggi, item.lebar, item.qty, item.sisi, item.metode_pengantaran, item.tgl_kirim]);
+      const rows = produksi.data.map((item, index) => [produksi.from + index, item.kode_spk, item.customer?.nama, item.bahan?.bahan, item.keterangan, item.satuan, item.tinggi, item.lebar, item.qty, item.sisi, item.metode_pengantaran, item.tgl_kirim]);
       autoTable(doc, { startY: 32, head: [["No", "Kode SPK", "Customer", "Bahan", "Keterangan", "Satuan Ukuran", "Tinggi", "Lebar", "Qty", "Sisi", "Metode P", "Tgl Kirim"]], body: rows, styles: { fontSize: 7 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
       doc.save("data_produksi.pdf");
     } catch (error) {
@@ -1491,8 +1491,8 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                           <td>{produksi.from + index}</td>
                           <td>{item.kode_spk}</td>
                           <td>{item.no_invoice}</td>
-                          <td>{item.customer.nama}</td>
-                          <td>{item.bahan.bahan}</td>
+                          <td>{item.customer?.nama}</td>
+                          <td>{item.bahan?.bahan}</td>
                           <td>{item.keterangan}</td>
                           <td>{item.tinggi} {item.satuan}</td>
                           <td>{item.lebar} {item.satuan}</td>

@@ -7,6 +7,7 @@ use App\Models\Bahanpakai;
 use App\Models\Itemstokbahan;
 use App\Models\Produksi;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
 
 class ProduksiController extends Controller
@@ -30,7 +31,7 @@ class ProduksiController extends Controller
         $tglAwal = $request->query('tgl_awal');
         $tglAkhir = $request->query('tgl_akhir');
 
-        $produksi = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')
+        $items = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')
             ->when(auth()->user()->role === 'Desainer', function ($q) {
                 $q->where('id_desainer', auth()->id())->whereNull('pembayaran');
             })
@@ -54,16 +55,45 @@ class ProduksiController extends Controller
                 $q->where('tanggal', '<=', $tglAkhir);
             })
             ->orderBy('id', 'desc')
-            ->paginate(20);
-        $produksi->appends(['search' => $search, 'tgl_awal' => $tglAwal, 'tgl_akhir' => $tglAkhir]);
+            ->get();
 
-        return Inertia::render('Admin/Dataproduksi', compact('produksi', 'tglAwal', 'tglAkhir'));
+        $grouped = $items->groupBy('no_invoice')->map(function ($group) {
+            return [
+                'no_invoice' => $group->first()->no_invoice,
+                'items' => $group->values(),
+                'customer' => $group->first()->customer,
+                'total_qty' => $group->sum('qty'),
+                'total_harga' => $group->sum('total_harga'),
+                'item_count' => $group->count(),
+                'has_payment' => $group->some(fn($item) => $item->pembayaran),
+                'all_lunas' => $group->every(fn($item) => $item->pembayaran === 'lunas'),
+                'all_utang' => $group->every(fn($item) => $item->pembayaran === 'utang'),
+            ];
+        })->values();
+
+        $perPage = 10;
+        $page = max(1, (int) $request->query('page', 1));
+        $paginator = new LengthAwarePaginator(
+            $grouped->forPage($page, $perPage),
+            $grouped->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+        $paginator->appends(['search' => $search, 'tgl_awal' => $tglAwal, 'tgl_akhir' => $tglAkhir]);
+
+        return Inertia::render('Admin/Dataproduksi', [
+            'produksi' => $paginator,
+            'tglAwal' => $tglAwal,
+            'tglAkhir' => $tglAkhir,
+        ]);
     }
 
     public function prosesProduksi(Request $request)
     {
         $ids = $request->input('ids', []);
         $paymentType = $request->input('payment_type');
+        $isApi = $request->expectsJson();
 
         if ($paymentType === 'utang') {
             $firstItem = Produksi::with('customer')->whereIn('id', $ids)->first();
@@ -72,9 +102,10 @@ class ProduksiController extends Controller
                 $total = Produksi::whereIn('id', $ids)->sum('total_harga');
 
                 if (($customer->limit_akhir + $total) > $customer->limit) {
-                    return back()->withErrors([
-                        'payment' => 'Limit customer tidak mencukupi. Sisa limit: Rp ' . number_format($customer->limit - $customer->limit_akhir),
-                    ]);
+                    $error = [
+                        'errors' => ['payment' => 'Limit customer tidak mencukupi. Sisa limit: Rp ' . number_format($customer->limit - $customer->limit_akhir)],
+                    ];
+                    return $isApi ? response()->json($error, 422) : back()->withErrors($error['errors']);
                 }
 
                 $customer->increment('limit_akhir', $total);
@@ -118,7 +149,9 @@ class ProduksiController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Status produksi berhasil diupdate');
+        return $isApi
+            ? response()->json(['message' => 'Status produksi berhasil diupdate'])
+            : back()->with('success', 'Status produksi berhasil diupdate');
     }
 
     public function proses(Request $request, $id)

@@ -21,24 +21,58 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
     const previewRef = useRef(null)
     const iframeRef = useRef(null)
     const paymentModalRef = useRef(null)
+    const [expandedInvoices, setExpandedInvoices] = React.useState(new Set())
 
-    const selectableIds = produksi.data.filter((item) => !(isCs && item.pembayaran)).map((item) => item.id)
-    const allIds = produksi.data.map((item) => item.id)
-    const allSelected = allIds.length > 0 && selected.length === allIds.length
+    const toggleExpand = (noInvoice) => {
+        setExpandedInvoices(prev => {
+            const next = new Set(prev)
+            if (next.has(noInvoice)) next.delete(noInvoice)
+            else next.add(noInvoice)
+            return next
+        })
+    }
 
-    const toggleSelect = (id) => {
-        const item = produksi.data.find((d) => d.id === id)
-        if (isCs && item?.pembayaran) return
-        setSelected((prev) =>
-            prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-        )
+    const allPageItems = React.useMemo(() =>
+        produksi.data.flatMap(group => group.items),
+    [produksi.data])
+
+    const toggleSelectGroup = (group) => {
+        const allInGroupSelected = group.items.every(item => selected.some(s => s.id === item.id))
+        if (allInGroupSelected) {
+            const groupIds = new Set(group.items.map(item => item.id))
+            setSelected(prev => prev.filter(item => !groupIds.has(item.id)))
+        } else {
+            const existingIds = new Set(selected.map(item => item.id))
+            const newItems = group.items.filter(item => !existingIds.has(item.id) && !(isCs && item.pembayaran))
+            setSelected(prev => [...prev, ...newItems])
+        }
+    }
+
+    const allSelected = allPageItems.length > 0 && allPageItems.every(item => {
+        if (isCs && item.pembayaran) return true
+        return selected.some(s => s.id === item.id)
+    })
+
+    const toggleSelect = (item) => {
+        if (isCs && item.pembayaran) return
+        setSelected((prev) => {
+            const exists = prev.find(x => x.id === item.id)
+            return exists ? prev.filter(x => x.id !== item.id) : [...prev, item]
+        })
     }
 
     const toggleSelectAll = () => {
-        setSelected(allSelected ? [] : [...selectableIds])
+        if (allSelected) {
+            const currentIds = new Set(allPageItems.map(item => item.id))
+            setSelected(prev => prev.filter(item => !currentIds.has(item.id)))
+        } else {
+            const existingIds = new Set(selected.map(item => item.id))
+            const newItems = allPageItems.filter(item => !existingIds.has(item.id) && !(isCs && item.pembayaran))
+            setSelected(prev => [...prev, ...newItems])
+        }
     }
 
-    const selectedItems = produksi.data.filter((item) => selected.includes(item.id) && !(isCs && item.pembayaran))
+    const selectedItems = selected.filter(item => !(isCs && item.pembayaran))
     const totalHarga = selectedItems.reduce((sum, item) => sum + Number(item.total_harga || 0), 0)
     const totalQty = selectedItems.reduce((sum, item) => sum + Number(item.qty || 0), 0)
     const firstCustomer = selectedItems.length > 0 ? selectedItems[0].customer : null
@@ -60,18 +94,47 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
             paymentType,
         })
 
+    const xsrfToken = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || ''
+
+    const buildProcessScript = (ids, paymentTypeVal) => `
+        <script>
+            window.addEventListener('afterprint', function() {
+                fetch('/dataproduksi/proses-produksi', {
+                    method: 'PUT',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-XSRF-TOKEN': decodeURIComponent('${encodeURIComponent(xsrfToken)}')
+                    },
+                    body: JSON.stringify({ ids: ${JSON.stringify(ids)}, payment_type: '${paymentTypeVal}' })
+                }).then(function() { window.close(); });
+            });
+        </script>
+    `
+
     const doPrintReceipt = (items) => {
         if (items.length === 0) return
         if (items.length === 1) {
             const w = window.open('', '_blank', 'width=420,height=640')
-            w.document.open(); w.document.write(buildReceiptHtml(items)); w.document.close()
+            if (!w) return
+            const html = buildReceiptHtml(items)
+            const script = buildProcessScript([items[0].id], paymentType)
+            w.document.open()
+            w.document.write(html.replace('</head>', script + '</head>'))
+            w.document.close()
             w.addEventListener('load', () => { w.focus(); setTimeout(() => w.print(), 300) })
         } else {
             let idx = 0
             const openNext = () => {
                 if (idx >= items.length) return
                 const w = window.open('', '_blank', 'width=420,height=640')
-                w.document.open(); w.document.write(buildReceiptHtml([items[idx]])); w.document.close()
+                if (!w) return
+                const html = buildReceiptHtml([items[idx]])
+                const script = buildProcessScript([items[idx].id], paymentType)
+                w.document.open()
+                w.document.write(html.replace('</head>', script + '</head>'))
+                w.document.close()
                 w.addEventListener('load', () => { w.focus(); setTimeout(() => w.print(), 300) })
                 const t = setInterval(() => { if (w.closed) { clearInterval(t); idx++; openNext() } }, 500)
             }
@@ -82,7 +145,12 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
     const doPrintReceiptCombined = (items) => {
         if (items.length === 0) return
         const w = window.open('', '_blank', 'width=500,height=700')
-        w.document.open(); w.document.write(buildReceiptHtml(items)); w.document.close()
+        if (!w) return
+        const html = buildReceiptHtml(items)
+        const script = buildProcessScript(items.map(item => item.id), paymentType)
+        w.document.open()
+        w.document.write(html.replace('</head>', script + '</head>'))
+        w.document.close()
         w.addEventListener('load', () => { w.focus(); setTimeout(() => w.print(), 300) })
     }
 
@@ -107,26 +175,15 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
         if (paymentType === 'utang' && wouldExceedLimit) return
 
         setProcessing(true)
-        setPaymentError(null)
 
-        router.put(route('proses.produksi'), { ids: selected, payment_type: paymentType }, {
-            preserveState: true,
-            preserveScroll: true,
-            onSuccess: () => {
-                setProcessing(false)
-                paymentModalRef.current?.close()
-                if (printMode === 'combined') {
-                    doPrintReceiptCombined(selectedItems)
-                } else {
-                    doPrintReceipt(selectedItems)
-                }
-                setSelected([])
-            },
-            onError: (errors) => {
-                setProcessing(false)
-                setPaymentError(errors.payment || 'Terjadi kesalahan')
-            },
-        })
+        paymentModalRef.current?.close()
+        if (printMode === 'combined') {
+            doPrintReceiptCombined(selectedItems)
+        } else {
+            doPrintReceipt(selectedItems)
+        }
+        setSelected([])
+        setProcessing(false)
     }
 
     const reviewReceipt = (items) => {
@@ -301,41 +358,70 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                     <tbody className="text-xs">
                                         {produksi.data.length === 0 ? (
                                             <tr>
-                                                <td colSpan={15} className="text-center py-8 text-base-content/50">
+                                                <td colSpan={16} className="text-center py-8 text-base-content/50">
                                                     Tidak ada data produksi
                                                 </td>
                                             </tr>
                                         ) : (
-                                            produksi.data.map((item, index) => (
-                                                <tr key={item.id} className={`hover:bg-base-200 ${item.pembayaran === 'utang' ? 'bg-red-50 text-red-700' : item.pembayaran === 'lunas' ? 'bg-green-50 text-green-700' : item.status_selesai == 1 ? 'bg-success/20' : ''}`}>
-                                                    <td>
-                                                        <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={selected.includes(item.id)} onChange={() => toggleSelect(item.id)} disabled={isCs && item.pembayaran} />
-                                                    </td>
-                                                    <td>{produksi.from + index}</td>
-                                                    <td>{item.no_invoice}</td>
-                                                    <td className="font-mono font-medium">{item.kode_spk}</td>
-                                                    <td>{item.customer?.nama}</td>
-                                                    <td>{item.bahan?.bahan}</td>
-                                                    <td>{item.keterangan}</td>
-                                                    <td className="tabular-nums">{item.tinggi} {item.satuan}</td>
-                                                    <td className="tabular-nums">{item.lebar} {item.satuan}</td>
-                                                    <td className="tabular-nums text-center">{item.qty}</td>
-                                                    <td className="text-center">{item.sisi}</td>
-                                                    <td className={'tabular-nums' + (isDesainer && item.harga_bahan ? ' blur-sm select-none' : '')}>{isDesainer && item.harga_bahan ? '••••••' : (item.harga_bahan ? Number(item.harga_bahan).toLocaleString('id-ID') : '-')}</td>
-                                                    <td className={'tabular-nums' + (isDesainer && item.total_harga ? ' blur-sm select-none' : '')}>{isDesainer && item.total_harga ? '••••••' : (item.total_harga ? Number(item.total_harga).toLocaleString('id-ID') : '-')}</td>
-                                                    <td>
-                                                        {item.pembayaran ? (
-                                                            <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : 'badge-warning'}`}>
-                                                                {item.pembayaran === 'lunas' ? 'Lunas' : 'Utang'}
-                                                            </span>
-                                                        ) : (
-                                                            <span className="text-base-content/30">-</span>
-                                                        )}
-                                                    </td>
-                                                    <td>{item.metode_pengantaran}</td>
-                                                    <td>{item.tgl_kirim}</td>
-                                                </tr>
-                                            ))
+                                            produksi.data.map((group, groupIndex) => {
+                                                const isExpanded = expandedInvoices.has(group.no_invoice)
+                                                const allInGroupSelected = group.items.every(item => selected.some(s => s.id === item.id))
+                                                return (
+                                                    <React.Fragment key={group.no_invoice}>
+                                                        <tr className={`cursor-pointer transition-colors ${group.all_lunas ? 'bg-green-50 hover:bg-green-100' : group.all_utang ? 'bg-red-50 hover:bg-red-100' : group.has_payment ? 'bg-yellow-50 hover:bg-yellow-100' : allInGroupSelected ? 'bg-success/10 hover:bg-success/15' : 'hover:bg-base-300'}`} onClick={() => toggleExpand(group.no_invoice)}>
+                                                            <td onClick={(e) => e.stopPropagation()}>
+                                                                <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={allInGroupSelected} onChange={() => toggleSelectGroup(group)} />
+                                                            </td>
+                                                            <td className="font-medium">{groupIndex + 1}</td>
+                                                            <td className="font-mono font-semibold">{group.no_invoice}</td>
+                                                            <td className="font-medium">{group.customer?.nama}</td>
+                                                            <td colSpan={12}>
+                                                                <div className="flex items-center justify-between gap-3">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <span className="badge badge-sm badge-success gap-1">
+                                                                            <i className="fas fa-layer-group text-xs"></i>
+                                                                            {group.item_count} item
+                                                                        </span>
+                                                                        <span className="text-base-content/60">Qty: <strong>{group.total_qty}</strong></span>
+                                                                        <span className="text-success font-semibold">Rp {Number(group.total_harga).toLocaleString('id-ID')}</span>
+                                                                    </div>
+                                                                    <i className={`fas fa-chevron-${isExpanded ? 'down' : 'right'} text-xs text-base-content/40 transition-transform`}></i>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        {isExpanded && group.items.map((item) => (
+                                                            <tr key={item.id} className={`hover:bg-base-200 ${item.pembayaran === 'utang' ? 'bg-red-50 text-red-700' : item.pembayaran === 'lunas' ? 'bg-green-50 text-green-700' : ''}`}>
+                                                                <td>
+                                                                    <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={selected.some(s => s.id === item.id)} onChange={() => toggleSelect(item)} disabled={isCs && item.pembayaran} />
+                                                                </td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td className="font-mono font-medium">{item.kode_spk}</td>
+                                                                <td>{item.customer?.nama}</td>
+                                                                <td>{item.bahan?.bahan}</td>
+                                                                <td>{item.keterangan}</td>
+                                                                <td className="tabular-nums">{item.tinggi} {item.satuan}</td>
+                                                                <td className="tabular-nums">{item.lebar} {item.satuan}</td>
+                                                                <td className="tabular-nums text-center">{item.qty}</td>
+                                                                <td className="text-center">{item.sisi}</td>
+                                                                <td className={'tabular-nums' + (isDesainer && item.harga_bahan ? ' blur-sm select-none' : '')}>{isDesainer && item.harga_bahan ? '••••••' : (item.harga_bahan ? Number(item.harga_bahan).toLocaleString('id-ID') : '-')}</td>
+                                                                <td className={'tabular-nums' + (isDesainer && item.total_harga ? ' blur-sm select-none' : '')}>{isDesainer && item.total_harga ? '••••••' : (item.total_harga ? Number(item.total_harga).toLocaleString('id-ID') : '-')}</td>
+                                                                <td>
+                                                                    {item.pembayaran ? (
+                                                                        <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : 'badge-warning'}`}>
+                                                                            {item.pembayaran === 'lunas' ? 'Lunas' : 'Utang'}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-base-content/30">-</span>
+                                                                    )}
+                                                                </td>
+                                                                <td>{item.metode_pengantaran}</td>
+                                                                <td>{item.tgl_kirim}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </React.Fragment>
+                                                )
+                                            })
                                         )}
                                     </tbody>
                                 </table>
@@ -350,7 +436,6 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                             className={`btn btn-sm join-item ${link.active ? 'btn-success' : ''} ${!link.url ? 'btn-disabled' : ''}`}
                                             preserveState
                                             replace
-                                            onClick={() => setSelected([])}
                                             dangerouslySetInnerHTML={{ __html: link.label }}
                                         />
                                     ))}
