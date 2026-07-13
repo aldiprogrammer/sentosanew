@@ -43,7 +43,7 @@ export default function Bahanpakai({ bahanpakai, masterBahan, kode }) {
   const hitungTotal = (p, l) => {
     const angkaP = parseFloat(p) || 0;
     const angkaL = parseFloat(l) || 0;
-    return angkaP && angkaL ? String(angkaP * angkaL) : '';
+    return angkaP && angkaL ? String(Math.round(angkaP * angkaL)) : '';
   };
 
   const setPanjang = (value) => {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\admin;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Desain;
+use App\Models\PembayaranHutang;
 use App\Models\Produksi;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -19,10 +20,13 @@ class LaporanPembukuanController extends Controller
         $totalLunas = $data->where('pembayaran', 'lunas')->sum('total_harga');
         $totalHutang = $data->where('pembayaran', 'utang')->sum('total_harga');
 
+        $pembayaranHutangs = PembayaranHutang::with('customer')->latest()->get();
+
         return Inertia::render('Admin/LaporanPembukuan', [
             'data' => $data,
             'totalLunas' => $totalLunas,
             'totalHutang' => $totalHutang,
+            'pembayaranHutangs' => $pembayaranHutangs,
             'today' => date('Y-m-d'),
             'filters' => $request->only(['tanggal_awal', 'tanggal_akhir', 'bulan', 'jenis']),
         ]);
@@ -52,6 +56,8 @@ class LaporanPembukuanController extends Controller
         $request->validate([
             'id' => 'required|integer',
             'jenis' => 'required|in:Desain,Produksi',
+            'tanggal_bayar' => 'required|date',
+            'jenis_pembayaran' => 'required|in:Cash,Transfer',
         ]);
 
         $model = $request->jenis === 'Desain' ? Desain::class : Produksi::class;
@@ -66,6 +72,14 @@ class LaporanPembukuanController extends Controller
         }
 
         $model::where('id', $item->id)->update(['pembayaran' => 'lunas']);
+
+        PembayaranHutang::create([
+            'no_invoice' => $item->no_invoice ?? $item->kode_spk,
+            'id_customer' => $item->id_customer,
+            'tanggal_bayar' => $request->tanggal_bayar,
+            'jenis_pembayaran' => $request->jenis_pembayaran,
+            'total_pembayaran' => $item->total_harga,
+        ]);
 
         if ($item->customer) {
             $item->customer->decrement('limit_akhir', $item->total_harga);

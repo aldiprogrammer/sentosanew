@@ -2,7 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout'
 import { router, usePage } from '@inertiajs/react'
 import React, { useState } from 'react'
 
-export default function LaporanPembukuan({ data, totalLunas, totalHutang, today, filters }) {
+export default function LaporanPembukuan({ data, totalLunas, totalHutang, pembayaranHutangs, today, filters }) {
   const { flash } = usePage().props
   const [tab, setTab] = useState('semua')
   const [processing, setProcessing] = useState(false)
@@ -10,6 +10,11 @@ export default function LaporanPembukuan({ data, totalLunas, totalHutang, today,
   const [tanggalAkhir, setTanggalAkhir] = useState(filters?.tanggal_akhir || '')
   const [bulan, setBulan] = useState(filters?.bulan || '')
   const [jenis, setJenis] = useState(filters?.jenis || '')
+
+  const [showBayarModal, setShowBayarModal] = useState(false)
+  const [bayarItem, setBayarItem] = useState(null)
+  const [tanggalBayar, setTanggalBayar] = useState(today || '')
+  const [jenisBayar, setJenisBayar] = useState('Cash')
 
   const filtered = data.filter((item) => {
     if (tab === 'lunas') return item.pembayaran === 'lunas'
@@ -40,33 +45,32 @@ export default function LaporanPembukuan({ data, totalLunas, totalHutang, today,
     window.open(`/laporan-pembukuan/pdf?${params.toString()}`, '_blank')
   }
 
-  function handleBayar(item) {
-    if (processing) return
-    Swal.fire({
-      title: 'Ubah ke Lunas?',
-      html: `Pembayaran <b>${item.customer}</b> sebesar <b>Rp ${Number(item.total_harga).toLocaleString('id-ID')}</b> akan diubah ke lunas.`,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Ya, Bayar!',
-      cancelButtonText: 'Batal',
-      buttonsStyling: false,
-      customClass: {
-        confirmButton: 'swal2-confirm btn btn-success btn-sm',
-        cancelButton: 'swal2-cancel btn btn-error btn-sm',
-        actions: 'swal2-actions gap-2',
-        popup: 'shadow-xl',
+  function openBayarModal(item) {
+    setBayarItem(item)
+    setTanggalBayar(today || '')
+    setJenisBayar('Cash')
+    setShowBayarModal(true)
+  }
+
+  function closeBayarModal() {
+    setShowBayarModal(false)
+    setBayarItem(null)
+  }
+
+  function handleBayar() {
+    if (!bayarItem || processing) return
+    setProcessing(true)
+    router.put(route('laporan-pembukuan.bayar'), {
+      id: bayarItem.id,
+      jenis: bayarItem.jenis,
+      tanggal_bayar: tanggalBayar,
+      jenis_pembayaran: jenisBayar,
+    }, {
+      preserveScroll: true,
+      onFinish: () => {
+        setProcessing(false)
+        closeBayarModal()
       },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setProcessing(true)
-        router.put(route('laporan-pembukuan.bayar'), {
-          id: item.id,
-          jenis: item.jenis,
-        }, {
-          preserveScroll: true,
-          onFinish: () => setProcessing(false),
-        })
-      }
     })
   }
 
@@ -192,7 +196,7 @@ export default function LaporanPembukuan({ data, totalLunas, totalHutang, today,
                         <td>
                           <button
                             className="inline-flex items-center gap-1 rounded bg-green-600 px-3 py-1 text-xs font-semibold text-white hover:bg-green-700"
-                            onClick={() => handleBayar(item)}
+                            onClick={() => openBayarModal(item)}
                             disabled={processing}
                           >
                             <i className="fas fa-check"></i> Bayar
@@ -215,7 +219,117 @@ export default function LaporanPembukuan({ data, totalLunas, totalHutang, today,
             </div>
           </div>
         </div>
+
+        {/* Tabel Pembayaran Hutang */}
+        <div className="card bg-base-100 shadow-md border border-base-300">
+          <div className="card-body">
+            <h2 className="card-title">Pembayaran Hutang</h2>
+            <div className="overflow-x-auto">
+              <table className="table table-zebra">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>No Invoice</th>
+                    <th>Customer</th>
+                    <th>Tanggal Bayar</th>
+                    <th>Jenis Pembayaran</th>
+                    <th>Total Pembayaran</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pembayaranHutangs.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center text-gray-400 py-4">Belum ada pembayaran hutang</td>
+                    </tr>
+                  ) : (
+                    pembayaranHutangs.map((item, i) => (
+                      <tr key={item.id}>
+                        <td>{i + 1}</td>
+                        <td>{item.no_invoice}</td>
+                        <td>{item.customer?.nama || '-'}</td>
+                        <td>{item.tanggal_bayar}</td>
+                        <td>
+                          <span className={`badge badge-sm ${item.jenis_pembayaran === 'Transfer' ? 'badge-info' : 'badge-success'}`}>
+                            {item.jenis_pembayaran}
+                          </span>
+                        </td>
+                        <td className="font-semibold">Rp {Number(item.total_pembayaran).toLocaleString('id-ID')}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Modal Bayar */}
+      {showBayarModal && bayarItem && (
+        <dialog className="modal modal-open">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">Pembayaran Hutang</h3>
+            <div className="py-4 space-y-4">
+              <div>
+                <p className="text-sm text-base-content/70">Customer</p>
+                <p className="font-semibold">{bayarItem.customer}</p>
+              </div>
+              <div>
+                <p className="text-sm text-base-content/70">Total Harga</p>
+                <p className="font-semibold text-lg">Rp {Number(bayarItem.total_harga).toLocaleString('id-ID')}</p>
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-semibold">Tanggal Bayar</span>
+                </label>
+                <input
+                  type="date"
+                  className="input input-bordered input-sm"
+                  value={tanggalBayar}
+                  onChange={(e) => setTanggalBayar(e.target.value)}
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-semibold">Jenis Pembayaran</span>
+                </label>
+                <select
+                  className="select select-bordered select-sm"
+                  value={jenisBayar}
+                  onChange={(e) => setJenisBayar(e.target.value)}
+                >
+                  <option value="Cash">Cash</option>
+                  <option value="Transfer">Transfer</option>
+                </select>
+              </div>
+
+              {jenisBayar === 'Transfer' && (
+                <div className="alert alert-info text-sm">
+                  <i className="fas fa-university"></i>
+                  <div>
+                    <p className="font-semibold">Rekening Tujuan</p>
+                    <p>BCA — No. Rek: <span className="font-mono font-bold">837 521 6007</span></p>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="modal-action">
+              <button className="btn btn-ghost btn-sm" onClick={closeBayarModal} disabled={processing}>Batal</button>
+              <button
+                className="btn btn-success btn-sm"
+                onClick={handleBayar}
+                disabled={processing || !tanggalBayar}
+              >
+                {processing ? <span className="loading loading-spinner loading-sm"></span> : <i className="fas fa-check"></i>}
+                Lunas
+              </button>
+            </div>
+          </div>
+          <form method="dialog" className="modal-backdrop" onClick={closeBayarModal}></form>
+        </dialog>
+      )}
     </AdminLayout>
   )
 }

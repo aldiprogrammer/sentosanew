@@ -16,6 +16,7 @@ use App\Http\Controllers\admin\LaporanFeeDesainController;
 use App\Http\Controllers\admin\LaporanOrderController;
 use App\Http\Controllers\admin\LaporanPembukuanController;
 use App\Http\Controllers\admin\MaterbahanController;
+use App\Http\Controllers\admin\PembayaranHutangController;
 use App\Http\Controllers\admin\PenggunaController;
 use App\Http\Controllers\admin\PoPembelianBahanController;
 use App\Http\Controllers\admin\PoEksternalController;
@@ -167,6 +168,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/laporan-pembukuan', [LaporanPembukuanController::class, 'index'])->name('laporan-pembukuan');
     Route::get('/laporan-pembukuan/pdf', [LaporanPembukuanController::class, 'pdf'])->name('laporan-pembukuan.pdf');
     Route::put('/laporan-pembukuan/bayar', [LaporanPembukuanController::class, 'bayar'])->name('laporan-pembukuan.bayar');
+
+    Route::get('/pembayaran-hutang', [PembayaranHutangController::class, 'index'])->name('pembayaran-hutang');
 
     Route::get('/laporan-fee-desain', [LaporanFeeDesainController::class, 'index'])->name('laporan-fee-desain');
     Route::get('/laporan-fee-desain/pdf', [LaporanFeeDesainController::class, 'pdf'])->name('laporan-fee-desain.pdf');

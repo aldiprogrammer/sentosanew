@@ -33,6 +33,7 @@ class JabatanController extends Controller
             ['key' => 'laporan-pembukuan', 'label' => 'Laporan Pembukuan', 'group' => 'Laporan Keuangan'],
             ['key' => 'laporan-fee-desain', 'label' => 'Laporan Fee Desain', 'group' => 'Laporan Keuangan'],
             ['key' => 'laporan-fee-cs', 'label' => 'Laporan Fee CS', 'group' => 'Laporan Keuangan'],
+            ['key' => 'pembayaran-hutang', 'label' => 'Pembayaran Hutang', 'group' => 'Laporan Keuangan'],
 
             ['key' => 'pengguna', 'label' => 'Pengguna', 'group' => 'Master Data'],
             ['key' => 'distributor', 'label' => 'Distributor', 'group' => 'Master Data'],

@@ -305,7 +305,7 @@ export default function AdminLayout({ children }) {
                                 </details>
                             </li>
                         )}
-                        {(hasMenu('laporan-pembukuan') || hasMenu('laporan-fee-desain') || hasMenu('laporan-fee-cs')) && (
+                        {(hasMenu('laporan-pembukuan') || hasMenu('laporan-fee-desain') || hasMenu('laporan-fee-cs') || hasMenu('pembayaran-hutang')) && (
                             <li>
                                 <details>
                                     <summary className="rounded-xl">
@@ -326,6 +326,11 @@ export default function AdminLayout({ children }) {
                                         {hasMenu('laporan-fee-cs') && (
                                             <li>
                                                 <Link href={route('laporan-fee-cs')}>Laporan Fee CS</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('pembayaran-hutang') && (
+                                            <li>
+                                                <Link href={route('pembayaran-hutang')}>Pembayaran Hutang</Link>
                                             </li>
                                         )}
                                     </ul>
