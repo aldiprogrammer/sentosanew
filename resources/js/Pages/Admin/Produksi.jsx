@@ -121,7 +121,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
         const qtyMax = qtyMaxKosong ? Infinity : Number(harga.qty_max);
         const sisiHarga = String(harga.sisi || '').trim();
 
-        if (bh.cara_perhitungan === 'QTY KHUSUS' && qtyMaxKosong && jumlah !== qtyMin) {
+        if ((bh.cara_perhitungan === 'QTY KHUSUS' || bh.cara_perhitungan === 'QTY2') && qtyMaxKosong && jumlah !== qtyMin) {
           return false;
         }
 
@@ -358,7 +358,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
 
     if (pilihan === 'Custom') return 0;
 
-    const harga = bh.cara_perhitungan === 'QTY KHUSUS'
+    const harga = bh.cara_perhitungan === 'QTY KHUSUS' || bh.cara_perhitungan === 'QTY2'
       ? hargaSesuaiQty(bh, qty, sisi)
       : hargaDasar(bh, sisi);
     const kolomHarga = hargaFieldByKategori[pilihan] || 'harga_umum';

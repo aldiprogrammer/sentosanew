@@ -83,6 +83,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
       if (["PCS", "QTY"].includes(satuan)) return Math.round(nilaiQty * nilaiHarga);
       return Math.round(nilaiHarga);
     }
+    if (caraPerhitungan === "QTY2") return Math.round(nilaiQty * nilaiHarga);
 
     return Math.round(nilaiQty * nilaiHarga);
   };

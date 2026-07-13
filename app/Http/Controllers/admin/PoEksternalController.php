@@ -388,6 +388,11 @@ class PoEksternalController extends Controller
             return round($harga);
         }
 
+        if ($caraPerhitungan === 'QTY2') {
+
+            return round($qty * $harga);
+        }
+
         return round($qty * $harga);
     }
 }

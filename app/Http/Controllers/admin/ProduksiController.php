@@ -263,7 +263,7 @@ class ProduksiController extends Controller
         $hargaBahan = Hargabahan::where('kode_bahan', $bahan->kode)->get();
         $pakaiSisi = $hargaBahan->contains(fn ($harga) => trim((string) $harga->sisi) !== '');
 
-        if ($bahan->cara_perhitungan === 'QTY KHUSUS') {
+        if (in_array($bahan->cara_perhitungan, ['QTY KHUSUS', 'QTY2'])) {
             $harga = $hargaBahan
                 ->filter(function ($harga) use ($qty, $sisi, $pakaiSisi) {
                     $qtyMin = (float) ($harga->qty_min ?: 0);
@@ -325,6 +325,11 @@ class ProduksiController extends Controller
             } else {
                 return (float) $hargaProduk;
             }
+        }
+
+        if ($bahan->cara_perhitungan === 'QTY2') {
+
+            return (float) $request->qty * $hargaProduk;
         }
 
         if ($bahan->cara_perhitungan === 'LUAS') {

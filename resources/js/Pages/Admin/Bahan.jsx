@@ -112,7 +112,7 @@ const jenisBahanOptions = [
   'DISPLAY',
   'UV',
 ];
-const perhitunganOptions = ['QTY', 'LUAS', 'QTY KHUSUS'];
+const perhitunganOptions = ['QTY', 'QTY2', 'LUAS', 'QTY KHUSUS'];
 
 const colors = [
   '#e8f5e9', '#e3f2fd', '#fff3e0', '#f3e5f5', '#e0f7fa',

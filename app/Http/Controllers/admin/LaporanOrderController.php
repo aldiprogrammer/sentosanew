@@ -4,6 +4,7 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Desain;
+use App\Models\Pengguna;
 use App\Models\Produksi;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ class LaporanOrderController extends Controller
         $tglAkhir = $request->query('tgl_akhir');
         $search = $request->query('search');
         $pembayaran = $request->query('pembayaran');
+        $penggunaId = $request->query('pengguna_id');
 
         $desain = Desain::with('customer', 'kategoridesain', 'desainer')
             ->when($search, function ($q, $search) {
@@ -25,6 +27,7 @@ class LaporanOrderController extends Controller
             ->when($pembayaran, function ($q, $pembayaran) {
                 $q->where('pembayaran', $pembayaran);
             })
+            ->when($penggunaId, fn($q) => $q->where('id_desain', $penggunaId))
             ->when($tglAwal, fn($q) => $q->where('tanggal', '>=', $tglAwal))
             ->when($tglAkhir, fn($q) => $q->where('tanggal', '<=', $tglAkhir))
             ->orderBy('id', 'desc')
@@ -41,24 +44,30 @@ class LaporanOrderController extends Controller
             ->when($pembayaran, function ($q, $pembayaran) {
                 $q->where('pembayaran', $pembayaran);
             })
+            ->when($penggunaId, fn($q) => $q->where('id_desainer', $penggunaId))
             ->when($tglAwal, fn($q) => $q->where('tanggal', '>=', $tglAwal))
             ->when($tglAkhir, fn($q) => $q->where('tanggal', '<=', $tglAkhir))
             ->orderBy('id', 'desc')
             ->paginate(20)
             ->withQueryString();
 
+        $penggunas = Pengguna::whereIn('role', ['Customer Service', 'Desainer'])
+            ->orderBy('username')
+            ->get(['id', 'username']);
+
         return Inertia::render('Admin/LaporanOrder', compact(
-            'desain', 'produksi', 'tglAwal', 'tglAkhir', 'search', 'pembayaran'
+            'desain', 'produksi', 'tglAwal', 'tglAkhir', 'search', 'pembayaran', 'penggunaId', 'penggunas'
         ));
     }
 
     public function pdfDesain(Request $request)
     {
         $data = $this->getFilteredDesain($request);
-        $filters = $request->only(['tgl_awal', 'tgl_akhir', 'search', 'pembayaran']);
+        $filters = $request->only(['tgl_awal', 'tgl_akhir', 'search', 'pembayaran', 'pengguna_id']);
         $totalKeseluruhan = $data->sum('total_harga');
+        $penggunaName = $filters['pengguna_id'] ? (Pengguna::find($filters['pengguna_id'])?->username ?? '') : '';
 
-        $pdf = Pdf::loadView('pdf.laporan-order-desain', compact('data', 'filters', 'totalKeseluruhan'))
+        $pdf = Pdf::loadView('pdf.laporan-order-desain', compact('data', 'filters', 'totalKeseluruhan', 'penggunaName'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->stream('laporan-order-desain.pdf');
@@ -67,10 +76,11 @@ class LaporanOrderController extends Controller
     public function pdfProduksi(Request $request)
     {
         $data = $this->getFilteredProduksi($request);
-        $filters = $request->only(['tgl_awal', 'tgl_akhir', 'search', 'pembayaran']);
+        $filters = $request->only(['tgl_awal', 'tgl_akhir', 'search', 'pembayaran', 'pengguna_id']);
         $totalKeseluruhan = $data->sum('total_harga');
+        $penggunaName = $filters['pengguna_id'] ? (Pengguna::find($filters['pengguna_id'])?->username ?? '') : '';
 
-        $pdf = Pdf::loadView('pdf.laporan-order-produksi', compact('data', 'filters', 'totalKeseluruhan'))
+        $pdf = Pdf::loadView('pdf.laporan-order-produksi', compact('data', 'filters', 'totalKeseluruhan', 'penggunaName'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->stream('laporan-order-produksi.pdf');
@@ -82,12 +92,14 @@ class LaporanOrderController extends Controller
         $tglAkhir = $request->query('tgl_akhir');
         $search = $request->query('search');
         $pembayaran = $request->query('pembayaran');
+        $penggunaId = $request->query('pengguna_id');
 
         return Desain::with('customer', 'kategoridesain', 'desainer')
             ->when($search, function ($q, $search) {
                 $q->where('no_invoice', 'like', "%{$search}%");
             })
             ->when($pembayaran, fn($q) => $q->where('pembayaran', $pembayaran))
+            ->when($penggunaId, fn($q) => $q->where('id_desain', $penggunaId))
             ->when($tglAwal, fn($q) => $q->where('tanggal', '>=', $tglAwal))
             ->when($tglAkhir, fn($q) => $q->where('tanggal', '<=', $tglAkhir))
             ->orderBy('id', 'desc')
@@ -100,6 +112,7 @@ class LaporanOrderController extends Controller
         $tglAkhir = $request->query('tgl_akhir');
         $search = $request->query('search');
         $pembayaran = $request->query('pembayaran');
+        $penggunaId = $request->query('pengguna_id');
 
         return Produksi::with('customer', 'bahan')
             ->when($search, function ($q, $search) {
@@ -109,6 +122,7 @@ class LaporanOrderController extends Controller
                 });
             })
             ->when($pembayaran, fn($q) => $q->where('pembayaran', $pembayaran))
+            ->when($penggunaId, fn($q) => $q->where('id_desainer', $penggunaId))
             ->when($tglAwal, fn($q) => $q->where('tanggal', '>=', $tglAwal))
             ->when($tglAkhir, fn($q) => $q->where('tanggal', '<=', $tglAkhir))
             ->orderBy('id', 'desc')

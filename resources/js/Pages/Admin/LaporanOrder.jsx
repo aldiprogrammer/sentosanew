@@ -2,11 +2,12 @@ import AdminLayout from '@/Layouts/AdminLayout'
 import { Link, router } from '@inertiajs/react'
 import React, { useState } from 'react'
 
-export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, search, pembayaran }) {
+export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, search, pembayaran, penggunaId, penggunas }) {
     const [filterTglAwal, setFilterTglAwal] = useState(tglAwal || '')
     const [filterTglAkhir, setFilterTglAkhir] = useState(tglAkhir || '')
     const [filterSearch, setFilterSearch] = useState(search || '')
     const [filterPembayaran, setFilterPembayaran] = useState(pembayaran || '')
+    const [filterPengguna, setFilterPengguna] = useState(penggunaId || '')
     const [tab, setTab] = useState('desain')
 
     const applyFilter = () => {
@@ -15,6 +16,7 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
             tgl_akhir: filterTglAkhir,
             search: filterSearch,
             pembayaran: filterPembayaran,
+            pengguna_id: filterPengguna,
         }, { preserveState: true, replace: true })
     }
 
@@ -28,6 +30,7 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
         if (filterTglAkhir) params.set('tgl_akhir', filterTglAkhir)
         if (filterSearch) params.set('search', filterSearch)
         if (filterPembayaran) params.set('pembayaran', filterPembayaran)
+        if (filterPengguna) params.set('pengguna_id', filterPengguna)
         window.open(`/laporan-order/pdf-desain?${params.toString()}`, '_blank')
     }
 
@@ -37,6 +40,7 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
         if (filterTglAkhir) params.set('tgl_akhir', filterTglAkhir)
         if (filterSearch) params.set('search', filterSearch)
         if (filterPembayaran) params.set('pembayaran', filterPembayaran)
+        if (filterPengguna) params.set('pengguna_id', filterPengguna)
         window.open(`/laporan-order/pdf-produksi?${params.toString()}`, '_blank')
     }
 
@@ -75,6 +79,16 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                     <option value="">Semua</option>
                                     <option value="lunas">Lunas</option>
                                     <option value="utang">Hutang</option>
+                                </select>
+                            </div>
+                            <div className="form-control">
+                                <label className="label"><span className="label-text">Pegawai</span></label>
+                                <select className="select select-bordered select-sm text-sm"
+                                    value={filterPengguna} onChange={(e) => setFilterPengguna(e.target.value)}>
+                                    <option value="">Semua Pegawai</option>
+                                    {penggunas?.map((p) => (
+                                        <option key={p.id} value={p.id}>{p.username}</option>
+                                    ))}
                                 </select>
                             </div>
                             <button className="btn btn-primary btn-sm mt-6" onClick={applyFilter}>

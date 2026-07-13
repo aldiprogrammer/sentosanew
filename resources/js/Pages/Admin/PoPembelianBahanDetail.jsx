@@ -737,7 +737,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                   )}
                   <label className="form-control">
                     <div className="label"><span className="label-text">Qty</span></div>
-                    <input type="number" step="0.01" value={data.qty} className="input input-bordered input-success w-full" onChange={(e) => setData("qty", e.target.value)} />
+                    <input type="number" step="0.01" value={data.qty} className="input input-bordered input-success w-full" onChange={(e) => setData("qty", e.target.value)} required />
                     {errors.qty && <span className="text-error text-xs mt-1 block">{errors.qty}</span>}
                   </label>
                   <label className="form-control">

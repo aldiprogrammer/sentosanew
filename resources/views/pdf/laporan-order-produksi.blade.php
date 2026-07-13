@@ -27,13 +27,16 @@
             @if ($filters['pembayaran'] ?? '')
                 Pembayaran: {{ ucfirst($filters['pembayaran']) }} |
             @endif
+            @if ($penggunaName ?? '')
+                Pegawai: {{ $penggunaName }} |
+            @endif
             @if ($filters['tgl_awal'] ?? '')
                 Tgl Awal: {{ $filters['tgl_awal'] }} |
             @endif
             @if ($filters['tgl_akhir'] ?? '')
                 Tgl Akhir: {{ $filters['tgl_akhir'] }} |
             @endif
-            @if (!($filters['tgl_awal'] ?? '') && !($filters['tgl_akhir'] ?? '') && !($filters['search'] ?? '') && !($filters['pembayaran'] ?? ''))
+            @if (!($filters['tgl_awal'] ?? '') && !($filters['tgl_akhir'] ?? '') && !($filters['search'] ?? '') && !($filters['pembayaran'] ?? '') && !($penggunaName ?? ''))
                 Semua Data
             @endif
         </p>
