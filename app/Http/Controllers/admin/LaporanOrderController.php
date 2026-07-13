@@ -20,21 +20,23 @@ class LaporanOrderController extends Controller
         $pembayaran = $request->query('pembayaran');
         $penggunaId = $request->query('pengguna_id');
 
-        $desain = Desain::with('customer', 'kategoridesain', 'desainer')
+        $desain = Desain::with('customer', 'kategoridesain', 'desainer', 'cs')
             ->when($search, function ($q, $search) {
                 $q->where('no_invoice', 'like', "%{$search}%");
             })
             ->when($pembayaran, function ($q, $pembayaran) {
                 $q->where('pembayaran', $pembayaran);
             })
-            ->when($penggunaId, fn($q) => $q->where('id_desain', $penggunaId))
+            ->when($penggunaId, fn($q) => $q->where(function ($q) use ($penggunaId) {
+                $q->where('id_desain', $penggunaId)->orWhere('id_cs', $penggunaId);
+            }))
             ->when($tglAwal, fn($q) => $q->where('tanggal', '>=', $tglAwal))
             ->when($tglAkhir, fn($q) => $q->where('tanggal', '<=', $tglAkhir))
             ->orderBy('id', 'desc')
             ->paginate(20)
             ->withQueryString();
 
-        $produksi = Produksi::with('customer', 'bahan')
+        $produksi = Produksi::with('customer', 'bahan', 'cs')
             ->when($search, function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     $q->where('no_invoice', 'like', "%{$search}%")
@@ -44,7 +46,7 @@ class LaporanOrderController extends Controller
             ->when($pembayaran, function ($q, $pembayaran) {
                 $q->where('pembayaran', $pembayaran);
             })
-            ->when($penggunaId, fn($q) => $q->where('id_desainer', $penggunaId))
+            ->when($penggunaId, fn($q) => $q->where('id_cs', $penggunaId))
             ->when($tglAwal, fn($q) => $q->where('tanggal', '>=', $tglAwal))
             ->when($tglAkhir, fn($q) => $q->where('tanggal', '<=', $tglAkhir))
             ->orderBy('id', 'desc')
@@ -94,12 +96,14 @@ class LaporanOrderController extends Controller
         $pembayaran = $request->query('pembayaran');
         $penggunaId = $request->query('pengguna_id');
 
-        return Desain::with('customer', 'kategoridesain', 'desainer')
+        return Desain::with('customer', 'kategoridesain', 'desainer', 'cs')
             ->when($search, function ($q, $search) {
                 $q->where('no_invoice', 'like', "%{$search}%");
             })
             ->when($pembayaran, fn($q) => $q->where('pembayaran', $pembayaran))
-            ->when($penggunaId, fn($q) => $q->where('id_desain', $penggunaId))
+            ->when($penggunaId, fn($q) => $q->where(function ($q) use ($penggunaId) {
+                $q->where('id_desain', $penggunaId)->orWhere('id_cs', $penggunaId);
+            }))
             ->when($tglAwal, fn($q) => $q->where('tanggal', '>=', $tglAwal))
             ->when($tglAkhir, fn($q) => $q->where('tanggal', '<=', $tglAkhir))
             ->orderBy('id', 'desc')
@@ -114,7 +118,7 @@ class LaporanOrderController extends Controller
         $pembayaran = $request->query('pembayaran');
         $penggunaId = $request->query('pengguna_id');
 
-        return Produksi::with('customer', 'bahan')
+        return Produksi::with('customer', 'bahan', 'cs')
             ->when($search, function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     $q->where('no_invoice', 'like', "%{$search}%")
@@ -122,7 +126,7 @@ class LaporanOrderController extends Controller
                 });
             })
             ->when($pembayaran, fn($q) => $q->where('pembayaran', $pembayaran))
-            ->when($penggunaId, fn($q) => $q->where('id_desainer', $penggunaId))
+            ->when($penggunaId, fn($q) => $q->where('id_cs', $penggunaId))
             ->when($tglAwal, fn($q) => $q->where('tanggal', '>=', $tglAwal))
             ->when($tglAkhir, fn($q) => $q->where('tanggal', '<=', $tglAkhir))
             ->orderBy('id', 'desc')

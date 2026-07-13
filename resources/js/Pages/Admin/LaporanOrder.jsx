@@ -136,12 +136,13 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                                 <th>Total Harga</th>
                                                 <th>Pembayaran</th>
                                                 <th>Desainer</th>
+                                                <th>CS</th>
                                             </tr>
                                         </thead>
                                         <tbody className="text-xs">
                                             {desain.data.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan={10} className="text-center py-8 text-base-content/50">Tidak ada data desain</td>
+                                                    <td colSpan={11} className="text-center py-8 text-base-content/50">Tidak ada data desain</td>
                                                 </tr>
                                             ) : (
                                                 desain.data.map((item, i) => (
@@ -164,6 +165,7 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                                             )}
                                                         </td>
                                                         <td>{item.desainer?.username || '-'}</td>
+                                                        <td>{item.cs?.username || '-'}</td>
                                                     </tr>
                                                 ))
                                             )}
@@ -207,12 +209,13 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                                 <th>Total Harga</th>
                                                 <th>Pembayaran</th>
                                                 <th>Status</th>
+                                                <th>CS</th>
                                             </tr>
                                         </thead>
                                         <tbody className="text-xs">
                                             {produksi.data.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan={10} className="text-center py-8 text-base-content/50">Tidak ada data produksi</td>
+                                                    <td colSpan={11} className="text-center py-8 text-base-content/50">Tidak ada data produksi</td>
                                                 </tr>
                                             ) : (
                                                 produksi.data.map((item, i) => (
@@ -243,6 +246,7 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                                                 return '-'
                                                             })()}
                                                         </td>
+                                                        <td>{item.cs?.username || '-'}</td>
                                                     </tr>
                                                 ))
                                             )}

@@ -88,12 +88,14 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
   const hitungLuas = (panjang, lebar) => {
     const p = parseFloat(panjang) || 0;
     const l = parseFloat(lebar) || 0;
-    return p * l;
+    return Math.round(p * l);
   };
 
-  const hitungTotal = (qty, harga) => {
+  const hitungTotal = (luas, qty, harga, satuan) => {
+    const l = parseFloat(luas) || 0;
     const q = parseFloat(qty) || 0;
     const h = parseFloat(harga) || 0;
+    if (satuan === 'M2') return Math.round(l * h * q);
     return q * h;
   };
 
@@ -106,7 +108,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
       const luas = hitungLuas(data.panjang, data.lebar);
       setData("luas", luas);
     }
-    const total = hitungTotal(data.qty, data.harga);
+    const total = hitungTotal(data.luas, data.qty, data.harga, data.satuan);
     setData("total_harga", total);
   }, [data.panjang, data.lebar, data.qty, data.harga, data.satuan]);
 

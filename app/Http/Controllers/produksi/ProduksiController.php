@@ -128,6 +128,7 @@ class ProduksiController extends Controller
             Produksi::whereIn('id', array_merge($nonDisplayIds, $nonEksternal))->update([
                 'status_produksi' => 1,
                 'pembayaran' => $paymentType,
+                'id_cs' => auth()->id(),
             ]);
         }
 
@@ -137,6 +138,7 @@ class ProduksiController extends Controller
                 'status_finishing' => 1,
                 'status_logistik' => 1,
                 'pembayaran' => $paymentType,
+                'id_cs' => auth()->id(),
             ]);
         }
 
@@ -146,6 +148,7 @@ class ProduksiController extends Controller
                 'status_finishing' => 1,
                 'status_logistik' => 1,
                 'pembayaran' => $paymentType,
+                'id_cs' => auth()->id(),
             ]);
         }
 

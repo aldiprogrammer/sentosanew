@@ -143,7 +143,10 @@ class DesainController extends Controller
             }
         }
 
-        Desain::whereIn('id', $ids)->update(['pembayaran' => $paymentType]);
+        Desain::whereIn('id', $ids)->update([
+            'pembayaran' => $paymentType,
+            'id_cs' => auth()->id(),
+        ]);
 
         $desains = Desain::with('kategoridesain')->whereIn('id', $ids)->get();
         $today = now()->toDateString();

@@ -20,4 +20,9 @@ class Desain extends Model
     {
         return $this->belongsTo(Pengguna::class, 'id_desain');
     }
+
+    public function cs()
+    {
+        return $this->belongsTo(Pengguna::class, 'id_cs');
+    }
 }

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Produksi extends Model
 {
-    protected $fillable = ['sisi', 'sisa_putih_panjang', 'sisa_putih_lebar', 'sisa_putih_total', 'kode_bahanpakai'];
+    protected $fillable = ['sisi', 'sisa_putih_panjang', 'sisa_putih_lebar', 'sisa_putih_total', 'kode_bahanpakai', 'id_cs'];
 
     public function customer()
     {
@@ -26,5 +26,10 @@ class Produksi extends Model
     public function mataAyam()
     {
         return $this->hasOne(MataAyam::class, 'kode_spk', 'kode_spk');
+    }
+
+    public function cs()
+    {
+        return $this->belongsTo(Pengguna::class, 'id_cs');
     }
 }
