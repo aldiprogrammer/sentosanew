@@ -708,7 +708,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                 </label>
                 <label className="form-control mt-2">
                   <div className="label"><span className="label-text">Keterangan</span></div>
-                  <textarea value={data.keterangan} className="textarea textarea-bordered textarea-success w-full" onChange={(e) => setData("keterangan", e.target.value)}></textarea>
+                  <textarea value={data.keterangan} className="textarea textarea-bordered textarea-success w-full" onChange={(e) => setData("keterangan", e.target.value)} required></textarea>
                   {errors.keterangan && <span className="text-error text-xs mt-1 block">{errors.keterangan}</span>}
                 </label>
               </div>
@@ -742,7 +742,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Harga</span></div>
-                    <input type="number" step="0.01" value={data.harga} className="input input-bordered input-success w-full" onChange={(e) => setData("harga", e.target.value)} />
+                    <input type="number" step="0.01" value={data.harga} className="input input-bordered input-success w-full" onChange={(e) => setData("harga", e.target.value)} required />
                     {errors.harga && <span className="text-error text-xs mt-1 block">{errors.harga}</span>}
                   </label>
                   <label className="form-control">
