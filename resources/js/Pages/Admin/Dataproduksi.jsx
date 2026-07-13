@@ -34,7 +34,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
 
     const allPageItems = React.useMemo(() =>
         produksi.data.flatMap(group => group.items),
-    [produksi.data])
+        [produksi.data])
 
     const toggleSelectGroup = (group) => {
         const allInGroupSelected = group.items.every(item => selected.some(s => s.id === item.id))
@@ -288,7 +288,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                         </div>
 
                         {selected.length > 0 && (
-                            <div className="mb-3 bg-gradient-to-r from-success/10 to-success/5 border border-success/30 rounded-xl px-4 py-3 shadow-sm transition-all duration-300">
+                            <div className="mb-3 bg-success border border-success/30 rounded-xl px-4 py-3 shadow-sm transition-all duration-300">
                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                     <div className="flex items-center gap-4 text-sm">
                                         <div className="flex items-center gap-2">
@@ -296,29 +296,29 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                                 <i className="fas fa-check-circle text-xs"></i>
                                                 {selected.length}
                                             </div>
-                                            <span className="text-base-content/70 font-medium">item dipilih</span>
+                                            <span className="text-white font-medium">item dipilih</span>
                                         </div>
                                         <div className="hidden sm:flex items-center gap-4">
-                                            <span className="text-base-content/40">|</span>
-                                            <span className="text-base-content/70">
-                                                Qty: <strong className="text-base-content">{totalQty}</strong>
+                                            <span className="text-white">|</span>
+                                            <span className="text-white">
+                                                Qty : <strong className="text-white">{totalQty}</strong>
                                             </span>
-                                            <span className="text-base-content/40">|</span>
-                                            <span className="text-base-content/70">
-                                                Total: <strong className="text-success text-sm">Rp {totalHarga.toLocaleString('id-ID')}</strong>
+                                            <span className="text-white">|</span>
+                                            <span className="text-white">
+                                                Total: <strong className="text-white">Rp {totalHarga.toLocaleString('id-ID')}</strong>
                                             </span>
                                         </div>
                                     </div>
                                     {!isDesainer && (
                                         <div className="flex gap-2">
-                                            <button className="btn btn-success btn-sm" onClick={handleCetakStruk}>
+                                            <button className="btn btn-white btn-sm" onClick={handleCetakStruk}>
                                                 <i className="fas fa-receipt"></i> Cetak Struk
                                             </button>
                                             <div className="dropdown dropdown-end">
-                                                <button className="btn btn-success btn-sm btn-outline" tabIndex={0}>
+                                                <button className="btn btn-white btn-sm btn-outline" tabIndex={0}>
                                                     <i className="fas fa-chevron-down"></i>
                                                 </button>
-                                                <ul tabIndex={0} className="dropdown-content menu menu-sm bg-base-100 rounded-xl shadow-lg border border-base-300 z-50 w-48 p-2 mt-1">
+                                                <ul tabIndex={0} className="dropdown-content menu menu-sm bg-white rounded-xl shadow-lg border border-base-300 z-50 w-48 p-2 mt-1">
                                                     <li><button onClick={handleCetakGabungan}><i className="fas fa-layer-group"></i> Cetak Gabungan</button></li>
                                                     <li><button onClick={() => setPreview(true)}><i className="fas fa-eye"></i> Preview Struk</button></li>
                                                     <li><button onClick={() => setSelected([])}><i className="fas fa-times"></i> Batalkan Pilihan</button></li>
