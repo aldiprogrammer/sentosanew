@@ -3,7 +3,9 @@ import { router, usePage } from '@inertiajs/react'
 import React, { useState } from 'react'
 
 export default function LaporanPembukuan({ data, totalLunas, totalHutang, today, filters }) {
+  const { flash } = usePage().props
   const [tab, setTab] = useState('semua')
+  const [processing, setProcessing] = useState(false)
   const [tanggalAwal, setTanggalAwal] = useState(filters?.tanggal_awal || '')
   const [tanggalAkhir, setTanggalAkhir] = useState(filters?.tanggal_akhir || '')
   const [bulan, setBulan] = useState(filters?.bulan || '')
@@ -36,6 +38,36 @@ export default function LaporanPembukuan({ data, totalLunas, totalHutang, today,
     if (bulan) params.set('bulan', bulan)
     if (jenis) params.set('jenis', jenis)
     window.open(`/laporan-pembukuan/pdf?${params.toString()}`, '_blank')
+  }
+
+  function handleBayar(item) {
+    if (processing) return
+    Swal.fire({
+      title: 'Ubah ke Lunas?',
+      html: `Pembayaran <b>${item.customer}</b> sebesar <b>Rp ${Number(item.total_harga).toLocaleString('id-ID')}</b> akan diubah ke lunas.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Ya, Bayar!',
+      cancelButtonText: 'Batal',
+      buttonsStyling: false,
+      customClass: {
+        confirmButton: 'swal2-confirm btn btn-success btn-sm',
+        cancelButton: 'swal2-cancel btn btn-error btn-sm',
+        actions: 'swal2-actions gap-2',
+        popup: 'shadow-xl',
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setProcessing(true)
+        router.put(route('laporan-pembukuan.bayar'), {
+          id: item.id,
+          jenis: item.jenis,
+        }, {
+          preserveScroll: true,
+          onFinish: () => setProcessing(false),
+        })
+      }
+    })
   }
 
   return (
@@ -131,6 +163,7 @@ export default function LaporanPembukuan({ data, totalLunas, totalHutang, today,
                     <th>Total Harga</th>
                     <th>Pembayaran</th>
                     <th>Jatuh Tempo</th>
+                    {tab === 'hutang' && <th>Aksi</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -155,11 +188,22 @@ export default function LaporanPembukuan({ data, totalLunas, totalHutang, today,
                           </span>
                         ) : '-'}
                       </td>
+                      {tab === 'hutang' && (
+                        <td>
+                          <button
+                            className="inline-flex items-center gap-1 rounded bg-green-600 px-3 py-1 text-xs font-semibold text-white hover:bg-green-700"
+                            onClick={() => handleBayar(item)}
+                            disabled={processing}
+                          >
+                            <i className="fas fa-check"></i> Bayar
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan="8" className="text-center text-gray-400 py-4">Tidak ada data</td>
+                      <td colSpan={tab === 'hutang' ? 9 : 8} className="text-center text-gray-400 py-4">Tidak ada data</td>
                     </tr>
                   )}
                 </tbody>

@@ -182,7 +182,7 @@ export default function LaporanFeeCs({
                                         <th>Kategori Desain</th>
                                         <th>Qty</th>
                                         <th>Fee CS</th>
-                                        {!isCs && <th>CS</th>}
+                                        <th>CS</th>
                                         <th>Status</th>
                                         <th>Diambil At</th>
                                     </tr>
@@ -206,7 +206,7 @@ export default function LaporanFeeCs({
                                             <td>{item.kategori_desain?.kategori || '-'}</td>
                                             <td>{item.desain?.qty || '-'}</td>
                                             <td className="font-semibold">Rp {Number(item.fee_cs).toLocaleString('id-ID')}</td>
-                                            {!isCs && <td>{item.pengguna?.username || '-'}</td>}
+                                            <td>{item.pengguna?.username || '-'}</td>
                                             <td>
                                                 <span className={`text-sm ${item.status === 'diambil' ? 'text-success' : 'text-warning'}`}>
                                                     {item.status === 'diambil' ? 'Diambil' : 'Belum diambil'}

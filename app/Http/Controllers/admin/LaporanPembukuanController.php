@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\Desain;
 use App\Models\Produksi;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -44,6 +45,33 @@ class LaporanPembukuanController extends Controller
         ])->setPaper('a4', 'landscape');
 
         return $pdf->stream('laporan-pembukuan.pdf');
+    }
+
+    public function bayar(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer',
+            'jenis' => 'required|in:Desain,Produksi',
+        ]);
+
+        $model = $request->jenis === 'Desain' ? Desain::class : Produksi::class;
+        $item = $model::with('customer')->find($request->id);
+
+        if (! $item) {
+            return back()->with('error', 'Data tidak ditemukan');
+        }
+
+        if ($item->pembayaran !== 'utang') {
+            return back()->with('error', 'Pembayaran bukan hutang');
+        }
+
+        $model::where('id', $item->id)->update(['pembayaran' => 'lunas']);
+
+        if ($item->customer) {
+            $item->customer->decrement('limit_akhir', $item->total_harga);
+        }
+
+        return back()->with('success', 'Pembayaran berhasil diubah ke lunas');
     }
 
     private function getFilteredData(Request $request)
