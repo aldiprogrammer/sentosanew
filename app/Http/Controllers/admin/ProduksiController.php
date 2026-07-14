@@ -344,7 +344,13 @@ class ProduksiController extends Controller
                 $tinggi /= 1000;
             }
 
-            return (float) $request->qty * ($lebar * $tinggi * $hargaProduk);
+            $luas = $lebar * $tinggi;
+
+            if ($request->boolean('minimum_harga') && $luas < 1) {
+                return (float) $request->qty * $hargaProduk;
+            }
+
+            return (float) $request->qty * ($luas * $hargaProduk);
         }
 
         return 0;

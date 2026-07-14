@@ -93,7 +93,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
     Umum: 'harga_umum',
     Khusus: 'harga_khusus',
     Member: 'harga_member',
-    Custom: 'harga_custome',
+    // Custom: 'harga_custome',
   };
 
   const getHargaRows = (bh) => bh?.harga_bahan || bh?.hargaBahan || [];
@@ -199,6 +199,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
     catatan: "",
     metode_pengambilan: "",
     tgl_kirim: "",
+    minimum_harga: false,
     pinising: {
       atas: "",
       bawah: "",
@@ -440,6 +441,24 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
 
     return Number(a.qty_min || 0) - Number(b.qty_min || 0);
   });
+
+  const hitungLuas = () => {
+    const t = Number(data.tinggi || 0);
+    const l = Number(data.lebar || 0);
+    if (!t || !l) return 0;
+    if (data.satuan === 'Cm') return (t / 100) * (l / 100);
+    if (data.satuan === 'Mm') return (t / 1000) * (l / 1000);
+    return t * l;
+  };
+
+  const luas = hitungLuas();
+  const showMinimumHarga = luas > 0 && luas < 1;
+
+  useEffect(() => {
+    if (!showMinimumHarga && data.minimum_harga) {
+      setData('minimum_harga', false);
+    }
+  }, [showMinimumHarga]);
 
   return (
     <>
@@ -703,33 +722,29 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                         />
                                         <span className="text-sm">{data.kategori_customer}</span>
                                       </label>
-                                      <label className="flex items-center gap-1 cursor-pointer">
-                                        <input
-                                          type="radio"
-                                          name="pilihan_harga_tambah"
-                                          className="radio radio-warning radio-xs"
-                                          checked={data.pilihan_harga === 'Custom'}
-                                          onChange={() => handlePilihanHarga('Custom')}
-                                        />
-                                        <span className="text-sm">Custom</span>
-                                      </label>
                                     </div>
-                                    {data.pilihan_harga === 'Custom' && (
-                                      <div className="mt-1">
-                                        <input
-                                          type="text"
-                                          className="input input-bordered input-success w-full input-sm"
-                                          placeholder="Rp 0"
-                                          value={data.harga_manual ? Number(data.harga_manual).toLocaleString('id-ID') : ''}
-                                          onChange={(e) => {
-                                            const numeric = e.target.value.replace(/\D/g, '');
-                                            setData((prev) => ({ ...prev, harga_manual: numeric, harga_tampil: numeric }));
-                                          }}
-                                        />
-                                      </div>
-                                    )}
                                   </div>
                                 ) : null}
+                                {showMinimumHarga && !isDesainer && (
+                                  <label className="flex items-center gap-2 mt-2 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      className="checkbox checkbox-warning checkbox-xs"
+                                      checked={data.minimum_harga}
+                                      onChange={(e) => {
+                                        const checked = e.target.checked;
+                                        setData('minimum_harga', checked);
+                                        if (checked) {
+                                          const harga = hitungHarga(data.id_bahan, data.pilihan_harga, data.qty, data.sisi);
+                                          setData('harga_tampil', harga);
+                                        } else {
+                                          setData('harga_tampil', hitungHarga(data.id_bahan, data.pilihan_harga, data.qty, data.sisi));
+                                        }
+                                      }}
+                                    />
+                                    <span className="text-sm font-medium">Minimum Harga</span>
+                                  </label>
+                                )}
                               </label>
 
                               {/* Satuan Ukuran */}
@@ -1196,33 +1211,29 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                         />
                                         <span className="text-sm">{data.kategori_customer}</span>
                                       </label>
-                                      <label className="flex items-center gap-1 cursor-pointer">
-                                        <input
-                                          type="radio"
-                                          name="pilihan_harga_edit"
-                                          className="radio radio-warning radio-xs"
-                                          checked={data.pilihan_harga === 'Custom'}
-                                          onChange={() => handlePilihanHarga('Custom')}
-                                        />
-                                        <span className="text-sm">Custom</span>
-                                      </label>
                                     </div>
-                                    {data.pilihan_harga === 'Custom' && (
-                                      <div className="mt-1">
-                                        <input
-                                          type="text"
-                                          className="input input-bordered input-success w-full input-sm"
-                                          placeholder="Rp 0"
-                                          value={data.harga_manual ? Number(data.harga_manual).toLocaleString('id-ID') : ''}
-                                          onChange={(e) => {
-                                            const numeric = e.target.value.replace(/\D/g, '');
-                                            setData((prev) => ({ ...prev, harga_manual: numeric, harga_tampil: numeric }));
-                                          }}
-                                        />
-                                      </div>
-                                    )}
                                   </div>
                                 ) : null}
+                                {showMinimumHarga && !isDesainer && (
+                                  <label className="flex items-center gap-2 mt-2 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      className="checkbox checkbox-warning checkbox-xs"
+                                      checked={data.minimum_harga}
+                                      onChange={(e) => {
+                                        const checked = e.target.checked;
+                                        setData('minimum_harga', checked);
+                                        if (checked) {
+                                          const harga = hitungHarga(data.id_bahan, data.pilihan_harga, data.qty, data.sisi);
+                                          setData('harga_tampil', harga);
+                                        } else {
+                                          setData('harga_tampil', hitungHarga(data.id_bahan, data.pilihan_harga, data.qty, data.sisi));
+                                        }
+                                      }}
+                                    />
+                                    <span className="text-sm font-medium">Minimum Harga</span>
+                                  </label>
+                                )}
                               </label>
 
                               {/* Satuan Ukuran */}
