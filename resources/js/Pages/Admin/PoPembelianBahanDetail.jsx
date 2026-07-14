@@ -717,7 +717,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
               <div className="bg-gray-100 p-2 rounded-lg">
                 <div className="grid grid-cols-2 gap-2">
                   <label className="form-control">
-                    <div className="label"><span className="label-text">Panjang erer</span></div>
+                    <div className="label"><span className="label-text">Panjang</span></div>
                     <input type="number" step="0.01" value={data.panjang} className="input input-bordered input-success w-full" onChange={(e) => setData("panjang", e.target.value)} />
                     {errors.panjang && <span className="text-error text-xs mt-1 block">{errors.panjang}</span>}
                   </label>

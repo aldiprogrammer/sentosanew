@@ -2,7 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout'
 import { router, usePage } from '@inertiajs/react'
 import React, { useState } from 'react'
 
-export default function LaporanPembukuan({ data, totalLunas, totalHutang, pembayaranHutangs, today, filters }) {
+export default function LaporanPembukuan({ data, totalLunas, totalHutang, totalTransfer, totalQris, pembayaranHutangs, today, filters }) {
   const { flash } = usePage().props
   const [tab, setTab] = useState('semua')
   const [processing, setProcessing] = useState(false)
@@ -18,6 +18,8 @@ export default function LaporanPembukuan({ data, totalLunas, totalHutang, pembay
 
   const filtered = data.filter((item) => {
     if (tab === 'lunas') return item.pembayaran === 'lunas'
+    if (tab === 'transfer') return item.pembayaran === 'transfer'
+    if (tab === 'qris') return item.pembayaran === 'qris'
     if (tab === 'hutang') return item.pembayaran === 'utang'
     return true
   })
@@ -122,22 +124,34 @@ export default function LaporanPembukuan({ data, totalLunas, totalHutang, pembay
               <a href="/laporan-pembukuan" className='btn btn-sm btn-warning'><i className='fas fa-rotate'> </i>Refresh</a>
             </div>
 
-            <div className="stats shadow mb-4">
-              <div className="stat">
-                <div className="stat-title">Total Semua</div>
-                <div className="stat-value text-primary">
-                  Rp {Number(totalLunas + totalHutang).toLocaleString('id-ID')}
+            <div className="grid grid-cols-5 gap-3 mb-4">
+              <div className="stat bg-base-200 rounded-box p-3">
+                <div className="stat-title text-xs">Total Semua</div>
+                <div className="stat-value text-primary text-lg">
+                  Rp {Number(totalLunas + totalHutang + totalTransfer + totalQris).toLocaleString('id-ID')}
                 </div>
               </div>
-              <div className="stat">
-                <div className="stat-title">Total Lunas</div>
-                <div className="stat-value text-success">
+              <div className="stat bg-base-200 rounded-box p-3">
+                <div className="stat-title text-xs">Total Lunas</div>
+                <div className="stat-value text-success text-lg">
                   Rp {Number(totalLunas).toLocaleString('id-ID')}
                 </div>
               </div>
-              <div className="stat">
-                <div className="stat-title">Total Hutang</div>
-                <div className="stat-value text-error">
+              <div className="stat bg-base-200 rounded-box p-3">
+                <div className="stat-title text-xs">Total Transfer</div>
+                <div className="stat-value text-info text-lg">
+                  Rp {Number(totalTransfer).toLocaleString('id-ID')}
+                </div>
+              </div>
+              <div className="stat bg-base-200 rounded-box p-3">
+                <div className="stat-title text-xs">Total QRIS</div>
+                <div className="stat-value text-secondary text-lg">
+                  Rp {Number(totalQris).toLocaleString('id-ID')}
+                </div>
+              </div>
+              <div className="stat bg-base-200 rounded-box p-3">
+                <div className="stat-title text-xs">Total Hutang</div>
+                <div className="stat-value text-error text-lg">
                   Rp {Number(totalHutang).toLocaleString('id-ID')}
                 </div>
               </div>
@@ -149,6 +163,12 @@ export default function LaporanPembukuan({ data, totalLunas, totalHutang, pembay
               </button>
               <button className={`tab ${tab === 'lunas' ? 'tab-active' : ''}`} onClick={() => setTab('lunas')}>
                 Lunas ({data.filter((d) => d.pembayaran === 'lunas').length})
+              </button>
+              <button className={`tab ${tab === 'transfer' ? 'tab-active' : ''}`} onClick={() => setTab('transfer')}>
+                Transfer ({data.filter((d) => d.pembayaran === 'transfer').length})
+              </button>
+              <button className={`tab ${tab === 'qris' ? 'tab-active' : ''}`} onClick={() => setTab('qris')}>
+                QRIS ({data.filter((d) => d.pembayaran === 'qris').length})
               </button>
               <button className={`tab ${tab === 'hutang' ? 'tab-active' : ''}`} onClick={() => setTab('hutang')}>
                 Hutang ({data.filter((d) => d.pembayaran === 'utang').length})
@@ -180,8 +200,8 @@ export default function LaporanPembukuan({ data, totalLunas, totalHutang, pembay
                       <td>{item.jenis}</td>
                       <td className="font-semibold">Rp {Number(item.total_harga).toLocaleString('id-ID')}</td>
                       <td>
-                        <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : 'badge-error'}`}>
-                          {item.pembayaran === 'lunas' ? 'Lunas' : 'Hutang'}
+                        <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'transfer' ? 'badge-info' : item.pembayaran === 'qris' ? 'badge-secondary' : 'badge-warning'}`}>
+                          {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'transfer' ? 'Transfer' : item.pembayaran === 'qris' ? 'QRIS' : 'Hutang'}
                         </span>
                       </td>
                       <td>

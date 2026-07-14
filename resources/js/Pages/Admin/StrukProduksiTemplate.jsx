@@ -105,7 +105,8 @@ export const buildProductionReceiptHtml = ({ items, auth, paymentType }) => {
     const invoiceNumber = firstItem?.no_invoice || firstItem?.kode_spk || '-'
     const selesaiDate = firstItem?.tgl_kirim || printedAt
     const cashierName = auth?.user?.username || auth?.user?.name || 'Admin'
-    const paymentLabel = paymentType === 'utang' ? 'UTANG' : 'TUNAI'
+    const paymentLabels = { lunas: 'TUNAI', utang: 'UTANG', transfer: 'TRANSFER', qris: 'QRIS' }
+    const paymentLabel = paymentLabels[paymentType] || 'TUNAI'
 
     const itemRows = items.map((item, i) => `
             <tr${i % 2 === 1 ? ' class="alt"' : ''}>

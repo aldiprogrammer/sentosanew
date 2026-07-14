@@ -62,7 +62,10 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
         return stokTerpilih?.kode_label || ''
     }, [selected, selectedItemStokIds, itemstokbahans, stokTerpilih])
 
+    const isIndoor2 = selected?.bahan?.kategori_cetak === 'INDOOR 2'
+
     const isSisaKurang = useMemo(() => {
+        if (isIndoor2) return false
         if (selected?.bahan?.satuan == 'LEMBAR') {
             if (!selectedItemStokIds.length) return true
             const totalAvailable = selectedItemStokIds.reduce((sum, id) => {
@@ -73,7 +76,7 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
         }
         if (!stokTerpilih) return false
         return parseFloat(stokTerpilih.total) < totalAll
-    }, [stokTerpilih, totalAll, selectedItemStokIds, selected, itemstokbahans])
+    }, [stokTerpilih, totalAll, selectedItemStokIds, selected, itemstokbahans, isIndoor2])
 
     const reviewReceipt = (item) => {
         const w = window.open('', '_blank', 'width=420,height=640')

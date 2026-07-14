@@ -40,7 +40,7 @@ class BahanController extends Controller
     {
         $request->validate([
             'kode' => ['required', 'string', 'max:30', 'unique:databahans,kode'],
-            'bahan' => ['required', 'string', 'max:35'],
+            'bahan' => ['required', 'string', 'max:200'],
             'kategori' => ['required', 'string', 'max:35'],
         ]);
 
@@ -59,7 +59,7 @@ class BahanController extends Controller
     {
         $request->validate([
             'kode' => ['required', 'string', 'max:30', 'unique:databahans,kode,' . $id],
-            'bahan' => ['required', 'string', 'max:35'],
+            'bahan' => ['required', 'string', 'max:200'],
             'kategori' => ['required', 'string', 'max:35'],
         ]);
 

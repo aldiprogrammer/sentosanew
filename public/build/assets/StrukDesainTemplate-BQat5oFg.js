@@ -1,21 +1,4 @@
-const formatReceiptDate = (date = new Date()) =>
-    new Intl.DateTimeFormat('id-ID', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-    }).format(date)
-
-const formatReceiptTime = (date = new Date()) =>
-    new Intl.DateTimeFormat('id-ID', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-    }).format(date)
-
-const formatMoney = (value) =>
-    Number(value || 0).toLocaleString('id-ID')
-
-const styles = `
+var e=(e=new Date)=>new Intl.DateTimeFormat(`id-ID`,{day:`2-digit`,month:`short`,year:`numeric`}).format(e),t=(e=new Date)=>new Intl.DateTimeFormat(`id-ID`,{hour:`2-digit`,minute:`2-digit`,hour12:!1}).format(e),n=e=>Number(e||0).toLocaleString(`id-ID`),r=`
 
     @page { size: 90mm 297mm; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -64,39 +47,23 @@ const styles = `
     .signatures > div { width: 48%; }
     .sign-name { margin-top: 28px; min-height: 14px; font-size: 13px; font-weight: bold; }
     .printed { display: flex; justify-content: space-between; margin-top: 3px; font-size: 10px; }
-`
-
-export const buildDesainReceiptHtml = ({ items, auth, paymentType }) => {
-    const printedAt = new Date()
-    const gtHarga = items.reduce((s, it) => s + Number(it.total_harga || 0), 0)
-    const gtQty = items.reduce((s, it) => s + Number(it.qty || 0), 0)
-    const firstItem = items[0]
-    const firstCustomer = firstItem?.customer
-    const invoiceNumber = firstItem?.no_invoice || firstItem?.no_antrian || '-'
-    const cashierName = auth?.user?.username || auth?.user?.name || 'Admin'
-    const paymentLabels = { lunas: 'TUNAI', utang: 'UTANG', transfer: 'TRANSFER', qris: 'QRIS' }
-    const paymentLabel = paymentLabels[paymentType] || 'TUNAI'
-
-    const itemRows = items.map((item, i) => `
-            <tr${i % 2 === 1 ? ' class="alt"' : ''}>
-                <td class="bahan">${item.kategoridesain?.kategori || '-'}</td>
+`,i=({items:i,auth:a,paymentType:o})=>{let s=new Date,c=i.reduce((e,t)=>e+Number(t.total_harga||0),0);i.reduce((e,t)=>e+Number(t.qty||0),0);let l=i[0],u=l?.customer,d=l?.no_invoice||l?.no_antrian||`-`,f=a?.user?.username||a?.user?.name||`Admin`,p={lunas:`TUNAI`,utang:`UTANG`,transfer:`TRANSFER`,qris:`QRIS`}[o]||`TUNAI`,m=i.map((e,t)=>`
+            <tr${t%2==1?` class="alt"`:``}>
+                <td class="bahan">${e.kategoridesain?.kategori||`-`}</td>
                 <td class="ukuran">
-                    <span>${formatMoney(item.kategoridesain?.harga || 0)}</span>
+                    <span>${n(e.kategoridesain?.harga||0)}</span>
                 </td>
-                <td class="qty">${item.qty || 0}</td>
-                <td class="amount">${formatMoney(item.total_harga)}</td>
+                <td class="qty">${e.qty||0}</td>
+                <td class="amount">${n(e.total_harga)}</td>
             </tr>
-            ${(item.keterangan || item.kode_order) ? `
-            <tr class="keterangan-row${i % 2 === 1 ? ' alt' : ''}">
-                <td class="keterangan" colspan="4">${item.keterangan || item.kode_order}</td>
-            </tr>` : ''}`
-    ).join('')
-
-    return `<!DOCTYPE html>
+            ${e.keterangan||e.kode_order?`
+            <tr class="keterangan-row${t%2==1?` alt`:``}">
+                <td class="keterangan" colspan="4">${e.keterangan||e.kode_order}</td>
+            </tr>`:``}`).join(``);return`<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8">
-<title>Struk Desain - ${items.length > 1 ? items.length + ' item' : items[0]?.kode_order}</title>
-<style>${styles}</style>
+<title>Struk Desain - ${i.length>1?i.length+` item`:i[0]?.kode_order}</title>
+<style>${r}</style>
 </head>
 <body>
     <div class="receipt">
@@ -108,22 +75,22 @@ export const buildDesainReceiptHtml = ({ items, auth, paymentType }) => {
 
         <table class="topline">
             <tr>
-                <td class="bahan invoice">${invoiceNumber}</td>
+                <td class="bahan invoice">${d}</td>
                 <td class="ukuran"></td>
                 <td class="qty"></td>
-                <td class="amount" style="font-weight: bold; font-size: 10px">${formatReceiptDate(printedAt)}</td>
+                <td class="amount" style="font-weight: bold; font-size: 10px">${e(s)}</td>
             </tr>
         </table>
 
         <div class="title">FAKTUR DESAIN</div>
         <div class="block">
             <span class="label">Kepada Yth :</span>
-            <div class="name">${firstCustomer?.nama || '-'}</div>
-            <div class="address">${firstCustomer?.alamat || '-'}</div>
+            <div class="name">${u?.nama||`-`}</div>
+            <div class="address">${u?.alamat||`-`}</div>
         </div>
         <div>
             <span>Cara Bayar :</span>
-            <strong>${paymentLabel}</strong>
+            <strong>${p}</strong>
         </div>
 
         <br />
@@ -138,10 +105,10 @@ export const buildDesainReceiptHtml = ({ items, auth, paymentType }) => {
                 </tr>
             </thead>
             <tbody>
-                ${itemRows}
+                ${m}
             </tbody>
             <tfoot>
-                <tr><td class="summary-label" colspan="3">Total</td><td class="amount">${formatMoney(gtHarga)}</td></tr>
+                <tr><td class="summary-label" colspan="3">Total</td><td class="amount">${n(c)}</td></tr>
                 <tr><td class="summary-label" colspan="3">Bayar</td><td class="amount">0</td></tr>
                 <tr><td class="summary-label" colspan="3">Kembalian</td><td class="amount">0</td></tr>
             </tfoot>
@@ -158,18 +125,17 @@ export const buildDesainReceiptHtml = ({ items, auth, paymentType }) => {
         <div class="signatures" style="margin-top: 10px; font-weight: bold;">
             <div>
                 <div>Hormat Kami,</div>
-                <div class="sign-name">${cashierName}</div>
+                <div class="sign-name">${f}</div>
             </div>
             <div>
                 <div>Customer</div>
-                <div class="sign-name">${firstCustomer?.nama || '-'}</div>
+                <div class="sign-name">${u?.nama||`-`}</div>
             </div>
         </div>
 
         <div class="printed" style="margin-top: 7px;">
-            <span>Printed By : ${cashierName}</span>
-            <span>${formatReceiptDate(printedAt)} ${formatReceiptTime(printedAt)}</span>
+            <span>Printed By : ${f}</span>
+            <span>${e(s)} ${t(s)}</span>
         </div>
     </div>
-</body></html>`
-}
+</body></html>`};export{i as buildDesainReceiptHtml};

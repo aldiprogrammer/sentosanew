@@ -78,6 +78,8 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                     value={filterPembayaran} onChange={(e) => setFilterPembayaran(e.target.value)}>
                                     <option value="">Semua</option>
                                     <option value="lunas">Lunas</option>
+                                    <option value="transfer">Transfer</option>
+                                    <option value="qris">QRIS</option>
                                     <option value="utang">Hutang</option>
                                 </select>
                             </div>
@@ -157,8 +159,8 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                                         <td className="text-right font-semibold">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
                                                         <td>
                                                             {item.pembayaran ? (
-                                                                <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : 'badge-warning'}`}>
-                                                                    {item.pembayaran === 'lunas' ? 'Lunas' : 'Hutang'}
+                                                                <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'transfer' ? 'badge-info' : item.pembayaran === 'qris' ? 'badge-secondary' : 'badge-warning'}`}>
+                                                                    {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'transfer' ? 'Transfer' : item.pembayaran === 'qris' ? 'QRIS' : 'Hutang'}
                                                                 </span>
                                                             ) : (
                                                                 <span className="text-base-content/30">-</span>
@@ -230,8 +232,8 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                                         <td className="text-right font-semibold">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
                                                         <td>
                                                             {item.pembayaran ? (
-                                                                <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : 'badge-warning'}`}>
-                                                                    {item.pembayaran === 'lunas' ? 'Lunas' : 'Hutang'}
+                                                                <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'transfer' ? 'badge-info' : item.pembayaran === 'qris' ? 'badge-secondary' : 'badge-warning'}`}>
+                                                                    {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'transfer' ? 'Transfer' : item.pembayaran === 'qris' ? 'QRIS' : 'Hutang'}
                                                                 </span>
                                                             ) : (
                                                                 <span className="text-base-content/30">-</span>

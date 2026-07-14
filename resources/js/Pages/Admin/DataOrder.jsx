@@ -97,8 +97,8 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
                                                 <td className="tabular-nums">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
                                                 <td>
                                                     {item.pembayaran ? (
-                                                        <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : 'badge-warning'}`}>
-                                                            {item.pembayaran === 'lunas' ? 'Lunas' : 'Utang'}
+                                                        <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'transfer' ? 'badge-info' : item.pembayaran === 'qris' ? 'badge-secondary' : 'badge-warning'}`}>
+                                                            {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'transfer' ? 'Transfer' : item.pembayaran === 'qris' ? 'QRIS' : 'Hutang'}
                                                         </span>
                                                     ) : (
                                                         <span className="text-base-content/30">-</span>
@@ -180,8 +180,8 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
                                                 <td className="tabular-nums">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
                                                 <td>
                                                     {item.pembayaran ? (
-                                                        <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : 'badge-warning'}`}>
-                                                            {item.pembayaran === 'lunas' ? 'Lunas' : 'Utang'}
+                                                        <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'transfer' ? 'badge-info' : item.pembayaran === 'qris' ? 'badge-secondary' : 'badge-warning'}`}>
+                                                            {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'transfer' ? 'Transfer' : item.pembayaran === 'qris' ? 'QRIS' : 'Hutang'}
                                                         </span>
                                                     ) : (
                                                         <span className="text-base-content/30">-</span>

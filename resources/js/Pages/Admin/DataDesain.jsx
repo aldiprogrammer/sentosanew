@@ -55,17 +55,48 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
     const buildReceiptHtml = (items) =>
         buildDesainReceiptHtml({ items, auth, paymentType })
 
+    const xsrfToken = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || ''
+
+    const buildProcessScript = (ids, paymentTypeVal) => `
+        <script>
+            window.addEventListener('afterprint', function() {
+                fetch('/data-desain/proses-pembayaran', {
+                    method: 'PUT',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-XSRF-TOKEN': decodeURIComponent('${encodeURIComponent(xsrfToken)}')
+                    },
+                    body: JSON.stringify({ ids: ${JSON.stringify(ids)}, payment_type: '${paymentTypeVal}' })
+                }).then(function() { window.close(); });
+            });
+        </script>
+    `
+
     const doPrintReceipt = (items) => {
         if (items.length === 0) return
         if (items.length === 1) {
             const w = window.open('', '_blank', 'width=420,height=640')
-            w.document.open(); w.document.write(buildReceiptHtml(items)); w.document.close()
+            if (!w) return
+            const html = buildReceiptHtml(items)
+            const script = buildProcessScript([items[0].id], paymentType)
+            w.document.open()
+            w.document.write(html.replace('</head>', script + '</head>'))
+            w.document.close()
+            w.addEventListener('load', () => { w.focus(); setTimeout(() => w.print(), 300) })
         } else {
             let idx = 0
             const openNext = () => {
                 if (idx >= items.length) return
                 const w = window.open('', '_blank', 'width=420,height=640')
-                w.document.open(); w.document.write(buildReceiptHtml([items[idx]])); w.document.close()
+                if (!w) return
+                const html = buildReceiptHtml([items[idx]])
+                const script = buildProcessScript([items[idx].id], paymentType)
+                w.document.open()
+                w.document.write(html.replace('</head>', script + '</head>'))
+                w.document.close()
+                w.addEventListener('load', () => { w.focus(); setTimeout(() => w.print(), 300) })
                 const t = setInterval(() => { if (w.closed) { clearInterval(t); idx++; openNext() } }, 500)
             }
             openNext()
@@ -75,7 +106,13 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
     const doPrintReceiptCombined = (items) => {
         if (items.length === 0) return
         const w = window.open('', '_blank', 'width=500,height=700')
-        w.document.open(); w.document.write(buildReceiptHtml(items)); w.document.close()
+        if (!w) return
+        const html = buildReceiptHtml(items)
+        const script = buildProcessScript(items.map(item => item.id), paymentType)
+        w.document.open()
+        w.document.write(html.replace('</head>', script + '</head>'))
+        w.document.close()
+        w.addEventListener('load', () => { w.focus(); setTimeout(() => w.print(), 300) })
     }
 
     const handleCetakStruk = () => {
@@ -99,26 +136,15 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
         if (paymentType === 'utang' && wouldExceedLimit) return
 
         setProcessing(true)
-        setPaymentError(null)
 
-        router.put(route('proses.pembayaran.desain'), { ids: selected, payment_type: paymentType }, {
-            preserveState: true,
-            preserveScroll: true,
-            onSuccess: () => {
-                setProcessing(false)
-                paymentModalRef.current?.close()
-                if (printMode === 'combined') {
-                    doPrintReceiptCombined(selectedItems)
-                } else {
-                    doPrintReceipt(selectedItems)
-                }
-                setSelected([])
-            },
-            onError: (errors) => {
-                setProcessing(false)
-                setPaymentError(errors.payment || 'Terjadi kesalahan')
-            },
-        })
+        paymentModalRef.current?.close()
+        if (printMode === 'combined') {
+            doPrintReceiptCombined(selectedItems)
+        } else {
+            doPrintReceipt(selectedItems)
+        }
+        setSelected([])
+        setProcessing(false)
     }
 
     const previewStruk = () => {
@@ -294,7 +320,7 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
                                             </tr>
                                         ) : (
                                             desain.data.map((item, index) => (
-                                                <tr key={item.id} className={`hover:bg-base-200 ${item.pembayaran === 'utang' ? 'bg-red-50 text-red-700' : item.pembayaran === 'lunas' ? 'bg-green-50 text-green-700' : ''}`}>
+                                                <tr key={item.id} className={`hover:bg-base-200 ${item.pembayaran === 'utang' ? 'bg-red-50 text-red-700' : ['lunas','transfer','qris'].includes(item.pembayaran) ? 'bg-green-50 text-green-700' : ''}`}>
                                                     <td>
                                                         <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={selected.includes(item.id)} onChange={() => toggleSelect(item.id)} disabled={isCs && item.pembayaran} />
                                                     </td>
@@ -308,8 +334,8 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
                                                     <td className="tabular-nums">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
                                                     <td>
                                                         {item.pembayaran ? (
-                                                            <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : 'badge-warning'}`}>
-                                                                {item.pembayaran === 'lunas' ? 'Lunas' : 'Utang'}
+                                                            <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'utang' ? 'badge-warning' : item.pembayaran === 'transfer' ? 'badge-info' : 'badge-secondary'}`}>
+                                                                {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'utang' ? 'Utang' : item.pembayaran === 'transfer' ? 'Transfer' : 'QRIS'}
                                                             </span>
                                                         ) : (
                                                             <span className="text-base-content/30">-</span>
@@ -398,19 +424,33 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
                             </div>
                             <div className="divider my-2"></div>
                             <p className="text-sm font-semibold mb-2">Status Pembayaran</p>
-                            <div className="flex gap-3">
-                                <label className={`flex-1 flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${paymentType === 'lunas' ? 'border-success bg-success/10' : 'border-base-300'}`}>
+                            <div className="grid grid-cols-2 gap-3">
+                                <label className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${paymentType === 'lunas' ? 'border-success bg-success/10' : 'border-base-300'}`}>
                                     <input type="radio" name="paymentType" className="radio radio-success" checked={paymentType === 'lunas'} onChange={() => setPaymentType('lunas')} />
                                     <div>
                                         <span className="font-semibold text-sm">Lunas</span>
-                                        <p className="text-xs text-base-content/60">Pembayaran penuh</p>
+                                        <p className="text-xs text-base-content/60">Tunai penuh</p>
                                     </div>
                                 </label>
-                                <label className={`flex-1 flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${paymentType === 'utang' ? 'border-warning bg-warning/10' : 'border-base-300'}`}>
+                                <label className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${paymentType === 'utang' ? 'border-warning bg-warning/10' : 'border-base-300'}`}>
                                     <input type="radio" name="paymentType" className="radio radio-warning" checked={paymentType === 'utang'} onChange={() => setPaymentType('utang')} />
                                     <div>
                                         <span className="font-semibold text-sm">Utang</span>
                                         <p className="text-xs text-base-content/60">Pembayaran sebagian</p>
+                                    </div>
+                                </label>
+                                <label className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${paymentType === 'transfer' ? 'border-info bg-info/10' : 'border-base-300'}`}>
+                                    <input type="radio" name="paymentType" className="radio radio-info" checked={paymentType === 'transfer'} onChange={() => setPaymentType('transfer')} />
+                                    <div>
+                                        <span className="font-semibold text-sm">Transfer</span>
+                                        <p className="text-xs text-base-content/60">Bayar via transfer</p>
+                                    </div>
+                                </label>
+                                <label className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${paymentType === 'qris' ? 'border-secondary bg-secondary/10' : 'border-base-300'}`}>
+                                    <input type="radio" name="paymentType" className="radio radio-secondary" checked={paymentType === 'qris'} onChange={() => setPaymentType('qris')} />
+                                    <div>
+                                        <span className="font-semibold text-sm">QRIS</span>
+                                        <p className="text-xs text-base-content/60">Bayar via QRIS</p>
                                     </div>
                                 </label>
                             </div>

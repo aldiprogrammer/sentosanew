@@ -1,21 +1,4 @@
-const formatReceiptDate = (date = new Date()) =>
-    new Intl.DateTimeFormat('id-ID', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-    }).format(date)
-
-const formatReceiptTime = (date = new Date()) =>
-    new Intl.DateTimeFormat('id-ID', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-    }).format(date)
-
-const formatMoney = (value) =>
-    Number(value || 0).toLocaleString('id-ID')
-
-const styles = `
+var e=(e=new Date)=>new Intl.DateTimeFormat(`id-ID`,{day:`2-digit`,month:`short`,year:`numeric`}).format(e),t=(e=new Date)=>new Intl.DateTimeFormat(`id-ID`,{hour:`2-digit`,minute:`2-digit`,hour12:!1}).format(e),n=e=>{if(!e)return null;if(typeof e==`string`){let t=e.match(/^(\d{2})-(\d{2})-(\d{4})$/);if(t){let[,e,n,r]=t;return new Date(Number(r),Number(n)-1,Number(e))}}let t=new Date(e);return Number.isNaN(t.getTime())?null:t},r=(e=new Date)=>{let t=e instanceof Date?e:n(e);return t?new Intl.DateTimeFormat(`id-ID`,{day:`2-digit`,month:`2-digit`,year:`numeric`}).format(t).replace(/\//g,`-`):e||`-`},i=e=>Number(e||0).toLocaleString(`id-ID`),a=`
 
     @page { size: 90mm 297mm; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -30,16 +13,21 @@ const styles = `
     .receipt { width: 100%; padding: 0; }
     .header { text-align: center; margin-bottom: 4px; }
     .brand-row { display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .logo-img { max-width: 100%; height: auto; display: block; margin: 0 auto 3px; }
+    .brand { font-size: 20px; font-weight: 900; letter-spacing: 0; line-height: 1; }
+    .sub { font-size: 10px; font-weight: 700; letter-spacing: 2px; margin-top: 1px; }
+    .contact { font-size: 13px; font-weight: 700; margin-top: 2px; letter-spacing: 0; }
     .topline { width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 2px; font-size: 12px; }
     .topline td { border: none; padding: 3px 0 4px; white-space: nowrap; }
     .topline .invoice { font-size: 11px; }
     .topline .amount { padding-right: 1mm; text-align: right; }
     .invoice { font-size: 13px; font-weight: 800; }
-    .title { font-size: 13px; font-weight: 800; margin-bottom: 4px; letter-spacing: 1px; text-align: center; }
+    .title { font-size: 13px; font-weight: 800; margin-bottom: 4px letter-spacing: 1px; text-align: center; }
     .block { margin-top: 2px; }
     .label { display: block; font-size: 11px; }
     .name { font-size: 14px; margin-top: 2px; }
     .address { min-height: 18px; overflow-wrap: anywhere; font-size: 12px; }
+    .pay-row { display: grid; grid-template-columns: 1fr 1fr; margin: 5px 0 3px; text-align: center; font-size: 12px; }
     .line { border-top: 2px solid #000; margin: 4px 0; }
     table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; }
     th, td { padding: 3px 2px; text-align: left; vertical-align: middle; overflow-wrap: anywhere; }
@@ -47,7 +35,7 @@ const styles = `
     td { padding-top: 4px; padding-bottom: 4px; }
     .bahan { width: 18mm; text-align: left; }
     .ukuran { width: 20mm; text-align: center; font-variant-numeric: tabular-nums; }
-    .qty { width: 7mm; text-align: center; font-variant-numeric: tabular-nums; }
+    .qty { width: 7mm; text-align: center; font-variant-numeric: tabular-nums; font-size: 12px; }
     .amount { width: 16mm; text-align: right; font-variant-numeric: tabular-nums; }
     .alt td { background: #eee; }
     .muted { color: #000; }
@@ -64,39 +52,26 @@ const styles = `
     .signatures > div { width: 48%; }
     .sign-name { margin-top: 28px; min-height: 14px; font-size: 13px; font-weight: bold; }
     .printed { display: flex; justify-content: space-between; margin-top: 3px; font-size: 10px; }
-`
-
-export const buildDesainReceiptHtml = ({ items, auth, paymentType }) => {
-    const printedAt = new Date()
-    const gtHarga = items.reduce((s, it) => s + Number(it.total_harga || 0), 0)
-    const gtQty = items.reduce((s, it) => s + Number(it.qty || 0), 0)
-    const firstItem = items[0]
-    const firstCustomer = firstItem?.customer
-    const invoiceNumber = firstItem?.no_invoice || firstItem?.no_antrian || '-'
-    const cashierName = auth?.user?.username || auth?.user?.name || 'Admin'
-    const paymentLabels = { lunas: 'TUNAI', utang: 'UTANG', transfer: 'TRANSFER', qris: 'QRIS' }
-    const paymentLabel = paymentLabels[paymentType] || 'TUNAI'
-
-    const itemRows = items.map((item, i) => `
-            <tr${i % 2 === 1 ? ' class="alt"' : ''}>
-                <td class="bahan">${item.kategoridesain?.kategori || '-'}</td>
+`,o=({items:n,auth:o,paymentType:s})=>{let c=new Date,l=n.reduce((e,t)=>e+Number(t.total_harga||0),0);n.reduce((e,t)=>e+Number(t.qty||0),0);let u=n[0],d=u?.customer,f=u?.no_invoice||u?.kode_spk||`-`,p=u?.tgl_kirim||c,m=o?.user?.username||o?.user?.name||`Admin`,h={lunas:`TUNAI`,utang:`UTANG`,transfer:`TRANSFER`,qris:`QRIS`}[s]||`TUNAI`,g=n.map((e,t)=>`
+            <tr${t%2==1?` class="alt"`:``}>
+                <td class="bahan">${e.bahan?.kode||`-`}</td>
                 <td class="ukuran">
-                    <span>${formatMoney(item.kategoridesain?.harga || 0)}</span>
+                    <span>${e.lebar||0}</span>
+                    <span class="muted"> x </span>
+                    <span>${e.tinggi||0}</span>
+                    <span class="muted"> ${e.satuan||``}</span>
                 </td>
-                <td class="qty">${item.qty || 0}</td>
-                <td class="amount">${formatMoney(item.total_harga)}</td>
+                <td class="qty">${e.qty||0}</td>
+                <td class="amount">${i(e.total_harga)}</td>
             </tr>
-            ${(item.keterangan || item.kode_order) ? `
-            <tr class="keterangan-row${i % 2 === 1 ? ' alt' : ''}">
-                <td class="keterangan" colspan="4">${item.keterangan || item.kode_order}</td>
-            </tr>` : ''}`
-    ).join('')
-
-    return `<!DOCTYPE html>
+            ${e.keterangan||e.kode_spk?`
+            <tr class="keterangan-row${t%2==1?` alt`:``}">
+                <td class="keterangan" colspan="4">${e.keterangan||e.kode_spk}</td>
+            </tr>`:``}`).join(``);return`<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8">
-<title>Struk Desain - ${items.length > 1 ? items.length + ' item' : items[0]?.kode_order}</title>
-<style>${styles}</style>
+<title>Struk Produksi - ${n.length>1?n.length+` item`:n[0]?.kode_spk}</title>
+<style>${a}</style>
 </head>
 <body>
     <div class="receipt">
@@ -108,22 +83,23 @@ export const buildDesainReceiptHtml = ({ items, auth, paymentType }) => {
 
         <table class="topline">
             <tr>
-                <td class="bahan invoice">${invoiceNumber}</td>
+                <td class="bahan invoice">${f}</td>
                 <td class="ukuran"></td>
                 <td class="qty"></td>
-                <td class="amount" style="font-weight: bold; font-size: 10px">${formatReceiptDate(printedAt)}</td>
+                <td class="amount" style="font-weight: bold; font-size: 10px">${r(c)}</td>
             </tr>
         </table>
 
-        <div class="title">FAKTUR DESAIN</div>
+        <div class="title">FAKTUR</div>
         <div class="block">
             <span class="label">Kepada Yth :</span>
-            <div class="name">${firstCustomer?.nama || '-'}</div>
-            <div class="address">${firstCustomer?.alamat || '-'}</div>
+            <div class="name">${d?.nama||`-`}</div>
+            <div class="address">${d?.alamat||`-`}</div>
         </div>
+        <div>Selesai : ${r(p)}</div>
         <div>
             <span>Cara Bayar :</span>
-            <strong>${paymentLabel}</strong>
+            <strong>${h}</strong>
         </div>
 
         <br />
@@ -131,17 +107,17 @@ export const buildDesainReceiptHtml = ({ items, auth, paymentType }) => {
         <table>
             <thead>
                 <tr>
-                    <th class="bahan">pesanan</th>
-                    <th class="ukuran">harga</th>
+                    <th class="bahan">Bahan</th>
+                    <th class="ukuran">ukuran</th>
                     <th class="qty">qty</th>
-                    <th class="amount" style="text-align: center;">total</th>
+                    <th class="amount" style="text-align: center;">jml</th>
                 </tr>
             </thead>
             <tbody>
-                ${itemRows}
+                ${g}
             </tbody>
             <tfoot>
-                <tr><td class="summary-label" colspan="3">Total</td><td class="amount">${formatMoney(gtHarga)}</td></tr>
+                <tr><td class="summary-label" colspan="3">Total Faktur</td><td class="amount">${i(l)}</td></tr>
                 <tr><td class="summary-label" colspan="3">Bayar</td><td class="amount">0</td></tr>
                 <tr><td class="summary-label" colspan="3">Kembalian</td><td class="amount">0</td></tr>
             </tfoot>
@@ -149,27 +125,26 @@ export const buildDesainReceiptHtml = ({ items, auth, paymentType }) => {
 
         <div class="notes">
             <ul>
-                <li>Hasil print dikertas tidak bisa dijadikan acuan</li>
-                <li>Design diperiksa dengan teliti dan baik (Warna, tulisan, peletakan).</li>
-                <li>Kesalahan dalam mencentak tidak menjadi tanggungan kami.</li>
+                <li>Diperiksa saat pengambilan / penerimaan barang pesanan.</li>
+                <li>Kami tidak bertanggung jawab atas kekurangan/kerusakan barang setelah diterima.</li>
+                <li>Barang yang tidak diambil selama 1 bulan bila hilang/rusak bukan tanggungan kami.</li>
             </ul>
         </div>
 
         <div class="signatures" style="margin-top: 10px; font-weight: bold;">
             <div>
                 <div>Hormat Kami,</div>
-                <div class="sign-name">${cashierName}</div>
+                <div class="sign-name">${m}</div>
             </div>
             <div>
                 <div>Customer</div>
-                <div class="sign-name">${firstCustomer?.nama || '-'}</div>
+                <div class="sign-name">${d?.nama||`-`}</div>
             </div>
         </div>
 
         <div class="printed" style="margin-top: 7px;">
-            <span>Printed By : ${cashierName}</span>
-            <span>${formatReceiptDate(printedAt)} ${formatReceiptTime(printedAt)}</span>
+            <span>Printed By : ${m}</span>
+            <span>${e(c)} ${t(c)}</span>
         </div>
     </div>
-</body></html>`
-}
+</body></html>`};export{o as buildProductionReceiptHtml};

@@ -390,7 +390,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                                             </td>
                                                         </tr>
                                                         {isExpanded && group.items.map((item) => (
-                                                            <tr key={item.id} className={`hover:bg-base-200 ${item.pembayaran === 'utang' ? 'bg-red-50 text-red-700' : item.pembayaran === 'lunas' ? 'bg-green-50 text-green-700' : ''}`}>
+                                                            <tr key={item.id} className={`hover:bg-base-200 ${item.pembayaran === 'utang' ? 'bg-red-50 text-red-700' : ['lunas','transfer','qris'].includes(item.pembayaran) ? 'bg-green-50 text-green-700' : ''}`}>
                                                                 <td>
                                                                     <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={selected.some(s => s.id === item.id)} onChange={() => toggleSelect(item)} disabled={isCs && item.pembayaran} />
                                                                 </td>
@@ -408,8 +408,8 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                                                 <td className={'tabular-nums' + (isDesainer && item.total_harga ? ' blur-sm select-none' : '')}>{isDesainer && item.total_harga ? '••••••' : (item.total_harga ? Number(item.total_harga).toLocaleString('id-ID') : '-')}</td>
                                                                 <td>
                                                                     {item.pembayaran ? (
-                                                                        <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : 'badge-warning'}`}>
-                                                                            {item.pembayaran === 'lunas' ? 'Lunas' : 'Utang'}
+                                                                        <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'utang' ? 'badge-warning' : item.pembayaran === 'transfer' ? 'badge-info' : 'badge-secondary'}`}>
+                                                                            {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'utang' ? 'Utang' : item.pembayaran === 'transfer' ? 'Transfer' : 'QRIS'}
                                                                         </span>
                                                                     ) : (
                                                                         <span className="text-base-content/30">-</span>
@@ -490,19 +490,33 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                             </div>
                             <div className="divider my-2"></div>
                             <p className="text-sm font-semibold mb-2">Status Pembayaran</p>
-                            <div className="flex gap-3">
-                                <label className={`flex-1 flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${paymentType === 'lunas' ? 'border-success bg-success/10' : 'border-base-300'}`}>
+                            <div className="grid grid-cols-2 gap-3">
+                                <label className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${paymentType === 'lunas' ? 'border-success bg-success/10' : 'border-base-300'}`}>
                                     <input type="radio" name="paymentType" className="radio radio-success" checked={paymentType === 'lunas'} onChange={() => setPaymentType('lunas')} />
                                     <div>
                                         <span className="font-semibold text-sm">Lunas</span>
-                                        <p className="text-xs text-base-content/60">Pembayaran penuh</p>
+                                        <p className="text-xs text-base-content/60">Tunai penuh</p>
                                     </div>
                                 </label>
-                                <label className={`flex-1 flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${paymentType === 'utang' ? 'border-warning bg-warning/10' : 'border-base-300'}`}>
+                                <label className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${paymentType === 'utang' ? 'border-warning bg-warning/10' : 'border-base-300'}`}>
                                     <input type="radio" name="paymentType" className="radio radio-warning" checked={paymentType === 'utang'} onChange={() => setPaymentType('utang')} />
                                     <div>
                                         <span className="font-semibold text-sm">Utang</span>
                                         <p className="text-xs text-base-content/60">Pembayaran sebagian</p>
+                                    </div>
+                                </label>
+                                <label className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${paymentType === 'transfer' ? 'border-info bg-info/10' : 'border-base-300'}`}>
+                                    <input type="radio" name="paymentType" className="radio radio-info" checked={paymentType === 'transfer'} onChange={() => setPaymentType('transfer')} />
+                                    <div>
+                                        <span className="font-semibold text-sm">Transfer</span>
+                                        <p className="text-xs text-base-content/60">Bayar via transfer</p>
+                                    </div>
+                                </label>
+                                <label className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${paymentType === 'qris' ? 'border-secondary bg-secondary/10' : 'border-base-300'}`}>
+                                    <input type="radio" name="paymentType" className="radio radio-secondary" checked={paymentType === 'qris'} onChange={() => setPaymentType('qris')} />
+                                    <div>
+                                        <span className="font-semibold text-sm">QRIS</span>
+                                        <p className="text-xs text-base-content/60">Bayar via QRIS</p>
                                     </div>
                                 </label>
                             </div>

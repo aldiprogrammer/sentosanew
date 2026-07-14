@@ -112,6 +112,7 @@ const jenisBahanOptions = [
   'DISPLAY',
   'UV',
 ];
+const sisiOptions = ['1 SISI', '2 SISI'];
 const perhitunganOptions = ['QTY', 'QTY2', 'LUAS', 'QTY KHUSUS'];
 
 const colors = [
@@ -360,7 +361,7 @@ export default function Bahan({ databahan, kode, materbahans }) {
       </div>
       <select
         value={form.data[field]}
-        className="select select-bordered select-success w-full"
+        className={`select select-bordered w-full ${form.errors[field] ? 'select-error' : 'select-success'}`}
         required={required}
         onChange={(e) => setter(field, e.target.value)}
       >
@@ -371,6 +372,11 @@ export default function Bahan({ databahan, kode, materbahans }) {
           </option>
         ))}
       </select>
+      {form.errors[field] && (
+        <div className="label">
+          <span className="label-text-alt text-error">{form.errors[field]}</span>
+        </div>
+      )}
     </label>
   );
 
@@ -389,12 +395,17 @@ export default function Bahan({ databahan, kode, materbahans }) {
       <input
         type="text"
         value={form.data[field] || ''}
-        className="input input-bordered input-success w-full"
+        className={`input input-bordered w-full ${form.errors[field] ? 'input-error' : 'input-success'}`}
         required={required}
         onChange={(e) =>
           setter(field, numeric ? cleanNumber(e.target.value) : e.target.value)
         }
       />
+      {form.errors[field] && (
+        <div className="label">
+          <span className="label-text-alt text-error">{form.errors[field]}</span>
+        </div>
+      )}
     </label>
   );
 
@@ -420,8 +431,29 @@ export default function Bahan({ databahan, kode, materbahans }) {
           }}
           placeholder="Pilih Kode Bahan"
         />
+        {bahanForm.errors.kode && (
+          <div className="label">
+            <span className="label-text-alt text-error">{bahanForm.errors.kode}</span>
+          </div>
+        )}
       </label>
-      {renderText('Nama Bahan', 'bahan', bahanForm, setBahanValue, true)}
+      <label className="form-control">
+        <div className="label">
+          <span className="label-text">Nama Bahan</span>
+        </div>
+        <textarea
+          className={`textarea textarea-bordered w-full ${bahanForm.errors.bahan ? 'textarea-error' : 'textarea-success'}`}
+          value={bahanForm.data.bahan || ''}
+          required
+          rows={2}
+          onChange={(e) => setBahanValue('bahan', e.target.value)}
+        />
+        {bahanForm.errors.bahan && (
+          <div className="label">
+            <span className="label-text-alt text-error">{bahanForm.errors.bahan}</span>
+          </div>
+        )}
+      </label>
       {renderSelect(
         'Kategori',
         'kategori',
@@ -457,7 +489,7 @@ export default function Bahan({ databahan, kode, materbahans }) {
       {includeHarga && (
         <>
           <div className="divider col-span-full my-1">Harga Awal</div>
-          {renderText('Sisi', 'sisi', bahanForm, setBahanValue)}
+          {renderSelect('Sisi', 'sisi', sisiOptions, bahanForm, setBahanValue, false)}
           {renderText('Qty Min', 'qty_min', bahanForm, setBahanValue, false, true)}
           {renderText('Qty Max', 'qty_max', bahanForm, setBahanValue, false, true)}
           {renderText('Harga PO', 'harga_po', bahanForm, setBahanValue, false, true)}
@@ -512,7 +544,7 @@ export default function Bahan({ databahan, kode, materbahans }) {
           required
         />
       </label>
-      {renderText('Sisi', 'sisi', hargaForm, setHargaValue)}
+      {renderSelect('Sisi', 'sisi', sisiOptions, hargaForm, setHargaValue, false)}
       {renderText('Qty Min', 'qty_min', hargaForm, setHargaValue, false, true)}
       {renderText('Qty Max', 'qty_max', hargaForm, setHargaValue, false, true)}
       {renderText('Harga PO', 'harga_po', hargaForm, setHargaValue, false, true)}

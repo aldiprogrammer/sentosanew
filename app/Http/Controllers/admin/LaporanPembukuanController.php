@@ -19,6 +19,8 @@ class LaporanPembukuanController extends Controller
 
         $totalLunas = $data->where('pembayaran', 'lunas')->sum('total_harga');
         $totalHutang = $data->where('pembayaran', 'utang')->sum('total_harga');
+        $totalTransfer = $data->where('pembayaran', 'transfer')->sum('total_harga');
+        $totalQris = $data->where('pembayaran', 'qris')->sum('total_harga');
 
         $pembayaranHutangs = PembayaranHutang::with('customer')->latest()->get();
 
@@ -26,6 +28,8 @@ class LaporanPembukuanController extends Controller
             'data' => $data,
             'totalLunas' => $totalLunas,
             'totalHutang' => $totalHutang,
+            'totalTransfer' => $totalTransfer,
+            'totalQris' => $totalQris,
             'pembayaranHutangs' => $pembayaranHutangs,
             'today' => date('Y-m-d'),
             'filters' => $request->only(['tanggal_awal', 'tanggal_akhir', 'bulan', 'jenis']),

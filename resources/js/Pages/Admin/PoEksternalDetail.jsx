@@ -35,6 +35,50 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
     return hargaPoSesuaiQty(bahan, qty);
   };
 
+  const [selectedInvoice, setSelectedInvoice] = React.useState('');
+  const [selectedSpkId, setSelectedSpkId] = React.useState('');
+
+  const uniqueInvoices = React.useMemo(() => {
+    const map = new Map();
+    invoices.forEach((inv) => {
+      if (!map.has(inv.no_invoice)) {
+        map.set(inv.no_invoice, inv.no_invoice);
+      }
+    });
+    return Array.from(map.values());
+  }, [invoices]);
+
+  const spkList = React.useMemo(() => {
+    if (!selectedInvoice) return [];
+    return invoices.filter((inv) => inv.no_invoice === selectedInvoice);
+  }, [invoices, selectedInvoice]);
+
+  const handleInvoiceChange = (e) => {
+    const noInv = e.target.value;
+    setSelectedInvoice(noInv);
+    setSelectedSpkId('');
+    reset();
+    if (noInv) {
+      const spks = invoices.filter((inv) => inv.no_invoice === noInv);
+      if (spks.length === 1) {
+        handleSpkSelect(spks[0]);
+      }
+    }
+  };
+
+  const handleSpkSelect = (inv) => {
+    setSelectedSpkId(inv.id);
+    setData("invoice", inv.no_invoice);
+    setData("id_bahan", inv.id_bahan);
+    setData("spk", inv.kode_spk);
+    setData("lebar", inv.lebar);
+    setData("tinggi", inv.tinggi);
+    setData("harga", hitungHargaPo(inv.id_bahan, inv.qty));
+    setData("qty", inv.qty);
+    setData("satuan", satuanBahanById(inv.id_bahan));
+    setData("satuan_ukuran", inv.satuan || '');
+  };
+
   const bahanById = (idBahan) => bahans.find((b) => Number(b.id) === Number(idBahan));
 
   const bahanLabel = (bahan) => {
@@ -127,6 +171,8 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
 
   const closeModal = () => {
     modalRef.current.close();
+    setSelectedInvoice('');
+    setSelectedSpkId('');
   };
 
   const openModalEdit = (item) => {
@@ -397,46 +443,58 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
               <div className="bg-gray-100 p-2 rounded-lg">
                 <label className="form-control">
                   <div className="label"><span className="label-text">Invoice</span></div>
-                  <select value={data.invoice} className="select select-bordered select-success w-full" onChange={(e) => {
-                    const val = e.target.value;
-                    setData("invoice", val);
-                    const inv = invoices.find((i) => i.no_invoice === val);
-                    if (inv) {
-                      setData("id_bahan", inv.id_bahan);
-                      setData("spk", inv.kode_spk);
-                      setData("lebar", inv.lebar);
-                      setData("tinggi", inv.tinggi);
-                      setData("harga", hitungHargaPo(inv.id_bahan, inv.qty));
-                      setData("qty", inv.qty);
-                      setData("satuan", satuanBahanById(inv.id_bahan));
-                      setData("satuan_ukuran", inv.satuan || '');
-                    }
-                  }}>
+                  <select value={selectedInvoice} className="select select-bordered select-success w-full" onChange={handleInvoiceChange}>
                     <option value="">-- Pilih Invoice --</option>
-                    {invoices.map((inv) => (
-                      <option key={inv.id} value={inv.no_invoice}>{inv.no_invoice}</option>
+                    {uniqueInvoices.map((noInv) => (
+                      <option key={noInv} value={noInv}>{noInv}</option>
                     ))}
                   </select>
                 </label>
-                <label className="form-control">
-                  <div className="label"><span className="label-text">Kode & Nama Bahan</span></div>
-                  <input
-                    type="text"
-                    value={bahanLabelById(data.id_bahan)}
-                    className="input input-bordered w-full bg-base-200"
-                    placeholder={bahanLabel(null)}
-                    readOnly
-                  />
-                  {data.id_bahan && (
-                    <span className="text-xs text-base-content/60 mt-1 ml-1">
-                      Satuan bahan: {satuanBahanById(data.id_bahan) || '-'}
-                    </span>
-                  )}
-                </label>
-                <label className="form-control">
-                  <div className="label"><span className="label-text">SPK</span></div>
-                  <input type="text" value={data.spk} className="input input-bordered input-success w-full" onChange={(e) => setData("spk", e.target.value)} />
-                </label>
+                {selectedInvoice && spkList.length > 0 && (
+                  <div className="mt-3">
+                    <div className="label"><span className="label-text text-xs font-semibold">Pilih SPK ({spkList.length} tersedia)</span></div>
+                    <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                      {spkList.map((inv) => (
+                        <div
+                          key={inv.id}
+                          onClick={() => handleSpkSelect(inv)}
+                          className={`p-2 rounded-lg border-2 cursor-pointer transition-all ${selectedSpkId === inv.id ? 'border-success bg-success/10' : 'border-base-300 hover:border-primary hover:bg-base-200'}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="font-mono font-semibold text-sm">{inv.kode_spk}</span>
+                              <span className="text-xs text-base-content/60 ml-2">{inv.bahan?.kode} - {inv.bahan?.bahan}</span>
+                            </div>
+                            {selectedSpkId === inv.id && <i className="fas fa-check-circle text-success text-sm"></i>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {data.id_bahan && (
+                  <>
+                    <label className="form-control mt-3">
+                      <div className="label"><span className="label-text">Kode & Nama Bahan</span></div>
+                      <input
+                        type="text"
+                        value={bahanLabelById(data.id_bahan)}
+                        className="input input-bordered w-full bg-base-200"
+                        placeholder={bahanLabel(null)}
+                        readOnly
+                      />
+                      {data.id_bahan && (
+                        <span className="text-xs text-base-content/60 mt-1 ml-1">
+                          Satuan bahan: {satuanBahanById(data.id_bahan) || '-'}
+                        </span>
+                      )}
+                    </label>
+                    <label className="form-control">
+                      <div className="label"><span className="label-text">SPK</span></div>
+                      <input type="text" value={data.spk} className="input input-bordered input-success w-full" onChange={(e) => setData("spk", e.target.value)} />
+                    </label>
+                  </>
+                )}
               </div>
               <div className="bg-gray-100 p-2 rounded-lg">
                 <div className="grid grid-cols-2 gap-2">
