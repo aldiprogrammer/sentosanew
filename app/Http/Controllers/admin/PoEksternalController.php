@@ -210,7 +210,7 @@ class PoEksternalController extends Controller
             ->whereHas('bahan', fn ($q) => $q->whereRaw('LOWER(jenis) = ?', ['eksternal']))
             ->whereNotNull('no_invoice')
             ->orderBy('no_invoice')
-            ->get(['id', 'no_invoice', 'id_bahan', 'kode_spk', 'lebar', 'tinggi', 'qty', 'harga_bahan', 'satuan', 'catatan', 'sisa_putih_panjang', 'sisa_putih_lebar', 'sisa_putih_total']);
+            ->get(['id', 'no_invoice', 'id_bahan', 'kode_spk', 'lebar', 'tinggi', 'qty', 'harga_bahan', 'satuan', 'catatan', 'keterangan', 'sisa_putih_panjang', 'sisa_putih_lebar', 'sisa_putih_total']);
 
         return Inertia::render('Admin/PoEksternalDetail', compact('po', 'bahans', 'invoices'));
     }

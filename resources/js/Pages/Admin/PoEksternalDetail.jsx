@@ -464,6 +464,9 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                             <div>
                               <span className="font-mono font-semibold text-sm">{inv.kode_spk}</span>
                               <span className="text-xs text-base-content/60 ml-2">{inv.bahan?.kode} - {inv.bahan?.bahan}</span>
+                              {inv.keterangan && (
+                                <div className="text-xs text-base-content/70 mt-1">{inv.keterangan}</div>
+                              )}
                             </div>
                             {selectedSpkId === inv.id && <i className="fas fa-check-circle text-success text-sm"></i>}
                           </div>
