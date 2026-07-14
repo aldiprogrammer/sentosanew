@@ -230,11 +230,16 @@ class PoEksternalController extends Controller
             ->get()
             ->keyBy('no_invoice');
 
+        $produksiBySpk = Produksi::whereIn('kode_spk', $po->items->pluck('spk')->filter()->values())
+            ->get()
+            ->keyBy('kode_spk');
+
         $user = auth()->user();
 
         $pdf = Pdf::loadView('pdf.po-eksternal', [
             'po' => $po,
             'produksiByInvoice' => $produksiByInvoice,
+            'produksiBySpk' => $produksiBySpk,
             'totalHarga' => $totalHarga,
             'diskonAmount' => $diskonAmount,
             'ppnAmount' => $ppnAmount,

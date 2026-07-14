@@ -333,8 +333,9 @@
             @forelse ($po->items as $index => $item)
                 @php
                     $produksi = $produksiByInvoice->get($item->invoice);
+                    $produksiSpk = $produksiBySpk->get($item->spk);
                     $satuanUkuran = $produksi?->satuan;
-                    $keterangan = $produksi?->keterangan;
+                    $keterangan = $produksiSpk?->keterangan;
                     $catatan = $produksi?->pinising?->catatan ?: '-';
                     $note = $item->keterangan;
                 @endphp

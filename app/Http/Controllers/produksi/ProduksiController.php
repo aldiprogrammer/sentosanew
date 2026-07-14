@@ -7,7 +7,6 @@ use App\Models\Bahanpakai;
 use App\Models\Itemstokbahan;
 use App\Models\Produksi;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
 
 class ProduksiController extends Controller
@@ -71,19 +70,8 @@ class ProduksiController extends Controller
             ];
         })->values();
 
-        $perPage = 10;
-        $page = max(1, (int) $request->query('page', 1));
-        $paginator = new LengthAwarePaginator(
-            $grouped->forPage($page, $perPage),
-            $grouped->count(),
-            $perPage,
-            $page,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
-        $paginator->appends(['search' => $search, 'tgl_awal' => $tglAwal, 'tgl_akhir' => $tglAkhir]);
-
         return Inertia::render('Admin/Dataproduksi', [
-            'produksi' => $paginator,
+            'produksi' => $grouped,
             'tglAwal' => $tglAwal,
             'tglAkhir' => $tglAkhir,
         ]);

@@ -33,8 +33,8 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
     }
 
     const allPageItems = React.useMemo(() =>
-        produksi.data.flatMap(group => group.items),
-        [produksi.data])
+        (Array.isArray(produksi) ? produksi : []).flatMap(group => group?.items || []),
+        [produksi])
 
     const toggleSelectGroup = (group) => {
         const allInGroupSelected = group.items.every(item => selected.some(s => s.id === item.id))
@@ -356,14 +356,14 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                         </tr>
                                     </thead>
                                     <tbody className="text-xs">
-                                        {produksi.data.length === 0 ? (
+                                        {(Array.isArray(produksi) ? produksi : []).length === 0 ? (
                                             <tr>
                                                 <td colSpan={16} className="text-center py-8 text-base-content/50">
                                                     Tidak ada data produksi
                                                 </td>
                                             </tr>
                                         ) : (
-                                            produksi.data.map((group, groupIndex) => {
+                                            (Array.isArray(produksi) ? produksi : []).map((group, groupIndex) => {
                                                 const isExpanded = expandedInvoices.has(group.no_invoice)
                                                 const allInGroupSelected = group.items.every(item => selected.some(s => s.id === item.id))
                                                 return (
@@ -426,21 +426,6 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                     </tbody>
                                 </table>
                             </div>
-
-                            {produksi.links && (
-                                <div className="flex justify-center mt-4 join">
-                                    {produksi.links.map((link, i) => (
-                                        <Link
-                                            key={i}
-                                            href={link.url || '#'}
-                                            className={`btn btn-sm join-item ${link.active ? 'btn-success' : ''} ${!link.url ? 'btn-disabled' : ''}`}
-                                            preserveState
-                                            replace
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    ))}
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
