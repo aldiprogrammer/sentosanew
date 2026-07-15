@@ -657,7 +657,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
               </div>
               <div className="stat bg-success/10 rounded-box p-4">
                 <div className="stat-title">Sub Total</div>
-                <div className="stat-value text-lg text-success">
+                <div className="stat-value text-lg text-warning">
                   {formatRp((() => {
                     const th = parseFloat(totalSemua || 0);
                     const d = parseFloat(headerForm.data.diskon || 0);
