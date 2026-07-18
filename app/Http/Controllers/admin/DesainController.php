@@ -7,7 +7,9 @@ use App\Models\Customer;
 use App\Models\Desain;
 use App\Models\FeeCsTransaksi;
 use App\Models\FeeDesainTransaksi;
+use App\Models\InvoiceDesain;
 use App\Models\Kategoridesain;
+use App\Models\PengajuanDiskon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -49,6 +51,7 @@ class DesainController extends Controller
         $tglAkhir = $request->query('tgl_akhir');
 
         $desain = Desain::with('customer', 'kategoridesain', 'desainer')
+            ->whereNull('alasan_pembatalan')
             ->when(auth()->user()->role === 'Desainer', function ($q) {
                 $q->where('id_desain', auth()->id())->whereNull('pembayaran');
             })
@@ -76,7 +79,9 @@ class DesainController extends Controller
             ->paginate(10);
         $desain->appends(['search' => $search, 'tgl_awal' => $tglAwal, 'tgl_akhir' => $tglAkhir]);
 
-        return Inertia::render('Admin/DataDesain', compact('desain', 'tglAwal', 'tglAkhir'));
+        $pengajuanDiskons = PengajuanDiskon::orderBy('id', 'desc')->get();
+
+        return Inertia::render('Admin/DataDesain', compact('desain', 'tglAwal', 'tglAkhir', 'pengajuanDiskons'));
     }
 
     public function store(Request $request)
@@ -182,6 +187,32 @@ class DesainController extends Controller
             }
         }
 
+        $processedItems = Desain::with('customer')->whereIn('id', $ids)->get();
+        $groupedByInvoice = $processedItems->groupBy('no_invoice');
+        foreach ($groupedByInvoice as $noInvoice => $items) {
+            if (! $noInvoice) {
+                continue;
+            }
+            $exists = InvoiceDesain::where('no_invoice', $noInvoice)->exists();
+            if (! $exists) {
+                $firstItem = $items->first();
+                $totalHarga = $items->sum('total_harga');
+                $approvedDiskon = PengajuanDiskon::where('no_invoice', $noInvoice)
+                    ->where('status', 'disetujui')
+                    ->first();
+                InvoiceDesain::create([
+                    'no_invoice' => $noInvoice,
+                    'id_customer' => $firstItem->id_customer,
+                    'customer' => $firstItem->customer->nama ?? '',
+                    'harga_awal' => $totalHarga,
+                    'diskon' => $approvedDiskon?->diskon,
+                    'mode_diskon' => $approvedDiskon?->mode_diskon,
+                    'harga_akhir' => $approvedDiskon?->harga_diskon ?? $totalHarga,
+                    'tanggal' => date('Y-m-d'),
+                ]);
+            }
+        }
+
         return back()->with('success', 'Pembayaran berhasil diproses');
     }
 
@@ -196,5 +227,46 @@ class DesainController extends Controller
         $desain->delete();
 
         return redirect()->back()->with('success', 'Data berhasil dihapus');
+    }
+
+    public function batal(Request $request, $id)
+    {
+        $request->validate([
+            'alasan_pembatalan' => 'required|string',
+        ]);
+
+        $desain = Desain::find($id);
+
+        if (! $desain) {
+            return redirect()->back()->with('error', 'Data desain tidak ditemukan');
+        }
+
+        if ($desain->alasan_pembatalan) {
+            return redirect()->back()->with('error', 'Data desain sudah dibatalkan');
+        }
+
+        $desain->alasan_pembatalan = $request->alasan_pembatalan;
+        $desain->save();
+
+        return redirect()->back()->with('success', 'Berhasil membatalkan desain');
+    }
+
+    public function batalMulti(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer',
+            'alasan_pembatalan' => 'required|string',
+        ]);
+
+        $count = Desain::whereIn('id', $request->ids)
+            ->whereNull('alasan_pembatalan')
+            ->update(['alasan_pembatalan' => $request->alasan_pembatalan]);
+
+        if ($count === 0) {
+            return redirect()->back()->with('error', 'Tidak ada data yang dapat dibatalkan');
+        }
+
+        return redirect()->back()->with('success', "Berhasil membatalkan {$count} order desain");
     }
 }

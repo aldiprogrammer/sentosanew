@@ -44,8 +44,6 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
                             </button>
                         </div>
 
-
-
                         <div className="divider font-bold text-base-content/70">DATA PRODUKSI</div>
 
                         <div className="mb-3">
@@ -65,55 +63,41 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
                                     <tr>
                                         <th>No</th>
                                         <th>Tgl</th>
+                                        <th>Tgl Kirim</th>
                                         <th>No Inv</th>
-                                        <th>Kode SPK</th>
-                                        <th>Keterangan</th>
+                                        <th>No SPK</th>
                                         <th>Customer</th>
                                         <th>Bahan</th>
                                         <th>Qty</th>
-                                        <th>Total Harga</th>
+                                        <th>Harga</th>
                                         <th>Pembayaran</th>
-                                        <th>Tgl Kirim</th>
-
-                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody className="text-xs">
                                     {produksi.data.length === 0 ? (
                                         <tr>
-                                            <td colSpan={12} className="text-center py-8 text-base-content/50">Tidak ada data produksi</td>
+                                            <td colSpan={10} className="text-center py-8 text-base-content/50">Tidak ada data produksi</td>
                                         </tr>
                                     ) : (
                                         produksi.data.map((item, index) => (
                                             <tr key={item.id}>
                                                 <td>{produksi.from + index}</td>
                                                 <td>{item.tanggal}</td>
-                                                <td>{item.no_invoice}</td>
-                                                <td className="font-mono font-medium">{item.kode_spk}</td>
-                                                <td>{item.keterangan}</td>
+                                                <td>{item.tgl_kirim}</td>
+                                                <td className="font-mono font-medium">{item.no_invoice}</td>
+                                                <td className="font-mono">{item.kode_spk}</td>
                                                 <td>{item.customer?.nama}</td>
                                                 <td>{item.bahan?.bahan}</td>
                                                 <td className="tabular-nums text-center">{item.qty}</td>
                                                 <td className="tabular-nums">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
                                                 <td>
                                                     {item.pembayaran ? (
-                                                        <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'transfer' ? 'badge-info' : item.pembayaran === 'qris' ? 'badge-secondary' : 'badge-warning'}`}>
-                                                            {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'transfer' ? 'Transfer' : item.pembayaran === 'qris' ? 'QRIS' : 'Hutang'}
+                                                        <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'utang' ? 'badge-warning' : item.pembayaran === 'transfer' ? 'badge-info' : 'badge-secondary'}`}>
+                                                            {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'utang' ? 'Utang' : item.pembayaran === 'transfer' ? 'Transfer' : 'QRIS'}
                                                         </span>
                                                     ) : (
                                                         <span className="text-base-content/30">-</span>
                                                     )}
-                                                </td>
-                                                <td>{item.tgl_kirim}</td>
-
-                                                <td>
-                                                    {(() => {
-                                                        if (item.status_selesai == 1) return <span className="text-success font-semibold">Selesai</span>
-                                                        if (item.status_logistik == 1) return <span className="text-info font-semibold">Proses Logistik</span>
-                                                        if (item.status_finishing == 1) return <span className="text-warning font-semibold">Proses Finishing</span>
-                                                        if (item.status_produksi == 1) return <span className="text-error font-semibold">Proses Produksi</span>
-                                                        return '-'
-                                                    })()}
                                                 </td>
                                             </tr>
                                         ))

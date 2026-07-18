@@ -18,6 +18,7 @@ class DataOrderController extends Controller
         $tglAkhir = $request->query('tgl_akhir');
 
         $desain = Desain::with('customer', 'kategoridesain', 'desainer')
+            ->whereNull('alasan_pembatalan')
             ->when(auth()->user()->role === 'Desainer', function ($q) {
                 $q->where('id_desain', auth()->id());
             })
@@ -40,6 +41,7 @@ class DataOrderController extends Controller
             ->withQueryString();
 
         $produksi = Produksi::with('customer', 'bahan')
+            ->whereNull('alasan_pembatalan')
             ->when(auth()->user()->role === 'Desainer', function ($q) {
                 $q->where('id_desainer', auth()->id());
             })

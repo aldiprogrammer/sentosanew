@@ -8,6 +8,7 @@ class PengajuanDiskon extends Model
 {
     protected $fillable = [
         'no_invoice',
+        'jenis',
         'id_customer',
         'customer',
         'harga_awal',

@@ -226,6 +226,47 @@ class ProduksiController extends Controller
         return redirect()->back()->with('success', 'Data barhasil dihapus');
     }
 
+    public function batal(Request $request, $id)
+    {
+        $request->validate([
+            'alasan_pembatalan' => 'required|string',
+        ]);
+
+        $produksi = Produksi::find($id);
+
+        if (! $produksi) {
+            return redirect()->back()->with('error', 'Data produksi tidak ditemukan');
+        }
+
+        if ($produksi->alasan_pembatalan) {
+            return redirect()->back()->with('error', 'Data produksi sudah dibatalkan');
+        }
+
+        $produksi->alasan_pembatalan = $request->alasan_pembatalan;
+        $produksi->save();
+
+        return redirect()->back()->with('success', 'Berhasil membatalkan produksi');
+    }
+
+    public function batalMulti(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer',
+            'alasan_pembatalan' => 'required|string',
+        ]);
+
+        $count = Produksi::whereIn('id', $request->ids)
+            ->whereNull('alasan_pembatalan')
+            ->update(['alasan_pembatalan' => $request->alasan_pembatalan]);
+
+        if ($count === 0) {
+            return redirect()->back()->with('error', 'Tidak ada data yang dapat dibatalkan');
+        }
+
+        return redirect()->back()->with('success', "Berhasil membatalkan {$count} order produksi");
+    }
+
     private function kodeAntrianProduksiBerikutnya()
     {
         $produksiTerakhir = Produksi::orderBy('id', 'desc')->first();

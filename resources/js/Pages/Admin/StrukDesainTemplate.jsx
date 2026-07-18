@@ -142,8 +142,7 @@ export const buildDesainReceiptHtml = ({ items, auth, paymentType }) => {
             </tbody>
             <tfoot>
                 <tr><td class="summary-label" colspan="3">Total</td><td class="amount">${formatMoney(gtHarga)}</td></tr>
-                <tr><td class="summary-label" colspan="3">Bayar</td><td class="amount">0</td></tr>
-                <tr><td class="summary-label" colspan="3">Kembalian</td><td class="amount">0</td></tr>
+                
             </tfoot>
         </table>
 

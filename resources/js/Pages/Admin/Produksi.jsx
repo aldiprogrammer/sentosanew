@@ -809,6 +809,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   <span className="label-text">Qty</span>
                                 </div>
                                 <input
+                                  min={1}
                                   type="number"
                                   name="qty"
                                   value={data.qty}

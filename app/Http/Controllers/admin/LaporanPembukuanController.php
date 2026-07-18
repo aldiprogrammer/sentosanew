@@ -105,6 +105,7 @@ class LaporanPembukuanController extends Controller
         if (! $jenisFilter || $jenisFilter === 'Desain') {
             $desain = Desain::with('customer')
                 ->whereNotNull('pembayaran')
+                ->whereNull('alasan_pembatalan')
                 ->when($tanggalAwal, fn ($q) => $q->where('tanggal', '>=', $tanggalAwal))
                 ->when($tanggalAkhir, fn ($q) => $q->where('tanggal', '<=', $tanggalAkhir))
                 ->when($bulan, fn ($q) => $q->whereMonth('tanggal', $bulan))
@@ -115,6 +116,7 @@ class LaporanPembukuanController extends Controller
         if (! $jenisFilter || $jenisFilter === 'Produksi') {
             $produksi = Produksi::with('customer')
                 ->whereNotNull('pembayaran')
+                ->whereNull('alasan_pembatalan')
                 ->when($tanggalAwal, fn ($q) => $q->where('tanggal', '>=', $tanggalAwal))
                 ->when($tanggalAkhir, fn ($q) => $q->where('tanggal', '<=', $tanggalAkhir))
                 ->when($bulan, fn ($q) => $q->whereMonth('tanggal', $bulan))

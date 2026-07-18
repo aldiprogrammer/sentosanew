@@ -4,7 +4,9 @@ import React, { useCallback, useRef } from 'react'
 import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
 import { buildDesainReceiptHtml } from './StrukDesainTemplate'
 
-export default function DataDesain({ desain, tglAwal, tglAkhir }) {
+export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons }) {
+    const { auth, flash } = usePage().props
+    const isCs = auth?.user?.role === 'Customer Service'
     const [search, setSearch] = React.useState('')
     const [tgl_awal, setTglAwal] = React.useState(tglAwal || '')
     const [tgl_akhir, setTglAkhir] = React.useState(tglAkhir || '')
@@ -18,10 +20,28 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
     const previewRef = useRef(null)
     const iframeRef = useRef(null)
     const paymentModalRef = useRef(null)
-    const { auth } = usePage().props
-    const isCs = auth?.user?.role === 'Customer Service'
+    const [showDiskonModal, setShowDiskonModal] = React.useState(false)
+    const [diskonForm, setDiskonForm] = React.useState({
+        no_invoice: '',
+        id_customer: '',
+        harga_awal: '',
+        mode_diskon: 'persen',
+        diskon: '',
+        jenis: 'desain',
+    })
+    const [batalForm, setBatalForm] = React.useState({ ids: [], alasan_pembatalan: '' })
+    const batalModalRef = React.useRef(null)
 
-    const selectableIds = desain.data.filter((item) => !(isCs && item.pembayaran)).map((item) => item.id)
+    React.useEffect(() => {
+        if (flash?.success) {
+            Swal.fire({ icon: 'success', title: 'Berhasil', text: flash.success, timer: 1500, showConfirmButton: false })
+        }
+        if (flash?.error) {
+            Swal.fire({ icon: 'error', title: 'Gagal', text: flash.error })
+        }
+    }, [flash])
+
+    const selectableIds = desain.data.filter((item) => !(isCs && item.pembayaran) && !item.alasan_pembatalan).map((item) => item.id)
     const allIds = desain.data.map((item) => item.id)
     const allSelected = allIds.length > 0 && selected.length === allIds.length
 
@@ -46,11 +66,51 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
     const customerLimitRemaining = customerLimit - customerLimitAkhir
     const wouldExceedLimit = paymentType === 'utang' && (customerLimitAkhir + totalHarga > customerLimit)
 
+    const selectedInvoice = selectedItems.length > 0 ? selectedItems[0]?.no_invoice : null
+
+    const existingDiskon = React.useMemo(() => {
+        if (!selectedInvoice || !Array.isArray(pengajuanDiskons)) return null
+        return pengajuanDiskons.find(d => d.no_invoice === selectedInvoice && (d.status === 'disetujui' || d.status === 'pending')) || null
+    }, [selectedInvoice, pengajuanDiskons])
+
+    const diskonInfoForReceipt = React.useMemo(() => {
+        if (!selectedInvoice || !Array.isArray(pengajuanDiskons)) return null
+        return pengajuanDiskons.find(d => d.no_invoice === selectedInvoice && d.status === 'disetujui') || null
+    }, [selectedInvoice, pengajuanDiskons])
+
     const handleSearch = (e) => {
         e.preventDefault()
         setSelected([])
         router.get('/data-desain', { search, tgl_awal, tgl_akhir }, { preserveState: true, replace: true })
     }
+
+    const openDiskonModal = () => {
+        if (!selectedInvoice) return
+        const firstItem = selectedItems[0]
+        if (!firstItem) return
+        setDiskonForm({
+            no_invoice: selectedInvoice,
+            id_customer: firstItem.id_customer || firstItem.customer?.id || '',
+            harga_awal: totalHarga || 0,
+            mode_diskon: 'persen',
+            diskon: '',
+            jenis: 'desain',
+        })
+        setShowDiskonModal(true)
+    }
+
+    const handleDiskonSubmit = (e) => {
+        e.preventDefault()
+        router.post('/pengajuan-diskon', diskonForm, {
+            onSuccess: () => { setShowDiskonModal(false) },
+        })
+    }
+
+    const hargaAwalDiskon = Number(diskonForm.harga_awal || 0)
+    const diskonVal = Number(diskonForm.diskon || 0)
+    const hargaDiskon = diskonForm.mode_diskon === 'persen'
+        ? Math.max(0, hargaAwalDiskon - (hargaAwalDiskon * diskonVal / 100))
+        : Math.max(0, hargaAwalDiskon - diskonVal)
 
     const buildReceiptHtml = (items) =>
         buildDesainReceiptHtml({ items, auth, paymentType })
@@ -252,7 +312,7 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
                         </div>
 
                         {selected.length > 0 && (
-                            <div className="mb-3 bg-gradient-to-r from-success/10 to-success/5 border border-success/30 rounded-xl px-4 py-3 shadow-sm transition-all duration-300">
+                            <div className="mb-3 bg-success border border-success/30 rounded-xl px-4 py-3 shadow-sm transition-all duration-300">
                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                     <div className="flex items-center gap-4 text-sm">
                                         <div className="flex items-center gap-2">
@@ -260,29 +320,66 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
                                                 <i className="fas fa-check-circle text-xs"></i>
                                                 {selected.length}
                                             </div>
-                                            <span className="text-base-content/70 font-medium">item dipilih</span>
+                                            <span className="text-white font-medium">item dipilih</span>
                                         </div>
-                                        <div className="hidden sm:flex items-center gap-4">
-                                            <span className="text-base-content/40">|</span>
-                                            <span className="text-base-content/70">
-                                                Qty: <strong className="text-base-content">{totalQty}</strong>
+                                        <div className="hidden sm:flex items-center gap-4 ">
+                                            <span className="text-white">|</span>
+                                            <span className="text-white">
+                                                Qty: <strong className="text-white">{totalQty}</strong>
                                             </span>
-                                            <span className="text-base-content/40">|</span>
-                                            <span className="text-base-content/70">
-                                                Total: <strong className="text-success text-sm">Rp {totalHarga.toLocaleString('id-ID')}</strong>
+                                            <span className="text-white">|</span>
+                                            <span className="text-white">
+                                                Total: <strong className="text-white text-sm">Rp {totalHarga.toLocaleString('id-ID')}</strong>
                                             </span>
+                                            {existingDiskon && (
+                                                <>
+                                                    <span className="text-white">|</span>
+                                                    <span className="text-white">
+                                                        Diskon: <strong className="text-warning">
+                                                            {existingDiskon.status === 'pending' ? '(Pending)' : existingDiskon.mode_diskon === 'persen' ? `${existingDiskon.diskon}%` : `Rp ${Number(existingDiskon.diskon).toLocaleString('id-ID')}`}
+                                                        </strong>
+                                                    </span>
+                                                    {existingDiskon.status === 'disetujui' && (
+                                                        <>
+                                                            <span className="text-base-content/40">|</span>
+                                                            <span className="text-white">
+                                                                Harga Akhir: <strong className="text-white">Rp {Number(existingDiskon.harga_diskon).toLocaleString('id-ID')}</strong>
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="flex gap-2">
-                                        <button className="btn btn-success btn-sm" onClick={handleCetakStruk}>
+                                        {existingDiskon && existingDiskon.status === 'pending' && (
+                                            <span className="btn btn-ghost btn-sm text-black cursor-default">
+                                                <i className="fas fa-clock"></i> Menunggu Persetujuan
+                                            </span>
+                                        )}
+                                        {!existingDiskon && (
+                                            <button className="btn btn-warning btn-sm" onClick={openDiskonModal}>
+                                                <i className="fas fa-percent"></i> Pengajuan Diskon
+                                            </button>
+                                        )}
+                                        <button className="btn btn-white btn-sm" onClick={handleCetakStruk}>
                                             <i className="fas fa-print"></i> Cetak Struk
                                         </button>
                                         <div className="dropdown dropdown-end">
-                                            <button className="btn btn-success btn-sm btn-outline" tabIndex={0}>
+                                            <button className="btn btn-white btn-sm btn-outline" tabIndex={0}>
                                                 <i className="fas fa-chevron-down"></i>
                                             </button>
                                             <ul tabIndex={0} className="dropdown-content menu menu-sm bg-base-100 rounded-xl shadow-lg border border-base-300 z-50 w-48 p-2 mt-1">
                                                 <li><button onClick={handleCetakGabungan}><i className="fas fa-layer-group"></i> Cetak Gabungan</button></li>
+                                                <li><button onClick={() => {
+                                                    if (selected.length > 0) {
+                                                        const unbatalItems = desain.data.filter(d => selected.includes(d.id) && !d.alasan_pembatalan)
+                                                        if (unbatalItems.length > 0) {
+                                                            setBatalForm({ ids: unbatalItems.map(i => i.id), alasan_pembatalan: '' })
+                                                            batalModalRef.current?.showModal()
+                                                        }
+                                                    }
+                                                }} disabled={desain.data.filter(d => selected.includes(d.id) && !d.alasan_pembatalan).length === 0}><i className="fas fa-ban"></i> Batalkan Order</button></li>
                                                 <li><button onClick={() => setSelected([])}><i className="fas fa-times"></i> Batalkan Pilihan</button></li>
                                             </ul>
                                         </div>
@@ -308,19 +405,20 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
                                             <th>Qty</th>
                                             <th>Total Harga</th>
                                             <th>Pembayaran</th>
+                                            <th>Status</th>
                                             <th>Desainer</th>
                                         </tr>
                                     </thead>
                                     <tbody className="text-xs">
                                         {desain.data.length === 0 ? (
                                             <tr>
-                                                <td colSpan={11} className="text-center py-8 text-base-content/50">
+                                                <td colSpan={12} className="text-center py-8 text-base-content/50">
                                                     Tidak ada data desain
                                                 </td>
                                             </tr>
                                         ) : (
                                             desain.data.map((item, index) => (
-                                                <tr key={item.id} className={`hover:bg-base-200 ${item.pembayaran === 'utang' ? 'bg-red-50 text-red-700' : ['lunas','transfer','qris'].includes(item.pembayaran) ? 'bg-green-50 text-green-700' : ''}`}>
+                                                <tr key={item.id} className={`hover:bg-base-200 ${item.pembayaran === 'utang' ? 'bg-red-50 text-red-700' : ['lunas', 'transfer', 'qris'].includes(item.pembayaran) ? 'bg-green-50 text-green-700' : ''}`}>
                                                     <td>
                                                         <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={selected.includes(item.id)} onChange={() => toggleSelect(item.id)} disabled={isCs && item.pembayaran} />
                                                     </td>
@@ -333,9 +431,22 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
                                                     <td className="tabular-nums text-center">{item.qty}</td>
                                                     <td className="tabular-nums">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
                                                     <td>
-                                                        {item.pembayaran ? (
+                                                        {item.alasan_pembatalan ? (
+                                                            <span className="badge badge-sm badge-error">
+                                                                Dibatalkan
+                                                            </span>
+                                                        ) : item.pembayaran ? (
                                                             <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'utang' ? 'badge-warning' : item.pembayaran === 'transfer' ? 'badge-info' : 'badge-secondary'}`}>
                                                                 {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'utang' ? 'Utang' : item.pembayaran === 'transfer' ? 'Transfer' : 'QRIS'}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-base-content/30">-</span>
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {item.alasan_pembatalan ? (
+                                                            <span className="text-error text-xs" title={item.alasan_pembatalan}>
+                                                                <i className="fas fa-ban"></i> Dibatalkan
                                                             </span>
                                                         ) : (
                                                             <span className="text-base-content/30">-</span>
@@ -506,11 +617,152 @@ export default function DataDesain({ desain, tglAwal, tglAkhir }) {
                     <button onClick={() => paymentModalRef.current?.close()}>close</button>
                 </form>
             </dialog>
+
+            <dialog className={`modal ${showDiskonModal ? 'modal-open' : ''}`}>
+                <div className="modal-box">
+                    <button type="button" className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onClick={() => setShowDiskonModal(false)}>✕</button>
+                    <h3 className="text-lg font-bold mb-4"><i className="fas fa-percent text-warning"></i> Pengajuan Diskon</h3>
+                    <form onSubmit={handleDiskonSubmit} className="space-y-3">
+                        <label className="form-control w-full">
+                            <span className="label-text text-xs">No Invoice</span>
+                            <input
+                                type="text"
+                                className="input input-bordered input-sm bg-base-200"
+                                value={diskonForm.no_invoice}
+                                readOnly
+                            />
+                        </label>
+                        <label className="form-control w-full">
+                            <span className="label-text text-xs">Customer</span>
+                            <input
+                                type="text"
+                                className="input input-bordered input-sm bg-base-200"
+                                value={selectedItems[0]?.customer?.nama || ''}
+                                readOnly
+                            />
+                        </label>
+                        <label className="form-control w-full">
+                            <span className="label-text text-xs">Harga</span>
+                            <input
+                                type="text"
+                                className="input input-bordered input-sm bg-base-200"
+                                value={`Rp ${Number(diskonForm.harga_awal || 0).toLocaleString('id-ID')}`}
+                                readOnly
+                            />
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                            <label className="form-control w-full">
+                                <span className="label-text text-xs">Mode Diskon</span>
+                                <select
+                                    className="select select-bordered select-success w-full select-sm text-sm"
+                                    value={diskonForm.mode_diskon}
+                                    onChange={(e) => setDiskonForm({ ...diskonForm, mode_diskon: e.target.value })}
+                                    required
+                                >
+                                    <option value="persen">Persen (%)</option>
+                                    <option value="rupiah">Rupiah (Rp)</option>
+                                </select>
+                            </label>
+                            <label className="form-control w-full">
+                                <span className="label-text text-xs">Diskon {diskonForm.mode_diskon === 'persen' ? '(%)' : '(Rp)'}</span>
+                                <input
+                                    type="number"
+                                    className="input input-bordered input-success w-full input-sm"
+                                    value={diskonForm.diskon}
+                                    onChange={(e) => setDiskonForm({ ...diskonForm, diskon: e.target.value })}
+                                    min="0"
+                                    required
+                                />
+                            </label>
+                        </div>
+                        <div className="p-3 bg-base-200 rounded-lg">
+                            <div className="flex justify-between text-sm">
+                                <span>Harga Setelah Diskon:</span>
+                                <span className="font-bold text-success">Rp {hargaDiskon.toLocaleString('id-ID')}</span>
+                            </div>
+                        </div>
+                        <div className="modal-action">
+                            <button type="button" className="btn btn-ghost" onClick={() => setShowDiskonModal(false)}>Batal</button>
+                            <button type="submit" className="btn btn-warning">
+                                <i className="fas fa-paper-plane"></i> Kirim Pengajuan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <form method="dialog" className="modal-backdrop">
+                    <button onClick={() => setShowDiskonModal(false)}>close</button>
+                </form>
+            </dialog>
+
             <KonfirmasiPassword
                 show={showPasswordModal}
                 onConfirmed={handlePasswordConfirmed}
                 onClose={handlePasswordCancel}
             />
+
+            <dialog ref={batalModalRef} className="modal">
+                <div className="modal-box">
+                    <button type="button" className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onClick={() => batalModalRef.current?.close()}>✕</button>
+                    <h3 className="text-lg font-bold mb-4"><i className="fas fa-ban text-error"></i> Batalkan Order</h3>
+                    <div className="space-y-3">
+                        <p className="text-sm text-base-content/70">
+                            Batalkan <strong>{batalForm.ids?.length || 0}</strong> item yang dipilih? Silakan masukkan alasan pembatalan.
+                        </p>
+                        <label className="form-control w-full">
+                            <span className="label-text text-xs">Alasan Pembatalan <span className="text-error">*</span></span>
+                            <textarea
+                                className="textarea textarea-bordered textarea-sm w-full"
+                                placeholder="Masukkan alasan pembatalan..."
+                                rows={3}
+                                value={batalForm.alasan_pembatalan}
+                                onChange={(e) => setBatalForm({ ...batalForm, alasan_pembatalan: e.target.value })}
+                                required
+                            />
+                        </label>
+                    </div>
+                    <div className="modal-action">
+                        <button type="button" className="btn btn-ghost" onClick={() => batalModalRef.current?.close()}>Batal</button>
+                        <button
+                            type="button"
+                            className="btn btn-error"
+                            disabled={!batalForm.alasan_pembatalan.trim()}
+                            onClick={() => {
+                                if (!batalForm.alasan_pembatalan.trim()) return
+                                batalModalRef.current?.close()
+                                Swal.fire({
+                                    title: 'Yakin membatalkan order?',
+                                    text: `${batalForm.ids?.length || 0} item yang dibatalkan tidak dapat dikembalikan.`,
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    customClass: {
+                                        confirmButton: 'bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded',
+                                        cancelButton: 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded',
+                                    },
+                                    confirmButtonText: 'Ya, Batalkan!',
+                                    cancelButtonText: 'Tidak',
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        router.put('/data-desain/batal-multi', {
+                                            ids: batalForm.ids,
+                                            alasan_pembatalan: batalForm.alasan_pembatalan,
+                                        }, {
+                                            onSuccess: () => {
+                                                batalModalRef.current?.close()
+                                                setSelected([])
+                                            },
+                                        })
+                                    }
+                                })
+                            }}
+                        >
+                            <i className="fas fa-ban"></i> Batalkan Order
+                        </button>
+                    </div>
+                </div>
+                <form method="dialog" className="modal-backdrop">
+                    <button onClick={() => batalModalRef.current?.close()}>close</button>
+                </form>
+            </dialog>
         </AdminLayout>
     )
 }

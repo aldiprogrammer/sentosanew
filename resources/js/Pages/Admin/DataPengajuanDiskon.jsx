@@ -2,9 +2,10 @@ import AdminLayout from '@/Layouts/AdminLayout'
 import { router, usePage } from '@inertiajs/react'
 import React from 'react'
 
-export default function DataPengajuanDiskon({ pengajuan }) {
+export default function DataPengajuanDiskon({ pengajuan, jenis: jenisFilter }) {
     const { flash } = usePage().props
     const [search, setSearch] = React.useState('')
+    const [jenis, setJenis] = React.useState(jenisFilter || '')
     const confirmRef = React.useRef(null)
     const [confirmData, setConfirmData] = React.useState({ title: '', text: '', color: '', onConfirm: null })
 
@@ -24,13 +25,18 @@ export default function DataPengajuanDiskon({ pengajuan }) {
 
     const handleSearch = (e) => {
         e.preventDefault()
-        router.get('/pengajuan-diskon', { search }, { preserveState: true, replace: true })
+        router.get('/pengajuan-diskon', { search, jenis }, { preserveState: true, replace: true })
     }
 
     const statusBadge = (status) => {
         if (status === 'disetujui') return <span className="badge badge-success badge-sm">Disetujui</span>
         if (status === 'ditolak') return <span className="badge badge-error badge-sm">Ditolak</span>
         return <span className="badge badge-warning badge-sm">Pending</span>
+    }
+
+    const jenisBadge = (itemJenis) => {
+        if (itemJenis === 'desain') return <span className="badge badge-info badge-sm"><i className="fas fa-palette mr-1"></i> Desain</span>
+        return <span className="badge badge-secondary badge-sm"><i className="fas fa-industry mr-1"></i> Produksi</span>
     }
 
     return (
@@ -42,7 +48,7 @@ export default function DataPengajuanDiskon({ pengajuan }) {
                     </div>
 
                     <div className="mb-3">
-                        <form onSubmit={handleSearch} className="flex gap-2 items-end">
+                        <form onSubmit={handleSearch} className="flex flex-wrap gap-2 items-end">
                             <input
                                 type="text"
                                 placeholder="Cari no invoice, customer..."
@@ -50,6 +56,15 @@ export default function DataPengajuanDiskon({ pengajuan }) {
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
+                            <select
+                                className="text-sm select select-bordered select-success select-sm w-full max-w-[180px]"
+                                value={jenis}
+                                onChange={(e) => setJenis(e.target.value)}
+                            >
+                                <option value="">Semua Jenis</option>
+                                <option value="desain">Desain</option>
+                                <option value="produksi">Produksi</option>
+                            </select>
                             <button type="submit" className="btn btn-success btn-sm">
                                 <i className="fas fa-search"></i> Cari
                             </button>
@@ -62,6 +77,7 @@ export default function DataPengajuanDiskon({ pengajuan }) {
                                 <tr>
                                     <th>No</th>
                                     <th>No Invoice</th>
+                                    <th>Jenis</th>
                                     <th>Customer</th>
                                     <th>Tanggal</th>
                                     <th>Harga Awal</th>
@@ -75,7 +91,7 @@ export default function DataPengajuanDiskon({ pengajuan }) {
                             <tbody className="text-sm">
                                 {pengajuan.data?.length === 0 ? (
                                     <tr>
-                                        <td colSpan={10} className="text-center py-8 text-base-content/50">
+                                        <td colSpan={11} className="text-center py-8 text-base-content/50">
                                             Tidak ada data pengajuan diskon
                                         </td>
                                     </tr>
@@ -84,6 +100,7 @@ export default function DataPengajuanDiskon({ pengajuan }) {
                                         <tr key={item.id}>
                                             <td>{pengajuan.from + idx}</td>
                                             <td className="font-mono font-semibold">{item.no_invoice}</td>
+                                            <td>{jenisBadge(item.jenis)}</td>
                                             <td>{item.customer}</td>
                                             <td>{item.tanggal}</td>
                                             <td className="tabular-nums">Rp {Number(item.harga_awal || 0).toLocaleString('id-ID')}</td>
@@ -110,7 +127,7 @@ export default function DataPengajuanDiskon({ pengajuan }) {
                                                 )}
                                                 {item.status === 'disetujui' && (
                                                     <button className="btn btn-warning btn-xs" onClick={() => openConfirm('Batalkan Persetujuan?', 'Status akan kembali ke pending', 'warning', () => router.put(`/pengajuan-diskon/${item.id}/cancel`))}>
-                                                        <i className="fas fa-undo"></i> Batal
+                                                        Batal
                                                     </button>
                                                 )}
                                                 {item.status === 'ditolak' && (

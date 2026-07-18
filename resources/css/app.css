@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.swal2-actions button {
+    color: #fff !important;
+}
+.swal2-actions button.swal2-cancel {
+    color: #fff !important;
+}
+.swal2-actions button.swal2-confirm {
+    color: #fff !important;
+}
+.swal2-actions button.swal2-deny {
+    color: #fff !important;
+}

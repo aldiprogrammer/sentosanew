@@ -18,6 +18,7 @@ use App\Http\Controllers\admin\LaporanPembukuanController;
 use App\Http\Controllers\admin\MaterbahanController;
 use App\Http\Controllers\admin\OtorisasiController;
 use App\Http\Controllers\admin\PembayaranHutangController;
+use App\Http\Controllers\admin\PembatalanOrderController;
 use App\Http\Controllers\admin\PengajuanDiskonController;
 use App\Http\Controllers\admin\PenggunaController;
 use App\Http\Controllers\admin\PoEksternalController;
@@ -109,6 +110,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/produksi', [ProduksiController::class, 'store'])->name('store.produksi');
     Route::put('/produksi/{id}', [ProduksiController::class, 'update'])->name('update.produksi');
     Route::delete('/produksi/{id}', [ProduksiController::class, 'delete'])->name('delete.produksi');
+    Route::put('/produksi/{id}/batal', [ProduksiController::class, 'batal'])->name('batal.produksi');
+    Route::put('/dataproduksi/batal-multi', [ProduksiController::class, 'batalMulti'])->name('batal-multi.produksi');
 
     Route::get('/distributor', [DistributorController::class, 'index'])->name('distributor');
     Route::post('/distributor', [DistributorController::class, 'store'])->name('store.distributor');
@@ -146,8 +149,11 @@ Route::middleware('auth')->group(function () {
     Route::put('/pengajuan-diskon/{id}/reject', [PengajuanDiskonController::class, 'reject'])->name('reject.pengajuan-diskon');
     Route::put('/pengajuan-diskon/{id}/cancel', [PengajuanDiskonController::class, 'cancel'])->name('cancel.pengajuan-diskon');
     Route::get('/data-order', [DataOrderController::class, 'index'])->name('data-order');
+    Route::get('/pembatalan-order', [PembatalanOrderController::class, 'index'])->name('pembatalan-order');
     Route::get('/data-desain', [DesainController::class, 'dataDesain'])->name('data-desain');
     Route::put('/data-desain/proses-pembayaran', [DesainController::class, 'prosesPembayaran'])->name('proses.pembayaran.desain');
+    Route::put('/data-desain/{id}/batal', [DesainController::class, 'batal'])->name('batal.desain');
+    Route::put('/data-desain/batal-multi', [DesainController::class, 'batalMulti'])->name('batal-multi.desain');
     Route::get('/produksi/produksi', [ProduksiProduksiController::class, 'index'])->name('produksi.produksi');
     Route::put('/produksi/produksi/{id}/proses', [ProduksiProduksiController::class, 'proses'])->name('produksi.produksi');
 

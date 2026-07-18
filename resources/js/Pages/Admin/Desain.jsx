@@ -334,6 +334,7 @@ export default function Desain({
                               <span className="label-text">QTY</span>
                             </div>
                             <input
+                              min={1}
                               type="number"
                               value={data.qty}
                               className="input input-bordered input-success w-full"

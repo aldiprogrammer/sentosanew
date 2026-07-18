@@ -185,8 +185,7 @@ export const buildProductionReceiptHtml = ({ items, auth, paymentType, diskonInf
                 <tr><td class="summary-label" colspan="3">Total Faktur</td><td class="amount">${formatMoney(gtHarga)}</td></tr>
                 ${hasDiskon ? `<tr><td class="summary-label" colspan="3">Diskon (${diskonLabel})</td><td class="amount" style="color:#c00">-${formatMoney(gtHarga - hargaSetelahDiskon)}</td></tr>` : ''}
                 ${hasDiskon ? `<tr><td class="summary-label" colspan="3" style="font-weight:900">Harga Akhir</td><td class="amount" style="font-weight:900">${formatMoney(hargaSetelahDiskon)}</td></tr>` : ''}
-                <tr><td class="summary-label" colspan="3">Bayar</td><td class="amount">0</td></tr>
-                <tr><td class="summary-label" colspan="3">Kembalian</td><td class="amount">0</td></tr>
+               
             </tfoot>
         </table>
 

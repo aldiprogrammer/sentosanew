@@ -29,7 +29,10 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
         harga_awal: '',
         mode_diskon: 'persen',
         diskon: '',
+        jenis: 'produksi',
     })
+    const [batalForm, setBatalForm] = React.useState({ ids: [], alasan_pembatalan: '' })
+    const batalModalRef = useRef(null)
 
 
     React.useEffect(() => {
@@ -61,18 +64,20 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
             setSelected(prev => prev.filter(item => !groupIds.has(item.id)))
         } else {
             const existingIds = new Set(selected.map(item => item.id))
-            const newItems = group.items.filter(item => !existingIds.has(item.id) && !(isCs && item.pembayaran))
+            const newItems = group.items.filter(item => !existingIds.has(item.id) && !(isCs && item.pembayaran) && !item.alasan_pembatalan)
             setSelected(prev => [...prev, ...newItems])
         }
     }
 
     const allSelected = allPageItems.length > 0 && allPageItems.every(item => {
         if (isCs && item.pembayaran) return true
+        if (item.alasan_pembatalan) return true
         return selected.some(s => s.id === item.id)
     })
 
     const toggleSelect = (item) => {
         if (isCs && item.pembayaran) return
+        if (item.alasan_pembatalan) return
         setSelected((prev) => {
             const exists = prev.find(x => x.id === item.id)
             return exists ? prev.filter(x => x.id !== item.id) : [...prev, item]
@@ -85,7 +90,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
             setSelected(prev => prev.filter(item => !currentIds.has(item.id)))
         } else {
             const existingIds = new Set(selected.map(item => item.id))
-            const newItems = allPageItems.filter(item => !existingIds.has(item.id) && !(isCs && item.pembayaran))
+            const newItems = allPageItems.filter(item => !existingIds.has(item.id) && !(isCs && item.pembayaran) && !item.alasan_pembatalan)
             setSelected(prev => [...prev, ...newItems])
         }
     }
@@ -286,6 +291,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
             harga_awal: group.total_harga || 0,
             mode_diskon: 'persen',
             diskon: '',
+            jenis: 'produksi',
         })
         setShowDiskonModal(true)
     }
@@ -407,6 +413,15 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                                 <ul tabIndex={0} className="dropdown-content menu menu-sm bg-white rounded-xl shadow-lg border border-base-300 z-50 w-48 p-2 mt-1">
                                                     <li><button onClick={handleCetakGabungan}><i className="fas fa-layer-group"></i> Cetak Gabungan</button></li>
                                                     <li><button onClick={() => setPreview(true)}><i className="fas fa-eye"></i> Preview Struk</button></li>
+                                                    <li><button onClick={() => {
+                                                        if (selectedItems.length > 0) {
+                                                            const unbatalItems = selectedItems.filter(item => !item.alasan_pembatalan)
+                                                            if (unbatalItems.length > 0) {
+                                                                setBatalForm({ ids: unbatalItems.map(i => i.id), alasan_pembatalan: '' })
+                                                                batalModalRef.current?.showModal()
+                                                            }
+                                                        }
+                                                    }} disabled={selectedItems.filter(i => !i.alasan_pembatalan).length === 0}><i className="fas fa-ban"></i> Batalkan Order</button></li>
                                                     <li><button onClick={() => setSelected([])}><i className="fas fa-times"></i> Batalkan Pilihan</button></li>
                                                 </ul>
                                             </div>
@@ -500,7 +515,11 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                                                 <td className={'tabular-nums' + (isDesainer && item.harga_bahan ? ' blur-sm select-none' : '')}>{isDesainer && item.harga_bahan ? '••••••' : (item.harga_bahan ? Number(item.harga_bahan).toLocaleString('id-ID') : '-')}</td>
                                                                 <td className={'tabular-nums' + (isDesainer && item.total_harga ? ' blur-sm select-none' : '')}>{isDesainer && item.total_harga ? '••••••' : (item.total_harga ? Number(item.total_harga).toLocaleString('id-ID') : '-')}</td>
                                                                 <td>
-                                                                    {item.pembayaran ? (
+                                                                    {item.alasan_pembatalan ? (
+                                                                        <span className="badge badge-sm badge-error">
+                                                                            Dibatalkan
+                                                                        </span>
+                                                                    ) : item.pembayaran ? (
                                                                         <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'utang' ? 'badge-warning' : item.pembayaran === 'transfer' ? 'badge-info' : 'badge-secondary'}`}>
                                                                             {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'utang' ? 'Utang' : item.pembayaran === 'transfer' ? 'Transfer' : 'QRIS'}
                                                                         </span>
@@ -742,6 +761,70 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                 onConfirmed={handlePasswordConfirmed}
                 onClose={handlePasswordCancel}
             />
+
+            <dialog ref={batalModalRef} className="modal">
+                <div className="modal-box">
+                    <button type="button" className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onClick={() => batalModalRef.current?.close()}>✕</button>
+                    <h3 className="text-lg font-bold mb-4"><i className="fas fa-ban text-error"></i> Batalkan Order</h3>
+                    <div className="space-y-3">
+                        <p className="text-sm text-base-content/70">
+                            Batalkan <strong>{batalForm.ids?.length || 0}</strong> item yang dipilih? Silakan masukkan alasan pembatalan.
+                        </p>
+                        <label className="form-control w-full">
+                            <span className="label-text text-xs">Alasan Pembatalan <span className="text-error">*</span></span>
+                            <textarea
+                                className="textarea textarea-bordered textarea-sm w-full"
+                                placeholder="Masukkan alasan pembatalan..."
+                                rows={3}
+                                value={batalForm.alasan_pembatalan}
+                                onChange={(e) => setBatalForm({ ...batalForm, alasan_pembatalan: e.target.value })}
+                                required
+                            />
+                        </label>
+                    </div>
+                    <div className="modal-action">
+                        <button type="button" className="btn btn-ghost" onClick={() => batalModalRef.current?.close()}>Batal</button>
+                        <button
+                            type="button"
+                            className="btn btn-error"
+                            disabled={!batalForm.alasan_pembatalan.trim()}
+                            onClick={() => {
+                                if (!batalForm.alasan_pembatalan.trim()) return
+                                batalModalRef.current?.close()
+                                Swal.fire({
+                                    title: 'Yakin membatalkan order?',
+                                    text: `${batalForm.ids?.length || 0} item yang dibatalkan tidak dapat dikembalikan.`,
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    customClass: {
+                                        confirmButton: 'bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded',
+                                        cancelButton: 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded',
+                                    },
+                                    confirmButtonText: 'Ya, Batalkan!',
+                                    cancelButtonText: 'Tidak',
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        router.put('/dataproduksi/batal-multi', {
+                                            ids: batalForm.ids,
+                                            alasan_pembatalan: batalForm.alasan_pembatalan,
+                                        }, {
+                                            onSuccess: () => {
+                                                batalModalRef.current?.close()
+                                                setSelected([])
+                                            },
+                                        })
+                                    }
+                                })
+                            }}
+                        >
+                            <i className="fas fa-ban"></i> Batalkan Order
+                        </button>
+                    </div>
+                </div>
+                <form method="dialog" className="modal-backdrop">
+                    <button onClick={() => batalModalRef.current?.close()}>close</button>
+                </form>
+            </dialog>
         </AdminLayout>
     )
 }

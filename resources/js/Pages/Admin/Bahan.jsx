@@ -1,5 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Link, router, useForm } from '@inertiajs/react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import React, { useEffect, useRef, useState } from 'react';
@@ -131,6 +131,8 @@ const formatRp = (value) => {
 };
 
 export default function Bahan({ databahan, kode, materbahans }) {
+  const { auth } = usePage().props;
+  const isAdmin = auth?.user?.role === 'Admin';
   const [search, setSearch] = useState(
     new URLSearchParams(window.location.search).get('search') || '',
   );
@@ -594,9 +596,11 @@ export default function Bahan({ databahan, kode, materbahans }) {
                 <button className="btn btn-primary" onClick={exportPDF}>
                   <i className="fas fa-file-pdf"></i> Export PDF
                 </button>
-                <button className="btn btn-success" onClick={openTambahBahan}>
-                  <i className="fas fa-plus"></i> Tambah Bahan
-                </button>
+                {isAdmin && (
+                  <button className="btn btn-success" onClick={openTambahBahan}>
+                    <i className="fas fa-plus"></i> Tambah Bahan
+                  </button>
+                )}
               </div>
             </div>
 
@@ -676,7 +680,7 @@ export default function Bahan({ databahan, kode, materbahans }) {
                             className="sticky right-0 z-10 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.1)]"
                             style={{ backgroundColor: bgColor }}>
                             <div className="flex min-w-44 flex-wrap gap-1">
-                              {hargaIndex === 0 && (
+                              {hargaIndex === 0 && isAdmin && (
                                 <>
                                   <button
                                     type="button"
@@ -694,7 +698,7 @@ export default function Bahan({ databahan, kode, materbahans }) {
                                   </button>
                                 </>
                               )}
-                              {hb.id && (
+                              {hb.id && isAdmin && (
                                 <button
                                   type="button"
                                   className="btn btn-info btn-xs"
@@ -782,13 +786,15 @@ export default function Bahan({ databahan, kode, materbahans }) {
               <button type="button" onClick={closeEditBahan} className="btn btn-warning">
                 Batal
               </button>
-              <button
-                type="button"
-                onClick={() => deleteBahan(bahanForm.data.id)}
-                className="btn btn-error"
-              >
-                <i className="fas fa-trash"></i> Hapus
-              </button>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => deleteBahan(bahanForm.data.id)}
+                  className="btn btn-error"
+                >
+                  <i className="fas fa-trash"></i> Hapus
+                </button>
+              )}
               <button type="button" onClick={duplicateBahan} className="btn btn-info">
                 <i className="fas fa-copy"></i> Duplikat
               </button>
@@ -826,7 +832,7 @@ export default function Bahan({ databahan, kode, materbahans }) {
               <button type="button" onClick={closeHarga} className="btn btn-warning">
                 Batal
               </button>
-              {hargaMode === 'edit' && (
+              {hargaMode === 'edit' && isAdmin && (
                 <button type="button" onClick={deleteHarga} className="btn btn-error">
                   <i className="fas fa-trash"></i> Hapus Harga
                 </button>

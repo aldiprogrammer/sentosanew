@@ -2,13 +2,36 @@ import AdminLayout from '@/Layouts/AdminLayout'
 import { Link, router } from '@inertiajs/react'
 import React, { useState } from 'react'
 
-export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, search, pembayaran, penggunaId, penggunas }) {
+export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, search, pembayaran, penggunaIds, penggunas, desainBatal }) {
     const [filterTglAwal, setFilterTglAwal] = useState(tglAwal || '')
     const [filterTglAkhir, setFilterTglAkhir] = useState(tglAkhir || '')
     const [filterSearch, setFilterSearch] = useState(search || '')
     const [filterPembayaran, setFilterPembayaran] = useState(pembayaran || '')
-    const [filterPengguna, setFilterPengguna] = useState(penggunaId || '')
-    const [tab, setTab] = useState('desain')
+    const [filterPengguna, setFilterPengguna] = useState(
+        Array.isArray(penggunaIds) ? penggunaIds.map(String) : (penggunaIds ? [String(penggunaIds)] : [])
+    )
+    const [tab, setTab] = useState('produksi')
+    const [showPegawaiDropdown, setShowPegawaiDropdown] = useState(false)
+    const pegawaiDropdownRef = React.useRef(null)
+
+    React.useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (pegawaiDropdownRef.current && !pegawaiDropdownRef.current.contains(e.target)) {
+                setShowPegawaiDropdown(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [])
+
+    const togglePengguna = (id) => {
+        const strId = String(id)
+        setFilterPengguna((prev) =>
+            prev.includes(strId) ? prev.filter((x) => x !== strId) : [...prev, strId]
+        )
+    }
+
+    const selectedPenggunaNames = penggunas?.filter((p) => filterPengguna.includes(String(p.id))).map((p) => p.username) || []
 
     const applyFilter = () => {
         router.get(route('laporan-order'), {
@@ -16,7 +39,7 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
             tgl_akhir: filterTglAkhir,
             search: filterSearch,
             pembayaran: filterPembayaran,
-            pengguna_id: filterPengguna,
+            'pengguna_id[]': filterPengguna.length > 0 ? filterPengguna : '',
         }, { preserveState: true, replace: true })
     }
 
@@ -24,24 +47,22 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
         if (e.key === 'Enter') applyFilter()
     }
 
-    const exportPDFDesain = () => {
+    const buildFilterParams = () => {
         const params = new URLSearchParams()
         if (filterTglAwal) params.set('tgl_awal', filterTglAwal)
         if (filterTglAkhir) params.set('tgl_akhir', filterTglAkhir)
         if (filterSearch) params.set('search', filterSearch)
         if (filterPembayaran) params.set('pembayaran', filterPembayaran)
-        if (filterPengguna) params.set('pengguna_id', filterPengguna)
-        window.open(`/laporan-order/pdf-desain?${params.toString()}`, '_blank')
+        filterPengguna.forEach((id) => params.append('pengguna_id[]', id))
+        return params.toString()
+    }
+
+    const exportPDFDesain = () => {
+        window.open(`/laporan-order/pdf-desain?${buildFilterParams()}`, '_blank')
     }
 
     const exportPDFProduksi = () => {
-        const params = new URLSearchParams()
-        if (filterTglAwal) params.set('tgl_awal', filterTglAwal)
-        if (filterTglAkhir) params.set('tgl_akhir', filterTglAkhir)
-        if (filterSearch) params.set('search', filterSearch)
-        if (filterPembayaran) params.set('pembayaran', filterPembayaran)
-        if (filterPengguna) params.set('pengguna_id', filterPengguna)
-        window.open(`/laporan-order/pdf-produksi?${params.toString()}`, '_blank')
+        window.open(`/laporan-order/pdf-produksi?${buildFilterParams()}`, '_blank')
     }
 
     const totalDesain = desain.data.reduce((sum, item) => sum + Number(item.total_harga || 0), 0)
@@ -83,15 +104,47 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                     <option value="utang">Hutang</option>
                                 </select>
                             </div>
-                            <div className="form-control">
+                            <div className="form-control" ref={pegawaiDropdownRef}>
                                 <label className="label"><span className="label-text">Pegawai</span></label>
-                                <select className="select select-bordered select-sm text-sm"
-                                    value={filterPengguna} onChange={(e) => setFilterPengguna(e.target.value)}>
-                                    <option value="">Semua Pegawai</option>
-                                    {penggunas?.map((p) => (
-                                        <option key={p.id} value={p.id}>{p.username}</option>
-                                    ))}
-                                </select>
+                                <div className="relative">
+                                    <button type="button" className="select select-bordered select-sm text-sm text-left w-full min-w-[180px]"
+                                        onClick={() => setShowPegawaiDropdown(!showPegawaiDropdown)}>
+                                        {selectedPenggunaNames.length > 0
+                                            ? `${selectedPenggunaNames.length} pegawai dipilih`
+                                            : 'Semua Pegawai'}
+                                        <i className="fas fa-chevron-down float-right mt-1 text-xs"></i>
+                                    </button>
+                                    {showPegawaiDropdown && (
+                                        <div className="absolute z-50 mt-1 w-full bg-base-100 border border-base-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                            <label className="flex items-center gap-2 px-3 py-2 hover:bg-base-200 cursor-pointer border-b border-base-300">
+                                                <input type="checkbox" className="checkbox checkbox-xs checkbox-success"
+                                                    checked={filterPengguna.length === 0}
+                                                    onChange={() => setFilterPengguna([])} />
+                                                <span className="text-sm font-semibold">Semua Pegawai</span>
+                                            </label>
+                                            {penggunas?.map((p) => (
+                                                <label key={p.id} className="flex items-center gap-2 px-3 py-2 hover:bg-base-200 cursor-pointer">
+                                                    <input type="checkbox" className="checkbox checkbox-xs checkbox-success"
+                                                        checked={filterPengguna.includes(String(p.id))}
+                                                        onChange={() => togglePengguna(p.id)} />
+                                                    <span className="text-sm">{p.username}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                {selectedPenggunaNames.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                        {selectedPenggunaNames.map((name) => (
+                                            <span key={name} className="badge badge-success badge-sm gap-1">
+                                                {name}
+                                                <button type="button" onClick={() => togglePengguna(penggunas.find(p => p.username === name)?.id)}>
+                                                    <i className="fas fa-times text-xs"></i>
+                                                </button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             <button className="btn btn-primary btn-sm mt-6" onClick={applyFilter}>
                                 <i className="fas fa-search"></i> Filter
@@ -102,90 +155,28 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                         </div>
 
                         <div role="tablist" className="tabs tabs-boxed mb-4">
+
+                            <button role="tab"
+                                className={`tab ${tab === 'produksi' ? 'tab-active' : ''}`}
+                                onClick={() => setTab('produksi')}>
+                                Laporan Produksi
+                            </button>
                             <button role="tab"
                                 className={`tab ${tab === 'desain' ? 'tab-active' : ''}`}
                                 onClick={() => setTab('desain')}>
                                 Laporan Desain
                             </button>
                             <button role="tab"
-                                className={`tab ${tab === 'produksi' ? 'tab-active' : ''}`}
-                                onClick={() => setTab('produksi')}>
-                                Laporan Produksi
+                                className={`tab ${tab === 'batal' ? 'tab-active' : ''}`}
+                                onClick={() => setTab('batal')}>
+                                Dibatalkan
+                                {desainBatal?.data?.length > 0 && (
+                                    <span className="badge badge-error badge-sm ml-1">{desainBatal.data.length}</span>
+                                )}
                             </button>
                         </div>
 
-                        {tab === 'desain' && (
-                            <div>
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="text-sm font-semibold">
-                                        Total: Rp {totalDesain.toLocaleString('id-ID')}
-                                    </span>
-                                    <button className="btn btn-accent btn-sm" onClick={exportPDFDesain}>
-                                        <i className="fas fa-file-pdf"></i> Export PDF Desain
-                                    </button>
-                                </div>
-                                <div className="overflow-x-auto">
-                                    <table className="table table-zebra">
-                                        <thead>
-                                            <tr>
-                                                <th>No</th>
-                                                <th>Tanggal</th>
-                                                <th>No Invoice</th>
-                                                <th>No Antrian</th>
-                                                <th>Customer</th>
-                                                <th>Kategori Desain</th>
-                                                <th>Qty</th>
-                                                <th>Total Harga</th>
-                                                <th>Pembayaran</th>
-                                                <th>Desainer</th>
-                                                <th>CS</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="text-xs">
-                                            {desain.data.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan={11} className="text-center py-8 text-base-content/50">Tidak ada data desain</td>
-                                                </tr>
-                                            ) : (
-                                                desain.data.map((item, i) => (
-                                                    <tr key={item.id}>
-                                                        <td>{desain.from + i}</td>
-                                                        <td>{item.tanggal}</td>
-                                                        <td className="font-mono">{item.no_invoice || item.kode_spk}</td>
-                                                        <td>{item.no_antrian}</td>
-                                                        <td>{item.customer?.nama}</td>
-                                                        <td>{item.kategoridesain?.kategori}</td>
-                                                        <td className="text-center">{item.qty}</td>
-                                                        <td className="text-right font-semibold">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
-                                                        <td>
-                                                            {item.pembayaran ? (
-                                                                <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'transfer' ? 'badge-info' : item.pembayaran === 'qris' ? 'badge-secondary' : 'badge-warning'}`}>
-                                                                    {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'transfer' ? 'Transfer' : item.pembayaran === 'qris' ? 'QRIS' : 'Hutang'}
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-base-content/30">-</span>
-                                                            )}
-                                                        </td>
-                                                        <td>{item.desainer?.username || '-'}</td>
-                                                        <td>{item.cs?.username || '-'}</td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                {desain.links && (
-                                    <div className="flex justify-center mt-4 join">
-                                        {desain.links.map((link, i) => (
-                                            <Link key={i} href={link.url || '#'}
-                                                className={`btn btn-sm join-item ${link.active ? 'btn-success' : ''} ${!link.url ? 'btn-disabled' : ''}`}
-                                                preserveState replace
-                                                dangerouslySetInnerHTML={{ __html: link.label }} />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
+
 
                         {tab === 'produksi' && (
                             <div>
@@ -260,6 +251,143 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                         {produksi.links.map((link, i) => (
                                             <Link key={i} href={link.url || '#'}
                                                 className={`btn btn-sm join-item ${link.active ? 'btn-success' : ''} ${!link.url ? 'btn-disabled' : ''}`}
+                                                preserveState replace
+                                                dangerouslySetInnerHTML={{ __html: link.label }} />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {tab === 'desain' && (
+                            <div>
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm font-semibold">
+                                        Total: Rp {totalDesain.toLocaleString('id-ID')}
+                                    </span>
+                                    <button className="btn btn-accent btn-sm" onClick={exportPDFDesain}>
+                                        <i className="fas fa-file-pdf"></i> Export PDF Desain
+                                    </button>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="table table-zebra">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Tanggal</th>
+                                                <th>No Invoice</th>
+                                                <th>No Antrian</th>
+                                                <th>Customer</th>
+                                                <th>Kategori Desain</th>
+                                                <th>Qty</th>
+                                                <th>Total Harga</th>
+                                                <th>Pembayaran</th>
+                                                <th>Desainer</th>
+                                                <th>CS</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-xs">
+                                            {desain.data.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={11} className="text-center py-8 text-base-content/50">Tidak ada data desain</td>
+                                                </tr>
+                                            ) : (
+                                                desain.data.map((item, i) => (
+                                                    <tr key={item.id}>
+                                                        <td>{desain.from + i}</td>
+                                                        <td>{item.tanggal}</td>
+                                                        <td className="font-mono">{item.no_invoice || item.kode_spk}</td>
+                                                        <td>{item.no_antrian}</td>
+                                                        <td>{item.customer?.nama}</td>
+                                                        <td>{item.kategoridesain?.kategori}</td>
+                                                        <td className="text-center">{item.qty}</td>
+                                                        <td className="text-right font-semibold">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
+                                                        <td>
+                                                            {item.pembayaran ? (
+                                                                <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'transfer' ? 'badge-info' : item.pembayaran === 'qris' ? 'badge-secondary' : 'badge-warning'}`}>
+                                                                    {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'transfer' ? 'Transfer' : item.pembayaran === 'qris' ? 'QRIS' : 'Hutang'}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-base-content/30">-</span>
+                                                            )}
+                                                        </td>
+                                                        <td>{item.desainer?.username || '-'}</td>
+                                                        <td>{item.cs?.username || '-'}</td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {desain.links && (
+                                    <div className="flex justify-center mt-4 join">
+                                        {desain.links.map((link, i) => (
+                                            <Link key={i} href={link.url || '#'}
+                                                className={`btn btn-sm join-item ${link.active ? 'btn-success' : ''} ${!link.url ? 'btn-disabled' : ''}`}
+                                                preserveState replace
+                                                dangerouslySetInnerHTML={{ __html: link.label }} />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {tab === 'batal' && (
+                            <div>
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm font-semibold text-error">
+                                        Total Dibatalkan: {desainBatal?.data?.length || 0} order
+                                    </span>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="table table-zebra">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Tanggal</th>
+                                                <th>No Invoice</th>
+                                                <th>No Antrian</th>
+                                                <th>Customer</th>
+                                                <th>Kategori Desain</th>
+                                                <th>Qty</th>
+                                                <th>Total Harga</th>
+                                                <th>Desainer</th>
+                                                <th>Alasan Pembatalan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-xs">
+                                            {!desainBatal?.data || desainBatal.data.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={10} className="text-center py-8 text-base-content/50">Tidak ada data dibatalkan</td>
+                                                </tr>
+                                            ) : (
+                                                desainBatal.data.map((item, i) => (
+                                                    <tr key={item.id} className="bg-red-50">
+                                                        <td>{desainBatal.from + i}</td>
+                                                        <td>{item.tanggal}</td>
+                                                        <td className="font-mono">{item.no_invoice || item.kode_spk}</td>
+                                                        <td>{item.no_antrian}</td>
+                                                        <td>{item.customer?.nama}</td>
+                                                        <td>{item.kategoridesain?.kategori}</td>
+                                                        <td className="text-center">{item.qty}</td>
+                                                        <td className="text-right font-semibold">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
+                                                        <td>{item.desainer?.username || '-'}</td>
+                                                        <td>
+                                                            <span className="text-error text-xs" title={item.alasan_pembatalan}>
+                                                                <i className="fas fa-ban"></i> {item.alasan_pembatalan}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {desainBatal?.links && (
+                                    <div className="flex justify-center mt-4 join">
+                                        {desainBatal.links.map((link, i) => (
+                                            <Link key={i} href={link.url || '#'}
+                                                className={`btn btn-sm join-item ${link.active ? 'btn-error' : ''} ${!link.url ? 'btn-disabled' : ''}`}
                                                 preserveState replace
                                                 dangerouslySetInnerHTML={{ __html: link.label }} />
                                         ))}

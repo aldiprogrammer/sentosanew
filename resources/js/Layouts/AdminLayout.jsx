@@ -203,6 +203,11 @@ export default function AdminLayout({ children }) {
                                                 <Link href={route('data-desain')}>Data Desain</Link>
                                             </li>
                                         )}
+                                        {hasMenu('pengajuan-diskon') && (
+                                            <li>
+                                                <Link href={route('pengajuan-diskon')}>Pengajuan Diskon</Link>
+                                            </li>
+                                        )}
                                     </ul>
                                 </details>
                             </li>
@@ -225,7 +230,7 @@ export default function AdminLayout({ children }) {
                                                 <Link href={route('dataproduksi')}>Data Produksi</Link>
                                             </li>
                                         )}
-                                        {hasMenu('data-produksi') && (
+                                        {hasMenu('pengajuan-diskon') && (
                                             <li>
                                                 <Link href={route('pengajuan-diskon')}>Pengajuan Diskon</Link>
                                             </li>
@@ -288,7 +293,7 @@ export default function AdminLayout({ children }) {
                                 </details>
                             </li>
                         )}
-                        {(hasMenu('data-order') || hasMenu('laporan-order')) && (
+                        {(hasMenu('data-order') || hasMenu('pengajuan-diskon') || hasMenu('pembatalan-order') || hasMenu('laporan-order')) && (
                             <li>
                                 <details>
                                     <summary className="rounded-xl">
@@ -299,6 +304,16 @@ export default function AdminLayout({ children }) {
                                         {hasMenu('data-order') && (
                                             <li>
                                                 <Link href={route('data-order')}>Data Order</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('pengajuan-diskon') && (
+                                            <li>
+                                                <Link href={route('pengajuan-diskon')}>Pengajuan Diskon</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('pembatalan-order') && (
+                                            <li>
+                                                <Link href={route('pembatalan-order')}>Pembatalan Order</Link>
                                             </li>
                                         )}
                                         {hasMenu('laporan-order') && (
