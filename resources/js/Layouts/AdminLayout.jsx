@@ -225,6 +225,11 @@ export default function AdminLayout({ children }) {
                                                 <Link href={route('dataproduksi')}>Data Produksi</Link>
                                             </li>
                                         )}
+                                        {hasMenu('data-produksi') && (
+                                            <li>
+                                                <Link href={route('pengajuan-diskon')}>Pengajuan Diskon</Link>
+                                            </li>
+                                        )}
                                     </ul>
                                 </details>
                             </li>

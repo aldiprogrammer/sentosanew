@@ -4,8 +4,8 @@ import React, { useCallback, useRef } from 'react'
 import { buildProductionReceiptHtml } from './StrukProduksiTemplate.jsx'
 import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
 
-export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
-    const { auth } = usePage().props;
+export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDiskons, customer }) {
+    const { auth, flash } = usePage().props;
     const isDesainer = auth.user?.role === 'Desainer';
     const isCs = auth.user?.role === 'Customer Service';
     const [search, setSearch] = React.useState('')
@@ -22,6 +22,24 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
     const iframeRef = useRef(null)
     const paymentModalRef = useRef(null)
     const [expandedInvoices, setExpandedInvoices] = React.useState(new Set())
+    const [showDiskonModal, setShowDiskonModal] = React.useState(false)
+    const [diskonForm, setDiskonForm] = React.useState({
+        no_invoice: '',
+        id_customer: '',
+        harga_awal: '',
+        mode_diskon: 'persen',
+        diskon: '',
+    })
+
+
+    React.useEffect(() => {
+        if (flash?.success) {
+            Swal.fire({ icon: 'success', title: 'Berhasil', text: flash.success, timer: 1500, showConfirmButton: false })
+        }
+        if (flash?.error) {
+            Swal.fire({ icon: 'error', title: 'Gagal', text: flash.error })
+        }
+    }, [flash])
 
     const toggleExpand = (noInvoice) => {
         setExpandedInvoices(prev => {
@@ -81,6 +99,18 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
     const customerLimitRemaining = customerLimit - customerLimitAkhir
     const wouldExceedLimit = paymentType === 'utang' && (customerLimitAkhir + totalHarga > customerLimit)
 
+    const selectedInvoice = selectedItems.length > 0 ? selectedItems[0]?.no_invoice : null
+
+    const existingDiskon = React.useMemo(() => {
+        if (!selectedInvoice || !Array.isArray(pengajuanDiskons)) return null
+        return pengajuanDiskons.find(d => d.no_invoice === selectedInvoice && (d.status === 'disetujui' || d.status === 'pending')) || null
+    }, [selectedInvoice, pengajuanDiskons])
+
+    const diskonInfoForReceipt = React.useMemo(() => {
+        if (!selectedInvoice || !Array.isArray(pengajuanDiskons)) return null
+        return pengajuanDiskons.find(d => d.no_invoice === selectedInvoice && d.status === 'disetujui') || null
+    }, [selectedInvoice, pengajuanDiskons])
+
     const handleSearch = (e) => {
         e.preventDefault()
         setSelected([])
@@ -92,6 +122,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
             items,
             auth,
             paymentType,
+            diskonInfo: diskonInfoForReceipt,
         })
 
     const xsrfToken = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || ''
@@ -245,6 +276,33 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
         }
     }
 
+    const openDiskonModal = () => {
+        if (!selectedInvoice) return
+        const group = (Array.isArray(produksi) ? produksi : []).find(g => g.no_invoice === selectedInvoice)
+        if (!group) return
+        setDiskonForm({
+            no_invoice: selectedInvoice,
+            id_customer: group.customer?.id || '',
+            harga_awal: group.total_harga || 0,
+            mode_diskon: 'persen',
+            diskon: '',
+        })
+        setShowDiskonModal(true)
+    }
+
+    const handleDiskonSubmit = (e) => {
+        e.preventDefault()
+        router.post('/pengajuan-diskon', diskonForm, {
+            onSuccess: () => { setShowDiskonModal(false) },
+        })
+    }
+
+    const hargaAwalDiskon = Number(diskonForm.harga_awal || 0)
+    const diskonVal = Number(diskonForm.diskon || 0)
+    const hargaDiskon = diskonForm.mode_diskon === 'persen'
+        ? Math.max(0, hargaAwalDiskon - (hargaAwalDiskon * diskonVal / 100))
+        : Math.max(0, hargaAwalDiskon - diskonVal)
+
     return (
         <AdminLayout>
             <div className="grid grid-cols-1 xl:grid-cols-1">
@@ -307,10 +365,38 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                             <span className="text-white">
                                                 Total: <strong className="text-white">Rp {totalHarga.toLocaleString('id-ID')}</strong>
                                             </span>
+                                            {existingDiskon && (
+                                                <>
+                                                    <span className="text-white">|</span>
+                                                    <span className="text-yellow-200">
+                                                        Diskon: <strong className="text-yellow-200">
+                                                            {existingDiskon.status === 'pending' ? '(Pending)' : existingDiskon.mode_diskon === 'persen' ? `${existingDiskon.diskon}%` : `Rp ${Number(existingDiskon.diskon).toLocaleString('id-ID')}`}
+                                                        </strong>
+                                                    </span>
+                                                    {existingDiskon.status === 'disetujui' && (
+                                                        <>
+                                                            <span className="text-white">|</span>
+                                                            <span className="text-green-200">
+                                                                Harga Akhir: <strong className="text-green-200">Rp {Number(existingDiskon.harga_diskon).toLocaleString('id-ID')}</strong>
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                     {!isDesainer && (
                                         <div className="flex gap-2">
+                                            {existingDiskon && existingDiskon.status === 'pending' && (
+                                                <span className="btn btn-ghost btn-sm text-yellow-300 cursor-default">
+                                                    <i className="fas fa-clock"></i> Menunggu Persetujuan
+                                                </span>
+                                            )}
+                                            {!existingDiskon && (
+                                                <button className="btn btn-warning btn-sm" onClick={openDiskonModal}>
+                                                    <i className="fas fa-percent"></i> Pengajuan Diskon
+                                                </button>
+                                            )}
                                             <button className="btn btn-white btn-sm" onClick={handleCetakStruk}>
                                                 <i className="fas fa-receipt"></i> Cetak Struk
                                             </button>
@@ -366,6 +452,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                             (Array.isArray(produksi) ? produksi : []).map((group, groupIndex) => {
                                                 const isExpanded = expandedInvoices.has(group.no_invoice)
                                                 const allInGroupSelected = group.items.every(item => selected.some(s => s.id === item.id))
+                                                const groupDiskon = (Array.isArray(pengajuanDiskons) ? pengajuanDiskons : []).find(d => d.no_invoice === group.no_invoice && d.status === 'disetujui')
                                                 return (
                                                     <React.Fragment key={group.no_invoice}>
                                                         <tr className={`cursor-pointer transition-colors ${group.all_lunas ? 'bg-green-50 hover:bg-green-100' : group.all_utang ? 'bg-red-50 hover:bg-red-100' : group.has_payment ? 'bg-yellow-50 hover:bg-yellow-100' : allInGroupSelected ? 'bg-success/10 hover:bg-success/15' : 'hover:bg-base-300'}`} onClick={() => toggleExpand(group.no_invoice)}>
@@ -384,13 +471,19 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                                                         </span>
                                                                         <span className="text-base-content/60">Qty: <strong>{group.total_qty}</strong></span>
                                                                         <span className="text-success font-semibold">Rp {Number(group.total_harga).toLocaleString('id-ID')}</span>
+                                                                        {groupDiskon && (
+                                                                            <span className="badge badge-sm badge-warning gap-1">
+                                                                                <i className="fas fa-percent text-xs"></i>
+                                                                                Diskon: {groupDiskon.mode_diskon === 'persen' ? `${groupDiskon.diskon}%` : `Rp ${Number(groupDiskon.diskon).toLocaleString('id-ID')}`}
+                                                                            </span>
+                                                                        )}
                                                                     </div>
                                                                     <i className={`fas fa-chevron-${isExpanded ? 'down' : 'right'} text-xs text-base-content/40 transition-transform`}></i>
                                                                 </div>
                                                             </td>
                                                         </tr>
                                                         {isExpanded && group.items.map((item) => (
-                                                            <tr key={item.id} className={`hover:bg-base-200 ${item.pembayaran === 'utang' ? 'bg-red-50 text-red-700' : ['lunas','transfer','qris'].includes(item.pembayaran) ? 'bg-green-50 text-green-700' : ''}`}>
+                                                            <tr key={item.id} className={`hover:bg-base-200 ${item.pembayaran === 'utang' ? 'bg-red-50 text-red-700' : ['lunas', 'transfer', 'qris'].includes(item.pembayaran) ? 'bg-green-50 text-green-700' : ''}`}>
                                                                 <td>
                                                                     <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={selected.some(s => s.id === item.id)} onChange={() => toggleSelect(item)} disabled={isCs && item.pembayaran} />
                                                                 </td>
@@ -469,6 +562,20 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                                 <span className="text-sm text-base-content/70">Total Harga</span>
                                 <span className="font-semibold text-success">Rp {totalHarga.toLocaleString('id-ID')}</span>
                             </div>
+                            {diskonInfoForReceipt && (
+                                <div className="flex justify-between items-center p-3 bg-warning/10 border border-warning/30 rounded-lg">
+                                    <span className="text-sm text-base-content/70">
+                                        Diskon ({diskonInfoForReceipt.mode_diskon === 'persen' ? `${diskonInfoForReceipt.diskon}%` : `Rp ${Number(diskonInfoForReceipt.diskon).toLocaleString('id-ID')}`})
+                                    </span>
+                                    <span className="font-semibold text-error">- Rp {(totalHarga - Number(diskonInfoForReceipt.harga_diskon)).toLocaleString('id-ID')}</span>
+                                </div>
+                            )}
+                            {diskonInfoForReceipt && (
+                                <div className="flex justify-between items-center p-3 bg-success/10 border border-success/30 rounded-lg">
+                                    <span className="text-sm font-semibold">Harga Akhir</span>
+                                    <span className="font-bold text-success text-lg">Rp {Number(diskonInfoForReceipt.harga_diskon).toLocaleString('id-ID')}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
                                 <span className="text-sm text-base-content/70">Customer</span>
                                 <span className="font-medium">{firstCustomer?.nama || '-'}</span>
@@ -552,6 +659,82 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir }) {
                 </div>
                 <form method="dialog" className="modal-backdrop">
                     <button onClick={() => paymentModalRef.current?.close()}>close</button>
+                </form>
+            </dialog>
+
+            <dialog className={`modal ${showDiskonModal ? 'modal-open' : ''}`}>
+                <div className="modal-box">
+                    <button type="button" className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onClick={() => setShowDiskonModal(false)}>✕</button>
+                    <h3 className="text-lg font-bold mb-4"><i className="fas fa-percent text-warning"></i> Pengajuan Diskon</h3>
+                    <form onSubmit={handleDiskonSubmit} className="space-y-3">
+                        <label className="form-control w-full">
+                            <span className="label-text text-xs">No Invoice</span>
+                            <input
+                                type="text"
+                                className="input input-bordered input-sm bg-base-200"
+                                value={diskonForm.no_invoice}
+                                readOnly
+                            />
+                        </label>
+                        <label className="form-control w-full">
+                            <span className="label-text text-xs">Customer</span>
+                            <input
+                                type="text"
+                                className="input input-bordered input-sm bg-base-200"
+                                value={(Array.isArray(produksi) ? produksi : []).find(g => g.no_invoice === diskonForm.no_invoice)?.customer?.nama || ''}
+                                readOnly
+                            />
+                        </label>
+                        <label className="form-control w-full">
+                            <span className="label-text text-xs">Harga</span>
+                            <input
+                                type="text"
+                                className="input input-bordered input-sm bg-base-200"
+                                value={`Rp ${Number(diskonForm.harga_awal || 0).toLocaleString('id-ID')}`}
+                                readOnly
+                            />
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                            <label className="form-control w-full">
+                                <span className="label-text text-xs">Mode Diskon</span>
+                                <select
+                                    className="select select-bordered select-success w-full select-sm text-sm"
+                                    value={diskonForm.mode_diskon}
+                                    onChange={(e) => setDiskonForm({ ...diskonForm, mode_diskon: e.target.value })}
+                                    required
+                                >
+                                    <option value="persen">Persen (%)</option>
+                                    <option value="rupiah">Rupiah (Rp)</option>
+                                </select>
+                            </label>
+                            <label className="form-control w-full">
+                                <span className="label-text text-xs">Diskon {diskonForm.mode_diskon === 'persen' ? '(%)' : '(Rp)'}</span>
+                                <input
+                                    type="number"
+                                    className="input input-bordered input-success w-full input-sm"
+                                    value={diskonForm.diskon}
+                                    onChange={(e) => setDiskonForm({ ...diskonForm, diskon: e.target.value })}
+                                    min="0"
+                                    required
+                                />
+                            </label>
+                        </div>
+                        <div className="p-3 bg-base-200 rounded-lg">
+                            <div className="flex justify-between text-sm">
+                                <span>Harga Setelah Diskon:</span>
+                                <span className="font-bold text-success">Rp {hargaDiskon.toLocaleString('id-ID')}</span>
+                            </div>
+                        </div>
+                        <div className="modal-action">
+                            <button type="button" className="btn btn-ghost" onClick={() => setShowDiskonModal(false)}>Batal</button>
+                            <button type="submit" className="btn btn-warning">
+                                <i className="fas fa-paper-plane"></i> Kirim Pengajuan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <form method="dialog" className="modal-backdrop">
+                    <button onClick={() => setShowDiskonModal(false)}>close</button>
                 </form>
             </dialog>
             <KonfirmasiPassword

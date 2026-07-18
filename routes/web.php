@@ -16,14 +16,15 @@ use App\Http\Controllers\admin\LaporanFeeDesainController;
 use App\Http\Controllers\admin\LaporanOrderController;
 use App\Http\Controllers\admin\LaporanPembukuanController;
 use App\Http\Controllers\admin\MaterbahanController;
+use App\Http\Controllers\admin\OtorisasiController;
 use App\Http\Controllers\admin\PembayaranHutangController;
+use App\Http\Controllers\admin\PengajuanDiskonController;
 use App\Http\Controllers\admin\PenggunaController;
-use App\Http\Controllers\admin\PoPembelianBahanController;
 use App\Http\Controllers\admin\PoEksternalController;
+use App\Http\Controllers\admin\PoPembelianBahanController;
 use App\Http\Controllers\admin\ProduksiController;
 use App\Http\Controllers\admin\SuplayerController;
 use App\Http\Controllers\admin\SuplayerPembelianBahanController;
-use App\Http\Controllers\admin\OtorisasiController;
 use App\Http\Controllers\produksi\FinishingController;
 use App\Http\Controllers\produksi\LogistikController;
 use App\Http\Controllers\produksi\PengambilanStokController;
@@ -138,6 +139,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dataproduksi', [ProduksiProduksiController::class, 'dataproduksi'])->name('dataproduksi');
     Route::put('/dataproduksi/proses-produksi', [ProduksiProduksiController::class, 'prosesProduksi'])->name('proses.produksi');
+
+    Route::get('/pengajuan-diskon', [PengajuanDiskonController::class, 'index'])->name('pengajuan-diskon');
+    Route::post('/pengajuan-diskon', [PengajuanDiskonController::class, 'store'])->name('store.pengajuan-diskon');
+    Route::put('/pengajuan-diskon/{id}/approve', [PengajuanDiskonController::class, 'approve'])->name('approve.pengajuan-diskon');
+    Route::put('/pengajuan-diskon/{id}/reject', [PengajuanDiskonController::class, 'reject'])->name('reject.pengajuan-diskon');
+    Route::put('/pengajuan-diskon/{id}/cancel', [PengajuanDiskonController::class, 'cancel'])->name('cancel.pengajuan-diskon');
     Route::get('/data-order', [DataOrderController::class, 'index'])->name('data-order');
     Route::get('/data-desain', [DesainController::class, 'dataDesain'])->name('data-desain');
     Route::put('/data-desain/proses-pembayaran', [DesainController::class, 'prosesPembayaran'])->name('proses.pembayaran.desain');
@@ -219,4 +226,4 @@ Route::middleware('auth')->group(function () {
     })->name('test-print-produksi');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

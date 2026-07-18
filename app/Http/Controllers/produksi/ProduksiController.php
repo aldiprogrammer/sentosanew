@@ -4,7 +4,10 @@ namespace App\Http\Controllers\produksi;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bahanpakai;
+use App\Models\Customer;
+use App\Models\InvoiceProduksi;
 use App\Models\Itemstokbahan;
+use App\Models\PengajuanDiskon;
 use App\Models\Produksi;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -64,16 +67,21 @@ class ProduksiController extends Controller
                 'total_qty' => $group->sum('qty'),
                 'total_harga' => $group->sum('total_harga'),
                 'item_count' => $group->count(),
-                'has_payment' => $group->some(fn($item) => $item->pembayaran),
-                'all_lunas' => $group->every(fn($item) => $item->pembayaran === 'lunas'),
-                'all_utang' => $group->every(fn($item) => $item->pembayaran === 'utang'),
+                'has_payment' => $group->some(fn ($item) => $item->pembayaran),
+                'all_lunas' => $group->every(fn ($item) => $item->pembayaran === 'lunas'),
+                'all_utang' => $group->every(fn ($item) => $item->pembayaran === 'utang'),
             ];
         })->values();
+
+        $pengajuanDiskons = PengajuanDiskon::orderBy('id', 'desc')->get();
+        $customer = Customer::all();
 
         return Inertia::render('Admin/Dataproduksi', [
             'produksi' => $grouped,
             'tglAwal' => $tglAwal,
             'tglAkhir' => $tglAkhir,
+            'pengajuanDiskons' => $pengajuanDiskons,
+            'customer' => $customer,
         ]);
     }
 
@@ -91,8 +99,9 @@ class ProduksiController extends Controller
 
                 if (($customer->limit_akhir + $total) > $customer->limit) {
                     $error = [
-                        'errors' => ['payment' => 'Limit customer tidak mencukupi. Sisa limit: Rp ' . number_format($customer->limit - $customer->limit_akhir)],
+                        'errors' => ['payment' => 'Limit customer tidak mencukupi. Sisa limit: Rp '.number_format($customer->limit - $customer->limit_akhir)],
                     ];
+
                     return $isApi ? response()->json($error, 422) : back()->withErrors($error['errors']);
                 }
 
@@ -101,13 +110,13 @@ class ProduksiController extends Controller
         }
 
         $displayIds = Produksi::with('bahan')->whereIn('id', $ids)
-            ->whereHas('bahan', fn($q) => $q->where('jenis_bahan', 'DISPLAY'))
+            ->whereHas('bahan', fn ($q) => $q->where('jenis_bahan', 'DISPLAY'))
             ->pluck('id');
 
         $nonDisplayIds = array_diff($ids, $displayIds->toArray());
 
         $eksternal = Produksi::with('bahan')->whereIn('id', $ids)
-            ->whereHas('bahan', fn($q) => $q->where('jenis', 'EKSTERNAL'))
+            ->whereHas('bahan', fn ($q) => $q->where('jenis', 'EKSTERNAL'))
             ->pluck('id');
 
         $nonEksternal = array_diff($ids, $eksternal->toArray());
@@ -138,6 +147,32 @@ class ProduksiController extends Controller
                 'pembayaran' => $paymentType,
                 'id_cs' => auth()->id(),
             ]);
+        }
+
+        $processedItems = Produksi::with('customer')->whereIn('id', $ids)->get();
+        $groupedByInvoice = $processedItems->groupBy('no_invoice');
+        foreach ($groupedByInvoice as $noInvoice => $items) {
+            if (! $noInvoice) {
+                continue;
+            }
+            $exists = InvoiceProduksi::where('no_invoice', $noInvoice)->exists();
+            if (! $exists) {
+                $firstItem = $items->first();
+                $totalHarga = $items->sum('total_harga');
+                $approvedDiskon = PengajuanDiskon::where('no_invoice', $noInvoice)
+                    ->where('status', 'disetujui')
+                    ->first();
+                InvoiceProduksi::create([
+                    'no_invoice' => $noInvoice,
+                    'id_customer' => $firstItem->id_customer,
+                    'customer' => $firstItem->customer->nama ?? '',
+                    'harga_awal' => $totalHarga,
+                    'diskon' => $approvedDiskon?->diskon,
+                    'mode_diskon' => $approvedDiskon?->mode_diskon,
+                    'harga_akhir' => $approvedDiskon?->harga_diskon ?? $totalHarga,
+                    'tanggal' => date('Y-m-d'),
+                ]);
+            }
         }
 
         return $isApi
