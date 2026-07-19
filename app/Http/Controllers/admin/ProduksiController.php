@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Databahan;
 use App\Models\Desain;
 use App\Models\Hargabahan;
+use App\Models\HargaKhususCustomer;
 use App\Models\MataAyam;
 use App\Models\Pinising;
 use App\Models\Produksi;
@@ -292,9 +293,9 @@ class ProduksiController extends Controller
             return (float) ($request->harga_manual ?: 0);
         }
 
+        $isKhusus = $request->pilihan_harga === 'Khusus';
         $kolomHarga = [
             'Umum' => 'harga_umum',
-            'Khusus' => 'harga_khusus',
             'Member' => 'harga_member',
             'Custom' => 'harga_custome',
         ][$request->pilihan_harga] ?? 'harga_umum';
@@ -341,6 +342,19 @@ class ProduksiController extends Controller
                 })
                 ->sortBy(fn ($harga) => (float) ($harga->qty_min ?: 0))
                 ->first();
+        }
+
+        if (! $harga) {
+            return 0;
+        }
+
+        if ($isKhusus && $request->id_customer) {
+            $hk = HargaKhususCustomer::where('hargabahan_id', $harga->id)
+                ->where('customer_id', $request->id_customer)
+                ->first();
+            if ($hk && $hk->harga) {
+                return (float) $hk->harga;
+            }
         }
 
         return (float) ($harga?->$kolomHarga ?: 0);

@@ -72,7 +72,6 @@ const initialBahan = {
   qty_max: '',
   harga_po: '',
   harga_umum: '',
-  harga_khusus: '',
   harga_member: '',
   harga_custome: '',
 };
@@ -85,7 +84,6 @@ const initialHarga = {
   qty_max: '',
   harga_po: '',
   harga_umum: '',
-  harga_khusus: '',
   harga_member: '',
   harga_custome: '',
 };
@@ -130,9 +128,9 @@ const formatRp = (value) => {
   return `Rp ${number.toLocaleString('id-ID')}`;
 };
 
-export default function Bahan({ databahan, kode, materbahans }) {
+export default function Bahan({ databahan, kode, materbahans, customers }) {
   const { auth } = usePage().props;
-  const isAdmin = auth?.user?.role === 'Admin';
+  const isAdmin = auth?.user?.role?.toLowerCase() === 'admin';
   const [search, setSearch] = useState(
     new URLSearchParams(window.location.search).get('search') || '',
   );
@@ -148,9 +146,13 @@ export default function Bahan({ databahan, kode, materbahans }) {
   const tambahBahanRef = useRef(null);
   const editBahanRef = useRef(null);
   const hargaRef = useRef(null);
+  const hargaKhususRef = useRef(null);
 
   const bahanForm = useForm(initialBahan);
   const hargaForm = useForm(initialHarga);
+  const [selectedHarga, setSelectedHarga] = useState(null);
+  const [selectedHargaKhusus, setSelectedHargaKhusus] = useState(null);
+  const hargaKhususForm = useForm({ customer_id: '', harga: '' });
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -182,7 +184,6 @@ export default function Bahan({ databahan, kode, materbahans }) {
       qty_max: hb.qty_max || '',
       harga_po: hb.harga_po || '',
       harga_umum: hb.harga_umum || '',
-      harga_khusus: hb.harga_khusus || '',
       harga_member: hb.harga_member || '',
       harga_custome: hb.harga_custome || '',
     });
@@ -229,7 +230,6 @@ export default function Bahan({ databahan, kode, materbahans }) {
       qty_max: harga.qty_max || '',
       harga_po: harga.harga_po || '',
       harga_umum: harga.harga_umum || '',
-      harga_khusus: harga.harga_khusus || '',
       harga_member: harga.harga_member || '',
       harga_custome: harga.harga_custome || '',
     });
@@ -240,6 +240,57 @@ export default function Bahan({ databahan, kode, materbahans }) {
     hargaRef.current.close();
     hargaForm.setData(initialHarga);
     hargaForm.clearErrors();
+  };
+
+  const openHargaKhusus = (item, harga) => {
+    setSelectedBahan(item);
+    setSelectedHargaKhusus(harga);
+    hargaKhususForm.setData({ customer_id: '', harga: '' });
+    hargaKhususRef.current.showModal();
+  };
+
+  const closeHargaKhusus = () => {
+    hargaKhususRef.current.close();
+    setSelectedHargaKhusus(null);
+    hargaKhususForm.setData({ customer_id: '', harga: '' });
+    hargaKhususForm.clearErrors();
+  };
+
+  const saveHargaKhusus = (e) => {
+    e.preventDefault();
+    hargaKhususForm.post(`/bahan/harga/${selectedHargaKhusus.id}/khusus-customer`, {
+      onSuccess: closeHargaKhusus,
+    });
+  };
+
+  const deleteHargaKhusus = (id) => {
+    if (confirm('Yakin ingin menghapus harga khusus ini?')) {
+      closeHargaKhusus();
+      router.delete(`/bahan/khusus-customer/${id}`, {
+        preserveScroll: true,
+      });
+    }
+  };
+
+  const editHargaKhususItem = useRef(null);
+  const [editHkId, setEditHkId] = useState(null);
+  const editHkForm = useForm({ harga: '' });
+
+  const startEditHk = (hk) => {
+    setEditHkId(hk.id);
+    editHkForm.setData({ harga: hk.harga || '' });
+  };
+
+  const cancelEditHk = () => {
+    setEditHkId(null);
+    editHkForm.setData({ harga: '' });
+  };
+
+  const saveEditHk = (e, id) => {
+    e.preventDefault();
+    editHkForm.put(`/bahan/khusus-customer/${id}`, {
+      onSuccess: cancelEditHk,
+    });
   };
 
   const saveBahan = (e) => {
@@ -317,7 +368,6 @@ export default function Bahan({ databahan, kode, materbahans }) {
           hb.qty_max || '-',
           formatRp(hb.harga_po),
           formatRp(hb.harga_umum),
-          formatRp(hb.harga_khusus),
           formatRp(hb.harga_member),
           formatRp(hb.harga_custome),
         ]);
@@ -338,7 +388,6 @@ export default function Bahan({ databahan, kode, materbahans }) {
             'Qty Max',
             'Harga PO',
             'Harga Umum',
-            'Harga Khusus',
             'Harga Member',
             'Harga Custom',
           ],
@@ -504,14 +553,6 @@ export default function Bahan({ databahan, kode, materbahans }) {
             true,
           )}
           {renderText(
-            'Harga Khusus',
-            'harga_khusus',
-            bahanForm,
-            setBahanValue,
-            false,
-            true,
-          )}
-          {renderText(
             'Harga Member',
             'harga_member',
             bahanForm,
@@ -553,14 +594,6 @@ export default function Bahan({ databahan, kode, materbahans }) {
       {renderText(
         'Harga Umum',
         'harga_umum',
-        hargaForm,
-        setHargaValue,
-        false,
-        true,
-      )}
-      {renderText(
-        'Harga Khusus',
-        'harga_khusus',
         hargaForm,
         setHargaValue,
         false,
@@ -633,7 +666,6 @@ export default function Bahan({ databahan, kode, materbahans }) {
                     <th>Qty Max</th>
                     <th>Harga PO</th>
                     <th>Harga Umum</th>
-                    <th>Harga Khusus</th>
                     <th>Harga Member</th>
                     <th>Harga Custom</th>
                     <th className="sticky right-0 z-10 bg-base-100 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.1)]">Aksi</th>
@@ -673,7 +705,6 @@ export default function Bahan({ databahan, kode, materbahans }) {
                           <td>{hb.qty_max || '-'}</td>
                           <td>{formatRp(hb.harga_po)}</td>
                           <td>{formatRp(hb.harga_umum)}</td>
-                          <td>{formatRp(hb.harga_khusus)}</td>
                           <td>{formatRp(hb.harga_member)}</td>
                           <td>{formatRp(hb.harga_custome)}</td>
                           <td
@@ -699,13 +730,22 @@ export default function Bahan({ databahan, kode, materbahans }) {
                                 </>
                               )}
                               {hb.id && isAdmin && (
-                                <button
-                                  type="button"
-                                  className="btn btn-info btn-xs"
-                                  onClick={() => openEditHarga(item, hb)}
-                                >
-                                  <i className="fas fa-tags"></i> Harga
-                                </button>
+                                <>
+                                  <button
+                                    type="button"
+                                    className="btn btn-info btn-xs"
+                                    onClick={() => openEditHarga(item, hb)}
+                                  >
+                                    <i className="fas fa-tags"></i> Harga
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn btn-accent btn-xs"
+                                    onClick={() => openHargaKhusus(item, hb)}
+                                  >
+                                    <i className="fas fa-user-tag"></i> H. Khusus
+                                  </button>
+                                </>
                               )}
                             </div>
                           </td>
@@ -837,6 +877,153 @@ export default function Bahan({ databahan, kode, materbahans }) {
                   <i className="fas fa-trash"></i> Hapus Harga
                 </button>
               )}
+            </div>
+          </form>
+        </div>
+      </dialog>
+
+      <dialog ref={hargaKhususRef} className="modal">
+        <div className="modal-box max-w-3xl">
+          <button
+            type="button"
+            onClick={closeHargaKhusus}
+            className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2"
+          >
+            x
+          </button>
+          <h3 className="mb-1 text-lg font-bold">Harga Khusus Customer</h3>
+          <p className="mb-2 text-sm text-base-content/70">
+            {selectedBahan?.kode} - {selectedBahan?.bahan}
+          </p>
+          {selectedHargaKhusus && (
+            <p className="mb-4 text-xs text-base-content/50">
+              Sisi: {selectedHargaKhusus.sisi || '-'} | Qty: {selectedHargaKhusus.qty_min || '-'} - {selectedHargaKhusus.qty_max || '-'}
+            </p>
+          )}
+
+          {selectedHargaKhusus?.harga_khusus_customer?.length > 0 && (
+            <div className="mb-4 overflow-x-auto">
+              <table className="table table-sm">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Customer</th>
+                    {/* <th>Kategori</th> */}
+                    <th>Harga Khusus</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="text-xs">
+                  {selectedHargaKhusus.harga_khusus_customer.map((hk, idx) => (
+                    <tr key={hk.id}>
+                      <td>{idx + 1}</td>
+                      <td>{hk.customer?.nama || '-'}</td>
+                      {/* <td>{hk.customer?.kategori || '-'}</td> */}
+                      <td>
+                        {editHkId === hk.id ? (
+                          <form onSubmit={(e) => saveEditHk(e, hk.id)} className="flex gap-1 items-center">
+                            <input
+                              type="text"
+                              value={editHkForm.data.harga}
+                              onChange={(e) => editHkForm.setData('harga', cleanNumber(e.target.value))}
+                              className="input input-bordered input-sm w-32"
+                            />
+                            <button type="submit" className="btn btn-success btn-xs" disabled={editHkForm.processing}>
+                              <i className="fas fa-save"></i>
+                            </button>
+                            <button type="button" onClick={cancelEditHk} className="btn btn-warning btn-xs">
+                              Batal
+                            </button>
+                          </form>
+                        ) : (
+                          formatRp(hk.harga)
+                        )}
+                      </td>
+                      <td>
+                        {editHkId !== hk.id && (
+                          <div className="flex gap-1">
+                            <button
+                              type="button"
+                              className="btn btn-warning btn-xs"
+                              onClick={() => startEditHk(hk)}
+                            >
+                              <i className="fas fa-pen"></i>
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-error btn-xs"
+                              onClick={() => deleteHargaKhusus(hk.id)}
+                            >
+                              <i className="fas fa-trash"></i>
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {(!selectedHargaKhusus?.harga_khusus_customer || selectedHargaKhusus.harga_khusus_customer.length === 0) && (
+            <p className="mb-4 text-sm text-base-content/50 italic">Belum ada harga khusus customer</p>
+          )}
+
+          <form onSubmit={saveHargaKhusus}>
+            <div className="divider">Tambah Harga Khusus</div>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <label className="form-control">
+                <div className="label">
+                  <span className="label-text">Customer</span>
+                </div>
+                <select
+                  value={hargaKhususForm.data.customer_id}
+                  className={`select select-bordered w-full ${hargaKhususForm.errors.customer_id ? 'select-error' : 'select-success'}`}
+                  required
+                  onChange={(e) => hargaKhususForm.setData('customer_id', e.target.value)}
+                >
+                  <option value="">-- Pilih Customer --</option>
+                  {(customers || []).map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nama} ({c.kode}) - {c.kategori}
+                    </option>
+                  ))}
+                </select>
+                {hargaKhususForm.errors.customer_id && (
+                  <div className="label">
+                    <span className="label-text-alt text-error">{hargaKhususForm.errors.customer_id}</span>
+                  </div>
+                )}
+              </label>
+              <label className="form-control">
+                <div className="label">
+                  <span className="label-text">Harga Khusus</span>
+                </div>
+                <input
+                  type="text"
+                  value={hargaKhususForm.data.harga || ''}
+                  className={`input input-bordered w-full ${hargaKhususForm.errors.harga ? 'input-error' : 'input-success'}`}
+                  onChange={(e) => hargaKhususForm.setData('harga', cleanNumber(e.target.value))}
+                />
+                {hargaKhususForm.errors.harga && (
+                  <div className="label">
+                    <span className="label-text-alt text-error">{hargaKhususForm.errors.harga}</span>
+                  </div>
+                )}
+              </label>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="submit"
+                disabled={hargaKhususForm.processing}
+                className="btn btn-success"
+              >
+                <i className="fas fa-save"></i> Simpan
+              </button>
+              <button type="button" onClick={closeHargaKhusus} className="btn btn-warning">
+                Tutup
+              </button>
             </div>
           </form>
         </div>

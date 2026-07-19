@@ -17,8 +17,8 @@ use App\Http\Controllers\admin\LaporanOrderController;
 use App\Http\Controllers\admin\LaporanPembukuanController;
 use App\Http\Controllers\admin\MaterbahanController;
 use App\Http\Controllers\admin\OtorisasiController;
-use App\Http\Controllers\admin\PembayaranHutangController;
 use App\Http\Controllers\admin\PembatalanOrderController;
+use App\Http\Controllers\admin\PembayaranHutangController;
 use App\Http\Controllers\admin\PengajuanDiskonController;
 use App\Http\Controllers\admin\PenggunaController;
 use App\Http\Controllers\admin\PoEksternalController;
@@ -86,6 +86,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/bahan/{kode}/harga', [BahanController::class, 'storeHarga'])->name('store.harga-bahan');
     Route::put('/bahan/harga/{id}', [BahanController::class, 'updateHarga'])->name('update.harga-bahan');
     Route::delete('/bahan/harga/{id}', [BahanController::class, 'deleteHarga'])->name('delete.harga-bahan');
+    Route::post('/bahan/harga/{id}/khusus-customer', [BahanController::class, 'storeHargaKhususCustomer'])->name('store.harga-khusus-customer');
+    Route::put('/bahan/khusus-customer/{id}', [BahanController::class, 'updateHargaKhususCustomer'])->name('update.harga-khusus-customer');
+    Route::delete('/bahan/khusus-customer/{id}', [BahanController::class, 'deleteHargaKhususCustomer'])->name('delete.harga-khusus-customer');
     Route::delete('/bahan/{id}', [BahanController::class, 'delete'])->name('delete.bahan');
     Route::put('/bahan/{id}', [BahanController::class, 'update'])->name('update.bahan');
 

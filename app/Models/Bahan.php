@@ -19,7 +19,6 @@ class Bahan extends Model
         'harga',
         'harga_beli',
         'harga_umum',
-        'harga_khusus',
         'harga_member',
         'harga_custom',
         'harga_po',

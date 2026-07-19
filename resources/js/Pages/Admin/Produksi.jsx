@@ -91,9 +91,8 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
 
   const hargaFieldByKategori = {
     Umum: 'harga_umum',
-    Khusus: 'harga_khusus',
+    Khusus: 'harga_umum',
     Member: 'harga_member',
-    // Custom: 'harga_custome',
   };
 
   const getHargaRows = (bh) => bh?.harga_bahan || bh?.hargaBahan || [];
