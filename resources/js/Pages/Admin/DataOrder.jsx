@@ -68,6 +68,7 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
                                         <th>No SPK</th>
                                         <th>Customer</th>
                                         <th>Bahan</th>
+                                        <th>Keterangan</th>
                                         <th>Qty</th>
                                         <th>Harga</th>
                                         <th>Pembayaran</th>
@@ -88,6 +89,7 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
                                                 <td className="font-mono">{item.kode_spk}</td>
                                                 <td>{item.customer?.nama}</td>
                                                 <td>{item.bahan?.bahan}</td>
+                                                <td>{item.katerengan}</td>
                                                 <td className="tabular-nums text-center">{item.qty}</td>
                                                 <td className="tabular-nums">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
                                                 <td>

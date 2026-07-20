@@ -47,6 +47,7 @@ class JabatanController extends Controller
             ['key' => 'master-materbahan', 'label' => 'Master Bahan', 'group' => 'Bahan'],
             ['key' => 'master-bahanpakai', 'label' => 'Bahan Pakai', 'group' => 'Bahan'],
             ['key' => 'relasi-bahan', 'label' => 'Relasi Bahan', 'group' => 'Bahan'],
+            ['key' => 'harga-khusus-customer', 'label' => 'Harga Khusus Customer', 'group' => 'Bahan'],
             ['key' => 'po-eksternal', 'label' => 'PO Eksternal', 'group' => 'Umum'],
             ['key' => 'po-pembelian-bahan', 'label' => 'PO Pembelian Bahan', 'group' => 'Umum'],
             ['key' => 'master-jabatan', 'label' => 'Jabatan', 'group' => 'Master Data'],

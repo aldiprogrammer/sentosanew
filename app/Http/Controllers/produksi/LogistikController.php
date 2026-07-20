@@ -39,8 +39,6 @@ class LogistikController extends Controller
         $pr->status_selesai = 1;
         $pr->update();
 
-
-
         if ($request->id_item_stoks && $request->total_all) {
             $ids = $request->id_item_stoks;
             $perItem = (float) $request->total_all / max(count($ids), 1);

@@ -153,7 +153,7 @@ export default function AdminLayout({ children }) {
                                 </details>
                             </li>
                         )}
-                        {(hasMenu('master-bahan') || hasMenu('master-materbahan') || hasMenu('master-bahanpakai') || hasMenu('relasi-bahan')) && (
+                        {(hasMenu('master-bahan') || hasMenu('master-materbahan') || hasMenu('master-bahanpakai') || hasMenu('relasi-bahan') || hasMenu('harga-khusus-customer')) && (
                             <li>
                                 <details>
                                     <summary className="rounded-xl">
@@ -179,6 +179,11 @@ export default function AdminLayout({ children }) {
                                         {hasMenu('relasi-bahan') && (
                                             <li>
                                                 <Link href={route('relasi-bahan')}>Relasi Bahan</Link>
+                                            </li>
+                                        )}
+                                        {hasMenu('harga-khusus-customer') && (
+                                            <li>
+                                                <Link href={route('harga-khusus-customer')}>Harga Khusus Customer</Link>
                                             </li>
                                         )}
                                     </ul>

@@ -42,7 +42,7 @@ class ProduksiController extends Controller
             ->with('customer', 'kategoridesain')
             ->get();
         $customer = Customer::all();
-        $bahan = Databahan::with('hargaBahan')->get();
+        $bahan = Databahan::with('hargaBahan.hargaKhususCustomer')->get();
 
         do {
             $kodespk = 'SPK-'.date('ymd').rand(0, 100000);

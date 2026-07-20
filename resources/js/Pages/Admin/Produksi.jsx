@@ -347,12 +347,12 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       customer: cs.nama,
       kategori_customer: cs.kategori,
       pilihan_harga: cs.kategori,
-      harga_tampil: hitungHarga(prev.id_bahan, cs.kategori, prev.qty, prev.sisi),
+      harga_tampil: hitungHarga(prev.id_bahan, cs.kategori, prev.qty, prev.sisi, cs.id),
       id_kategori_desain: ds?.id_kategori_desain ?? "0",
     }));
   };
 
-  const hitungHarga = (bahanId, pilihan, qty = data.qty, sisi = data.sisi) => {
+  const hitungHarga = (bahanId, pilihan, qty = data.qty, sisi = data.sisi, idCustomer = data.id_customer) => {
     const bh = bahan.find((item) => item.id === Number(bahanId));
     if (!bh) return 0;
 
@@ -361,6 +361,18 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
     const harga = bh.cara_perhitungan === 'QTY KHUSUS' || bh.cara_perhitungan === 'QTY2'
       ? hargaSesuaiQty(bh, qty, sisi)
       : hargaDasar(bh, sisi);
+
+    if (!harga) return 0;
+
+    if (pilihan === 'Khusus' && idCustomer) {
+      const hk = (harga.harga_khusus_customer || []).find(
+        (item) => Number(item.customer_id) === Number(idCustomer)
+      );
+      if (hk && hk.harga) {
+        return Number(hk.harga);
+      }
+    }
+
     const kolomHarga = hargaFieldByKategori[pilihan] || 'harga_umum';
 
     return harga?.[kolomHarga] || 0;

@@ -21,4 +21,9 @@ class Hargabahan extends Model
     {
         return $this->hasMany(HargaKhususCustomer::class, 'hargabahan_id');
     }
+
+    public function databahan()
+    {
+        return $this->belongsTo(Databahan::class, 'kode_bahan', 'kode');
+    }
 }

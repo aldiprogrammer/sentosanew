@@ -14,15 +14,16 @@ use Inertia\Inertia;
 
 class PengambilanStokController extends Controller
 {
-    function index()
+    public function index()
     {
         $bahanpakaiList = Bahanpakai::get();
         $itemstokbahans = Itemstokbahan::where('qty', '>', 0)->orderBy('id')->get();
         $riwayat = PengambilanStok::with('user', 'bahanPakai')->orderBy('id', 'desc')->limit(5)->get();
+
         return Inertia::render('Produksi/PengambilanStok', compact('bahanpakaiList', 'itemstokbahans', 'riwayat'));
     }
 
-    function proses(Request $request)
+    public function proses(Request $request)
     {
         $request->validate([
             'kode_bahan_pakai' => 'required|string',
@@ -36,14 +37,20 @@ class PengambilanStokController extends Controller
         $itemStokData = [];
 
         foreach ($request->item_stok_ids as $stokId) {
-            if ($remainingNeed <= 0) break;
+            if ($remainingNeed <= 0) {
+                break;
+            }
 
             $stok = Itemstokbahan::find($stokId);
-            if (!$stok) continue;
+            if (! $stok) {
+                continue;
+            }
 
             $take = min((float) $stok->total, $remainingNeed);
             $stok->total = max(0, (float) $stok->total - $take);
-            if ((float) $stok->total == 0) $stok->qty = 0;
+            if ((float) $stok->total == 0) {
+                $stok->qty = 0;
+            }
             $stok->save();
 
             $itemStokData[] = [
@@ -72,7 +79,7 @@ class PengambilanStokController extends Controller
         return back()->with('success', 'Stok berhasil diambil');
     }
 
-    function riwayat(Request $request)
+    public function riwayat(Request $request)
     {
         $search = $request->query('search');
         $riwayat = PengambilanStok::with('user', 'bahanPakai')
@@ -90,11 +97,12 @@ class PengambilanStokController extends Controller
         return Inertia::render('Produksi/RiwayatPengambilanStok', compact('riwayat', 'search'));
     }
 
-    function riwayatPemakaian(Request $request)
+    public function riwayatPemakaian(Request $request)
     {
         $masterBahan = Materbahan::orderBy('kode_bahan_jual')->get()->map(function ($m) {
-            $m->total_stok = Bahanpakai::whereRaw('JSON_CONTAINS(id_master_bahan, \'["' . $m->kode_bahan_jual . '"]\')')
+            $m->total_stok = Bahanpakai::whereRaw('JSON_CONTAINS(id_master_bahan, \'["'.$m->kode_bahan_jual.'"]\')')
                 ->sum('total_stok');
+
             return $m;
         });
         $kode = $request->query('kode');
@@ -113,7 +121,7 @@ class PengambilanStokController extends Controller
 
             $totalProduksi = Produksi::whereIn('id_bahan', $databahanIds)->count();
 
-            $totalStok = Bahanpakai::whereRaw('JSON_CONTAINS(id_master_bahan, \'["' . $kode . '"]\')')
+            $totalStok = Bahanpakai::whereRaw('JSON_CONTAINS(id_master_bahan, \'["'.$kode.'"]\')')
                 ->sum('total_stok');
         }
 

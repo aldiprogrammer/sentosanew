@@ -977,19 +977,12 @@ export default function Bahan({ databahan, kode, materbahans, customers }) {
                 <div className="label">
                   <span className="label-text">Customer</span>
                 </div>
-                <select
+                <SearchableSelect
+                  options={(customers || []).map((c) => ({ value: c.id, label: `${c.nama} (${c.kode}) - ${c.kategori}` }))}
                   value={hargaKhususForm.data.customer_id}
-                  className={`select select-bordered w-full ${hargaKhususForm.errors.customer_id ? 'select-error' : 'select-success'}`}
-                  required
-                  onChange={(e) => hargaKhususForm.setData('customer_id', e.target.value)}
-                >
-                  <option value="">-- Pilih Customer --</option>
-                  {(customers || []).map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.nama} ({c.kode}) - {c.kategori}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => hargaKhususForm.setData('customer_id', val)}
+                  placeholder="-- Pilih Customer --"
+                />
                 {hargaKhususForm.errors.customer_id && (
                   <div className="label">
                     <span className="label-text-alt text-error">{hargaKhususForm.errors.customer_id}</span>

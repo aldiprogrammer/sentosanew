@@ -7,6 +7,7 @@ use App\Http\Controllers\admin\DashboardController;
 use App\Http\Controllers\admin\DataOrderController;
 use App\Http\Controllers\admin\DesainController;
 use App\Http\Controllers\admin\DistributorController;
+use App\Http\Controllers\admin\HargaKhususCustomerController;
 use App\Http\Controllers\admin\HomeController;
 use App\Http\Controllers\admin\JabatanController;
 use App\Http\Controllers\admin\KategoriDesainController;
@@ -91,6 +92,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/bahan/khusus-customer/{id}', [BahanController::class, 'deleteHargaKhususCustomer'])->name('delete.harga-khusus-customer');
     Route::delete('/bahan/{id}', [BahanController::class, 'delete'])->name('delete.bahan');
     Route::put('/bahan/{id}', [BahanController::class, 'update'])->name('update.bahan');
+
+    Route::get('/harga-khusus-customer', [HargaKhususCustomerController::class, 'index'])->name('harga-khusus-customer');
+    Route::post('/harga-khusus-customer', [HargaKhususCustomerController::class, 'store'])->name('store.harga-khusus-customer');
+    Route::delete('/harga-khusus-customer/{id}', [HargaKhususCustomerController::class, 'delete'])->name('delete.harga-khusus-customer');
 
     Route::get('/materbahan', [MaterbahanController::class, 'index'])->name('materbahan');
     Route::post('/materbahan', [MaterbahanController::class, 'store'])->name('store.materbahan');

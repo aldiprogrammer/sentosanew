@@ -18,7 +18,7 @@ class LaporanOrderController extends Controller
         $tglAkhir = $request->query('tgl_akhir');
         $search = $request->query('search');
         $pembayaran = $request->query('pembayaran');
-        $penggunaIds = $request->query('pengguna_id') ? (array) $request->query('pengguna_id') : [];
+        $penggunaIds = array_values(array_filter((array) $request->query('pengguna_id', []), fn ($id) => $id !== ''));
 
         $desain = Desain::with('customer', 'kategoridesain', 'desainer', 'cs')
             ->whereNull('alasan_pembatalan')
@@ -28,13 +28,13 @@ class LaporanOrderController extends Controller
             ->when($pembayaran, function ($q, $pembayaran) {
                 $q->where('pembayaran', $pembayaran);
             })
-            ->when(!empty($penggunaIds), fn($q) => $q->where(function ($q) use ($penggunaIds) {
+            ->when(! empty($penggunaIds), fn ($q) => $q->where(function ($q) use ($penggunaIds) {
                 foreach ($penggunaIds as $id) {
                     $q->orWhere('id_desain', $id)->orWhere('id_cs', $id);
                 }
             }))
-            ->when($tglAwal, fn($q) => $q->where('tanggal', '>=', $tglAwal))
-            ->when($tglAkhir, fn($q) => $q->where('tanggal', '<=', $tglAkhir))
+            ->when($tglAwal, fn ($q) => $q->where('tanggal', '>=', $tglAwal))
+            ->when($tglAkhir, fn ($q) => $q->where('tanggal', '<=', $tglAkhir))
             ->orderBy('id', 'desc')
             ->paginate(20)
             ->withQueryString();
@@ -44,13 +44,13 @@ class LaporanOrderController extends Controller
             ->when($search, function ($q, $search) {
                 $q->where('no_invoice', 'like', "%{$search}%");
             })
-            ->when(!empty($penggunaIds), fn($q) => $q->where(function ($q) use ($penggunaIds) {
+            ->when(! empty($penggunaIds), fn ($q) => $q->where(function ($q) use ($penggunaIds) {
                 foreach ($penggunaIds as $id) {
                     $q->orWhere('id_desain', $id)->orWhere('id_cs', $id);
                 }
             }))
-            ->when($tglAwal, fn($q) => $q->where('tanggal', '>=', $tglAwal))
-            ->when($tglAkhir, fn($q) => $q->where('tanggal', '<=', $tglAkhir))
+            ->when($tglAwal, fn ($q) => $q->where('tanggal', '>=', $tglAwal))
+            ->when($tglAkhir, fn ($q) => $q->where('tanggal', '<=', $tglAkhir))
             ->orderBy('id', 'desc')
             ->paginate(20)
             ->withQueryString();
@@ -66,9 +66,9 @@ class LaporanOrderController extends Controller
             ->when($pembayaran, function ($q, $pembayaran) {
                 $q->where('pembayaran', $pembayaran);
             })
-            ->when(!empty($penggunaIds), fn($q) => $q->whereIn('id_cs', $penggunaIds))
-            ->when($tglAwal, fn($q) => $q->where('tanggal', '>=', $tglAwal))
-            ->when($tglAkhir, fn($q) => $q->where('tanggal', '<=', $tglAkhir))
+            ->when(! empty($penggunaIds), fn ($q) => $q->whereIn('id_cs', $penggunaIds))
+            ->when($tglAwal, fn ($q) => $q->where('tanggal', '>=', $tglAwal))
+            ->when($tglAkhir, fn ($q) => $q->where('tanggal', '<=', $tglAkhir))
             ->orderBy('id', 'desc')
             ->paginate(20)
             ->withQueryString();
@@ -86,10 +86,10 @@ class LaporanOrderController extends Controller
     {
         $data = $this->getFilteredDesain($request);
         $filters = $request->only(['tgl_awal', 'tgl_akhir', 'search', 'pembayaran']);
-        $penggunaIds = $request->query('pengguna_id') ? (array) $request->query('pengguna_id') : [];
+        $penggunaIds = array_values(array_filter((array) $request->query('pengguna_id', []), fn ($id) => $id !== ''));
         $filters['pengguna_id'] = $penggunaIds;
         $totalKeseluruhan = $data->sum('total_harga');
-        $penggunaName = !empty($penggunaIds)
+        $penggunaName = ! empty($penggunaIds)
             ? Pengguna::whereIn('id', $penggunaIds)->pluck('username')->implode(', ')
             : '';
 
@@ -103,10 +103,10 @@ class LaporanOrderController extends Controller
     {
         $data = $this->getFilteredProduksi($request);
         $filters = $request->only(['tgl_awal', 'tgl_akhir', 'search', 'pembayaran']);
-        $penggunaIds = $request->query('pengguna_id') ? (array) $request->query('pengguna_id') : [];
+        $penggunaIds = array_values(array_filter((array) $request->query('pengguna_id', []), fn ($id) => $id !== ''));
         $filters['pengguna_id'] = $penggunaIds;
         $totalKeseluruhan = $data->sum('total_harga');
-        $penggunaName = !empty($penggunaIds)
+        $penggunaName = ! empty($penggunaIds)
             ? Pengguna::whereIn('id', $penggunaIds)->pluck('username')->implode(', ')
             : '';
 
@@ -122,21 +122,21 @@ class LaporanOrderController extends Controller
         $tglAkhir = $request->query('tgl_akhir');
         $search = $request->query('search');
         $pembayaran = $request->query('pembayaran');
-        $penggunaIds = $request->query('pengguna_id') ? (array) $request->query('pengguna_id') : [];
+        $penggunaIds = array_values(array_filter((array) $request->query('pengguna_id', []), fn ($id) => $id !== ''));
 
         return Desain::with('customer', 'kategoridesain', 'desainer', 'cs')
             ->whereNull('alasan_pembatalan')
             ->when($search, function ($q, $search) {
                 $q->where('no_invoice', 'like', "%{$search}%");
             })
-            ->when($pembayaran, fn($q) => $q->where('pembayaran', $pembayaran))
-            ->when(!empty($penggunaIds), fn($q) => $q->where(function ($q) use ($penggunaIds) {
+            ->when($pembayaran, fn ($q) => $q->where('pembayaran', $pembayaran))
+            ->when(! empty($penggunaIds), fn ($q) => $q->where(function ($q) use ($penggunaIds) {
                 foreach ($penggunaIds as $id) {
                     $q->orWhere('id_desain', $id)->orWhere('id_cs', $id);
                 }
             }))
-            ->when($tglAwal, fn($q) => $q->where('tanggal', '>=', $tglAwal))
-            ->when($tglAkhir, fn($q) => $q->where('tanggal', '<=', $tglAkhir))
+            ->when($tglAwal, fn ($q) => $q->where('tanggal', '>=', $tglAwal))
+            ->when($tglAkhir, fn ($q) => $q->where('tanggal', '<=', $tglAkhir))
             ->orderBy('id', 'desc')
             ->get();
     }
@@ -147,7 +147,7 @@ class LaporanOrderController extends Controller
         $tglAkhir = $request->query('tgl_akhir');
         $search = $request->query('search');
         $pembayaran = $request->query('pembayaran');
-        $penggunaIds = $request->query('pengguna_id') ? (array) $request->query('pengguna_id') : [];
+        $penggunaIds = array_values(array_filter((array) $request->query('pengguna_id', []), fn ($id) => $id !== ''));
 
         return Produksi::with('customer', 'bahan', 'cs')
             ->whereNull('alasan_pembatalan')
@@ -157,10 +157,10 @@ class LaporanOrderController extends Controller
                         ->orWhere('kode_spk', 'like', "%{$search}%");
                 });
             })
-            ->when($pembayaran, fn($q) => $q->where('pembayaran', $pembayaran))
-            ->when(!empty($penggunaIds), fn($q) => $q->whereIn('id_cs', $penggunaIds))
-            ->when($tglAwal, fn($q) => $q->where('tanggal', '>=', $tglAwal))
-            ->when($tglAkhir, fn($q) => $q->where('tanggal', '<=', $tglAkhir))
+            ->when($pembayaran, fn ($q) => $q->where('pembayaran', $pembayaran))
+            ->when(! empty($penggunaIds), fn ($q) => $q->whereIn('id_cs', $penggunaIds))
+            ->when($tglAwal, fn ($q) => $q->where('tanggal', '>=', $tglAwal))
+            ->when($tglAkhir, fn ($q) => $q->where('tanggal', '<=', $tglAkhir))
             ->orderBy('id', 'desc')
             ->get();
     }

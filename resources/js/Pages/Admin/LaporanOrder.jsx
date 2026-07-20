@@ -34,13 +34,16 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
     const selectedPenggunaNames = penggunas?.filter((p) => filterPengguna.includes(String(p.id))).map((p) => p.username) || []
 
     const applyFilter = () => {
-        router.get(route('laporan-order'), {
+        const params = {
             tgl_awal: filterTglAwal,
             tgl_akhir: filterTglAkhir,
             search: filterSearch,
             pembayaran: filterPembayaran,
-            'pengguna_id[]': filterPengguna.length > 0 ? filterPengguna : '',
-        }, { preserveState: true, replace: true })
+        }
+        if (filterPengguna.length > 0) {
+            params['pengguna_id[]'] = filterPengguna
+        }
+        router.get(route('laporan-order'), params, { preserveState: true, replace: true })
     }
 
     const handleKeyDown = (e) => {
