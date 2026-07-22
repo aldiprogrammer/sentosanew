@@ -91,7 +91,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
 
   const hargaFieldByKategori = {
     Umum: 'harga_umum',
-    Khusus: 'harga_umum',
+    Khusus: 'harga_khusus',
     Member: 'harga_member',
   };
 
@@ -364,7 +364,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
 
     if (!harga) return 0;
 
-    if (pilihan === 'Khusus' && idCustomer) {
+    if (idCustomer) {
       const hk = (harga.harga_khusus_customer || []).find(
         (item) => Number(item.customer_id) === Number(idCustomer)
       );

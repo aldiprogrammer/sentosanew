@@ -14,17 +14,37 @@ use Inertia\Inertia;
 
 class ProduksiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $produksi = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')
+        $search = $request->query('search');
+        $tglAwal = $request->query('tgl_awal');
+        $tglAkhir = $request->query('tgl_akhir');
+
+        $produksi = Produksi::with(['customer', 'bahan' => function ($q) {
+            $q->with(['hargaBahan' => function ($q2) {
+                $q2->with('hargaKhususCustomer');
+            }]);
+        }, 'pinising', 'mataAyam'])
             ->where('status_finishing', 0)
             ->where('status_produksi', 1)
+            ->when($search, function ($q, $search) {
+                $q->where(function ($qq) use ($search) {
+                    $qq->where('kode_spk', 'like', "%{$search}%")
+                        ->orWhere('no_invoice', 'like', "%{$search}%")
+                        ->orWhere('keterangan', 'like', "%{$search}%")
+                        ->orWhereHas('customer', function ($qqq) use ($search) {
+                            $qqq->where('nama', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->when($tglAwal, fn ($q, $v) => $q->where('tanggal', '>=', $v))
+            ->when($tglAkhir, fn ($q, $v) => $q->where('tanggal', '<=', $v))
             ->orderBy('id', 'desc')
             ->get();
         $bahanpakaiList = Bahanpakai::get();
         $itemstokbahans = Itemstokbahan::where('qty', '>', 0)->orderBy('id')->get();
 
-        return Inertia::render('Produksi/Produksi', compact('produksi', 'bahanpakaiList', 'itemstokbahans'));
+        return Inertia::render('Produksi/Produksi', compact('produksi', 'bahanpakaiList', 'itemstokbahans', 'search', 'tglAwal', 'tglAkhir'));
     }
 
     public function dataproduksi(Request $request)

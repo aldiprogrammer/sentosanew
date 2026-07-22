@@ -293,9 +293,9 @@ class ProduksiController extends Controller
             return (float) ($request->harga_manual ?: 0);
         }
 
-        $isKhusus = $request->pilihan_harga === 'Khusus';
         $kolomHarga = [
             'Umum' => 'harga_umum',
+            'Khusus' => 'harga_khusus',
             'Member' => 'harga_member',
             'Custom' => 'harga_custome',
         ][$request->pilihan_harga] ?? 'harga_umum';
@@ -348,7 +348,7 @@ class ProduksiController extends Controller
             return 0;
         }
 
-        if ($isKhusus && $request->id_customer) {
+        if ($request->id_customer) {
             $hk = HargaKhususCustomer::where('hargabahan_id', $harga->id)
                 ->where('customer_id', $request->id_customer)
                 ->first();

@@ -17,20 +17,21 @@ function formatRupiah(value) {
     return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
-export default function Customer({ customer, kode }) {
+export default function Customer({ customer, kode, search: initialSearch, kategori: initialKategori }) {
     const { auth } = usePage().props;
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState(initialSearch || '');
+    const [kategori, setKategori] = useState(initialKategori || '');
 
     useEffect(() => {
         const t = setTimeout(() => {
-            router.get('/customer', { search }, { preserveState: true, replace: true });
+            router.get('/customer', { search, kategori }, { preserveState: true, replace: true });
         }, 500);
         return () => clearTimeout(t);
-    }, [search]);
+    }, [search, kategori]);
 
     const handleSearch = (e) => {
         e.preventDefault();
-        router.get('/customer', { search }, { preserveState: true, replace: true });
+        router.get('/customer', { search, kategori }, { preserveState: true, replace: true });
     };
     const restrictedRoles = ['customer service', 'desain', 'gudang', 'finishing', 'logistik'];
     const isEditable = !restrictedRoles.includes(auth.user?.role);
@@ -557,7 +558,7 @@ export default function Customer({ customer, kode }) {
                         </div>
 
                         <div className="mb-3">
-                            <form onSubmit={handleSearch}>
+                            <form onSubmit={handleSearch} className="flex flex-wrap gap-2 items-end">
                                 <input
                                     type="text"
                                     placeholder="Cari nama atau no hp..."
@@ -565,6 +566,16 @@ export default function Customer({ customer, kode }) {
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                 />
+                                <select
+                                    value={kategori}
+                                    onChange={(e) => setKategori(e.target.value)}
+                                    className="select select-bordered select-success"
+                                >
+                                    <option value="">Semua Kategori</option>
+                                    <option value="Umum">Umum</option>
+                                    <option value="Member">Member</option>
+                                    <option value="Khusus">Khusus</option>
+                                </select>
                             </form>
                         </div>
 

@@ -73,7 +73,7 @@ const initialBahan = {
   harga_po: '',
   harga_umum: '',
   harga_member: '',
-  harga_custome: '',
+  harga_khusus: '',
 };
 
 const initialHarga = {
@@ -85,7 +85,7 @@ const initialHarga = {
   harga_po: '',
   harga_umum: '',
   harga_member: '',
-  harga_custome: '',
+  harga_khusus: '',
 };
 
 const kategoriOptions = ['DIGITAL', 'OFFSET'];
@@ -185,7 +185,7 @@ export default function Bahan({ databahan, kode, materbahans, customers }) {
       harga_po: hb.harga_po || '',
       harga_umum: hb.harga_umum || '',
       harga_member: hb.harga_member || '',
-      harga_custome: hb.harga_custome || '',
+      harga_khusus: hb.harga_khusus || '',
     });
   };
 
@@ -231,7 +231,7 @@ export default function Bahan({ databahan, kode, materbahans, customers }) {
       harga_po: harga.harga_po || '',
       harga_umum: harga.harga_umum || '',
       harga_member: harga.harga_member || '',
-      harga_custome: harga.harga_custome || '',
+      harga_khusus: harga.harga_khusus || '',
     });
     hargaRef.current.showModal();
   };
@@ -369,7 +369,7 @@ export default function Bahan({ databahan, kode, materbahans, customers }) {
           formatRp(hb.harga_po),
           formatRp(hb.harga_umum),
           formatRp(hb.harga_member),
-          formatRp(hb.harga_custome),
+          formatRp(hb.harga_khusus),
         ]);
       });
 
@@ -389,7 +389,7 @@ export default function Bahan({ databahan, kode, materbahans, customers }) {
             'Harga PO',
             'Harga Umum',
             'Harga Member',
-            'Harga Custom',
+            'Harga Khusus',
           ],
         ],
         body: rows,
@@ -561,8 +561,8 @@ export default function Bahan({ databahan, kode, materbahans, customers }) {
             true,
           )}
           {renderText(
-            'Harga Custom',
-            'harga_custome',
+            'Harga Khusus',
+            'harga_khusus',
             bahanForm,
             setBahanValue,
             false,
@@ -608,8 +608,8 @@ export default function Bahan({ databahan, kode, materbahans, customers }) {
         true,
       )}
       {renderText(
-        'Harga Custom',
-        'harga_custome',
+        'Harga Khusus',
+        'harga_khusus',
         hargaForm,
         setHargaValue,
         false,
@@ -667,7 +667,7 @@ export default function Bahan({ databahan, kode, materbahans, customers }) {
                     <th>Harga PO</th>
                     <th>Harga Umum</th>
                     <th>Harga Member</th>
-                    <th>Harga Custom</th>
+                    <th>Harga Khusus</th>
                     <th className="sticky right-0 z-10 bg-base-100 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.1)]">Aksi</th>
                   </tr>
                 </thead>
@@ -706,7 +706,7 @@ export default function Bahan({ databahan, kode, materbahans, customers }) {
                           <td>{formatRp(hb.harga_po)}</td>
                           <td>{formatRp(hb.harga_umum)}</td>
                           <td>{formatRp(hb.harga_member)}</td>
-                          <td>{formatRp(hb.harga_custome)}</td>
+                          <td>{formatRp(hb.harga_khusus)}</td>
                           <td
                             className="sticky right-0 z-10 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.1)]"
                             style={{ backgroundColor: bgColor }}>

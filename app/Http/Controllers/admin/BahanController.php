@@ -172,6 +172,7 @@ class BahanController extends Controller
             'harga_po' => $this->cleanNumber($request->harga_po ?? $request->harga_beli),
             'harga_umum' => $this->cleanNumber($request->harga_umum),
             'harga_member' => $this->cleanNumber($request->harga_member),
+            'harga_khusus' => $this->cleanNumber($request->harga_khusus),
             'harga_custom' => $this->cleanNumber($request->harga_custome ?? $request->harga_custom),
         ];
     }
@@ -186,6 +187,7 @@ class BahanController extends Controller
             'harga_beli',
             'harga_umum',
             'harga_member',
+            'harga_khusus',
             'harga_custome',
             'harga_custom',
         ])->contains(fn ($field) => filled($request->input($field)));

@@ -12,18 +12,34 @@ use Inertia\Inertia;
 
 class LogistikController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->query('search');
+        $tglAwal = $request->query('tgl_awal');
+        $tglAkhir = $request->query('tgl_akhir');
+
         $produksi = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')
             ->where('status_logistik', 1)
             ->where('status_selesai', 0)
+            ->when($search, function ($q, $search) {
+                $q->where(function ($qq) use ($search) {
+                    $qq->where('kode_spk', 'like', "%{$search}%")
+                        ->orWhere('no_invoice', 'like', "%{$search}%")
+                        ->orWhere('keterangan', 'like', "%{$search}%")
+                        ->orWhereHas('customer', function ($qqq) use ($search) {
+                            $qqq->where('nama', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->when($tglAwal, fn ($q, $v) => $q->where('tanggal', '>=', $v))
+            ->when($tglAkhir, fn ($q, $v) => $q->where('tanggal', '<=', $v))
             ->orderBy('id', 'desc')
             ->get();
         $kurir = Kurir::all();
         $bahanpakaiList = Bahanpakai::get();
         $itemstokbahans = Itemstokbahan::where('qty', '>', 0)->orderBy('id')->get();
 
-        return Inertia::render('Produksi/Logistik', compact('produksi', 'kurir', 'bahanpakaiList', 'itemstokbahans'));
+        return Inertia::render('Produksi/Logistik', compact('produksi', 'kurir', 'bahanpakaiList', 'itemstokbahans', 'search', 'tglAwal', 'tglAkhir'));
     }
 
     public function proses(Request $request, $id)

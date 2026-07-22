@@ -3,9 +3,12 @@ import { router } from '@inertiajs/react'
 import React, { useMemo, useRef, useState, useCallback } from 'react'
 import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
 
-export default function Logistik({ produksi, kurir, bahanpakaiList, itemstokbahans }) {
+export default function Logistik({ produksi, kurir, bahanpakaiList, itemstokbahans, search: initialSearch, tglAwal: initialTglAwal, tglAkhir: initialTglAkhir }) {
     const [selected, setSelected] = useState(null)
     const [selectedKurir, setSelectedKurir] = useState('')
+    const [search, setSearch] = useState(initialSearch || '')
+    const [tgl_awal, setTglAwal] = useState(initialTglAwal || '')
+    const [tgl_akhir, setTglAkhir] = useState(initialTglAkhir || '')
     const [filterKategori, setFilterKategori] = useState('')
     const [filterJenisBahan, setFilterJenisBahan] = useState('')
     const [selectedBahanpakai, setSelectedBahanpakai] = useState('')
@@ -72,6 +75,11 @@ export default function Logistik({ produksi, kurir, bahanpakaiList, itemstokbaha
         }, 0)
         return totalAvailable >= totalAll
     }, [selectedItemStoks, totalAll, qtyCount, itemstokbahans])
+
+    const handleSearch = (e) => {
+        e.preventDefault()
+        router.get('/produksi/logistik', { search, tgl_awal, tgl_akhir }, { preserveState: true, replace: true })
+    }
 
     const shouldShowSection = (kategori) =>
         !filterKategori || filterKategori === kategori
@@ -257,28 +265,60 @@ table.items tr:nth-child(even) { background: #f0fdf4; }
                                 {totalSemuaItem} order menunggu pengiriman
                             </p>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            <select
-                                value={filterKategori}
-                                onChange={(e) => setFilterKategori(e.target.value)}
-                                className="select select-bordered select-sm text-sm"
-                            >
-                                <option value="">Semua Kategori</option>
-                                {kategoriList.map((k) => (
-                                    <option key={k} value={k}>{k}</option>
-                                ))}
-                            </select>
-                            <select
-                                value={filterJenisBahan}
-                                onChange={(e) => setFilterJenisBahan(e.target.value)}
-                                className="select select-bordered select-sm text-sm"
-                            >
-                                <option value="">Semua Jenis Bahan</option>
-                                {jenisBahanList.map((j) => (
-                                    <option key={j} value={j}>{j}</option>
-                                ))}
-                            </select>
-                        </div>
+                    </div>
+
+                    <form onSubmit={handleSearch} className="flex flex-wrap gap-2 items-end">
+                        <input
+                            type="text"
+                            placeholder="Cari kode SPK, customer, keterangan..."
+                            className="input input-bordered input-success w-full max-w-xs input-sm"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                        <label className="form-control w-full max-w-[160px]">
+                            <span className="label-text text-xs">Tgl Awal</span>
+                            <input
+                                type="date"
+                                className="input input-bordered input-success input-sm"
+                                value={tgl_awal}
+                                onChange={(e) => setTglAwal(e.target.value)}
+                            />
+                        </label>
+                        <label className="form-control w-full max-w-[160px]">
+                            <span className="label-text text-xs">Tgl Akhir</span>
+                            <input
+                                type="date"
+                                className="input input-bordered input-success input-sm"
+                                value={tgl_akhir}
+                                onChange={(e) => setTglAkhir(e.target.value)}
+                            />
+                        </label>
+                        <button type="submit" className="btn btn-success btn-sm">
+                            <i className="fas fa-search"></i> Cari
+                        </button>
+                    </form>
+
+                    <div className="flex flex-wrap gap-2">
+                        <select
+                            value={filterKategori}
+                            onChange={(e) => setFilterKategori(e.target.value)}
+                            className="select select-bordered select-sm text-sm"
+                        >
+                            <option value="">Semua Kategori</option>
+                            {kategoriList.map((k) => (
+                                <option key={k} value={k}>{k}</option>
+                            ))}
+                        </select>
+                        <select
+                            value={filterJenisBahan}
+                            onChange={(e) => setFilterJenisBahan(e.target.value)}
+                            className="select select-bordered select-sm text-sm"
+                        >
+                            <option value="">Semua Jenis Bahan</option>
+                            {jenisBahanList.map((j) => (
+                                <option key={j} value={j}>{j}</option>
+                            ))}
+                        </select>
                     </div>
 
                     {totalSemuaItem === 0 ? (

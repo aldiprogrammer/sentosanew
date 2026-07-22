@@ -4,8 +4,64 @@ import React, { useMemo, useRef, useState, useCallback } from 'react'
 import { buildFinishingReceiptHtml } from './StrukFinishingTemplate'
 import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
 
-export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
+const cleanNumber = (v) => String(v || '').replace(/\D/g, '')
+const formatRp = (v) => {
+    const n = Number(cleanNumber(v))
+    return n ? `Rp ${n.toLocaleString('id-ID')}` : '-'
+}
+
+function resolveHargaSatuan(item) {
+    const bahan = item.bahan
+    const customer = item.customer
+    if (!bahan || !customer) return 0
+
+    const hargaBahanList = bahan.harga_bahan || bahan.hargaBahan || []
+    const sisi = (item.sisi || '').trim()
+    const qty = parseFloat(item.qty) || 0
+    const pakaiSisi = hargaBahanList.some((h) => (h.sisi || '').trim() !== '')
+
+    let matched = null
+    if (['QTY KHUSUS', 'QTY2'].includes(bahan.cara_perhitungan)) {
+        matched = hargaBahanList
+            .filter((h) => {
+                const qMin = parseFloat(h.qty_min) || 0
+                const qMaxRaw = (h.qty_max || '').toString().trim()
+                const qMax = qMaxRaw === '' ? Infinity : parseFloat(qMaxRaw)
+                const s = (h.sisi || '').trim()
+                if (qMaxRaw === '' && qty !== qMin) return false
+                if (qty < qMin || qty > qMax) return false
+                if (pakaiSisi) return s.toLowerCase() === sisi.toLowerCase()
+                return s === ''
+            })
+            .sort((a, b) => (parseFloat(b.qty_min) || 0) - (parseFloat(a.qty_min) || 0))[0]
+    } else {
+        matched = hargaBahanList
+            .filter((h) => {
+                const s = (h.sisi || '').trim()
+                if (pakaiSisi) return s.toLowerCase() === sisi.toLowerCase()
+                return s === ''
+            })
+            .sort((a, b) => (parseFloat(a.qty_min) || 0) - (parseFloat(b.qty_min) || 0))[0]
+    }
+
+    if (!matched) return 0
+
+    const custId = String(customer.id)
+    const hkList = matched.harga_khusus_customer || matched.hargaKhususCustomer || []
+    const hk = hkList.find((r) => String(r.customer_id) === custId || String(r.id_customer) === custId)
+    if (hk && hk.harga) return parseFloat(cleanNumber(hk.harga)) || 0
+
+    const isKhusus = (customer.kategori || '').toLowerCase() === 'khusus'
+    if (isKhusus && matched.harga_khusus) return parseFloat(cleanNumber(matched.harga_khusus)) || 0
+
+    return parseFloat(cleanNumber(matched.harga_umum)) || 0
+}
+
+export default function Produksi({ produksi, bahanpakaiList, itemstokbahans, search: initialSearch, tglAwal: initialTglAwal, tglAkhir: initialTglAkhir }) {
     const [selected, setSelected] = useState(null)
+    const [search, setSearch] = useState(initialSearch || '')
+    const [tgl_awal, setTglAwal] = useState(initialTglAwal || '')
+    const [tgl_akhir, setTglAkhir] = useState(initialTglAkhir || '')
     const [filterKategori, setFilterKategori] = useState('')
     const [filterJenisBahan, setFilterJenisBahan] = useState('')
     const [sisaPutihPanjang, setSisaPutihPanjang] = useState('')
@@ -111,6 +167,11 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
 
     const shouldShowSection = (kategori) =>
         !filterKategori || filterKategori === kategori
+
+    const handleSearch = (e) => {
+        e.preventDefault()
+        router.get('/produksi/produksi', { search, tgl_awal, tgl_akhir }, { preserveState: true, replace: true })
+    }
 
     const itemsByKategori = useMemo(() => {
         const map = {}
@@ -219,28 +280,60 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
                                 {totalSemuaItem} order menunggu diproses
                             </p>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            <select
-                                value={filterKategori}
-                                onChange={(e) => setFilterKategori(e.target.value)}
-                                className="select select-bordered select-sm text-sm"
-                            >
-                                <option value="">Semua Kategori</option>
-                                {kategoriList.map((k) => (
-                                    <option key={k} value={k}>{k}</option>
-                                ))}
-                            </select>
-                            <select
-                                value={filterJenisBahan}
-                                onChange={(e) => setFilterJenisBahan(e.target.value)}
-                                className="select select-bordered select-sm text-sm"
-                            >
-                                <option value="">Semua Jenis Bahan</option>
-                                {jenisBahanList.map((j) => (
-                                    <option key={j} value={j}>{j}</option>
-                                ))}
-                            </select>
-                        </div>
+                    </div>
+
+                    <form onSubmit={handleSearch} className="flex flex-wrap gap-2 items-end">
+                        <input
+                            type="text"
+                            placeholder="Cari kode SPK, customer, keterangan..."
+                            className="input input-bordered input-success w-full max-w-xs input-sm"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                        <label className="form-control w-full max-w-[160px]">
+                            <span className="label-text text-xs">Tgl Awal</span>
+                            <input
+                                type="date"
+                                className="input input-bordered input-success input-sm"
+                                value={tgl_awal}
+                                onChange={(e) => setTglAwal(e.target.value)}
+                            />
+                        </label>
+                        <label className="form-control w-full max-w-[160px]">
+                            <span className="label-text text-xs">Tgl Akhir</span>
+                            <input
+                                type="date"
+                                className="input input-bordered input-success input-sm"
+                                value={tgl_akhir}
+                                onChange={(e) => setTglAkhir(e.target.value)}
+                            />
+                        </label>
+                        <button type="submit" className="btn btn-success btn-sm">
+                            <i className="fas fa-search"></i> Cari
+                        </button>
+                    </form>
+
+                    <div className="flex flex-wrap gap-2">
+                        <select
+                            value={filterKategori}
+                            onChange={(e) => setFilterKategori(e.target.value)}
+                            className="select select-bordered select-sm text-sm"
+                        >
+                            <option value="">Semua Kategori</option>
+                            {kategoriList.map((k) => (
+                                <option key={k} value={k}>{k}</option>
+                            ))}
+                        </select>
+                        <select
+                            value={filterJenisBahan}
+                            onChange={(e) => setFilterJenisBahan(e.target.value)}
+                            className="select select-bordered select-sm text-sm"
+                        >
+                            <option value="">Semua Jenis Bahan</option>
+                            {jenisBahanList.map((j) => (
+                                <option key={j} value={j}>{j}</option>
+                            ))}
+                        </select>
                     </div>
 
                     {totalSemuaItem === 0 ? (
@@ -285,6 +378,8 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
                                                                     <th className="py-2 text-center">Sisi</th>
                                                                     <th className="py-2 text-center">Pengantaran</th>
                                                                     <th className="py-2 text-center">Tgl Kirim</th>
+                                                                    <th className="py-2 text-right">Harga Satuan</th>
+                                                                    <th className="py-2 text-right">Total Harga</th>
                                                                     <th className="py-2">Catatan</th>
                                                                 </tr>
                                                             </thead>
@@ -324,6 +419,8 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans }) {
                                                                             </span>
                                                                         </td>
                                                                         <td className="text-[11px] text-center tabular-nums">{item.tgl_kirim}</td>
+                                                                        <td className="text-[11px] text-right tabular-nums font-medium">{formatRp(resolveHargaSatuan(item))}</td>
+                                                                        <td className="text-[11px] text-right tabular-nums font-bold">{formatRp(resolveHargaSatuan(item) * (parseFloat(item.qty) || 1))}</td>
                                                                         <td className="text-[11px] max-w-[120px] truncate text-base-content/60" title={item.pinising?.catatan || ''}>
                                                                             {item.pinising?.catatan || '-'}
                                                                         </td>

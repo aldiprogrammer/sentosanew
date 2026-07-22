@@ -12,16 +12,18 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
+        $kategori = $request->query('kategori');
         $customer = Customer::when($search, function ($q, $search) {
             $q->where('nama', 'like', "%{$search}%")
                 ->orWhere('nohp', 'like', "%{$search}%");
         })
+            ->when($kategori, fn ($q, $v) => $q->where('kategori', $v))
             ->orderBy('id', 'desc')
             ->paginate(10);
-        $customer->appends(['search' => $search]);
+        $customer->appends(['search' => $search, 'kategori' => $kategori]);
         $kode = $this->kodeCustomer();
 
-        return Inertia::render('Admin/Customer', compact('customer', 'kode'));
+        return Inertia::render('Admin/Customer', compact('customer', 'kode', 'search', 'kategori'));
     }
 
     public function show($id)

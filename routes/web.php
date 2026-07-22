@@ -153,6 +153,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/pengajuan-diskon', [PengajuanDiskonController::class, 'index'])->name('pengajuan-diskon');
     Route::post('/pengajuan-diskon', [PengajuanDiskonController::class, 'store'])->name('store.pengajuan-diskon');
+    Route::put('/pengajuan-diskon/{id}', [PengajuanDiskonController::class, 'update'])->name('update.pengajuan-diskon');
+    Route::get('/pengajuan-diskon/{id}/detail', [PengajuanDiskonController::class, 'detail'])->name('detail.pengajuan-diskon');
     Route::put('/pengajuan-diskon/{id}/approve', [PengajuanDiskonController::class, 'approve'])->name('approve.pengajuan-diskon');
     Route::put('/pengajuan-diskon/{id}/reject', [PengajuanDiskonController::class, 'reject'])->name('reject.pengajuan-diskon');
     Route::put('/pengajuan-diskon/{id}/cancel', [PengajuanDiskonController::class, 'cancel'])->name('cancel.pengajuan-diskon');

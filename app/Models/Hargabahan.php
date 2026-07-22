@@ -14,7 +14,8 @@ class Hargabahan extends Model
         'harga_po',
         'harga_umum',
         'harga_member',
-        'harga_custome',
+        'harga_khusus',
+        'harga_custom',
     ];
 
     public function hargaKhususCustomer()

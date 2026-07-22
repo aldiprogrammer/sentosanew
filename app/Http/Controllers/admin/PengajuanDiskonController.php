@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\InvoiceDesain;
 use App\Models\InvoiceProduksi;
 use App\Models\PengajuanDiskon;
+use App\Models\Produksi;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -75,6 +76,61 @@ class PengajuanDiskonController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Pengajuan diskon berhasil dikirim');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $pengajuan = PengajuanDiskon::find($id);
+        if (! $pengajuan) {
+            return redirect()->back()->with('error', 'Data pengajuan tidak ditemukan');
+        }
+
+        $request->validate([
+            'harga_awal' => 'required|numeric|min:0',
+            'mode_diskon' => 'required|in:persen,rupiah',
+            'diskon' => 'required|numeric|min:0',
+        ]);
+
+        $hargaAwal = (float) $request->harga_awal;
+        $modeDiskon = $request->mode_diskon;
+        $diskonVal = (float) $request->diskon;
+
+        if ($modeDiskon === 'persen') {
+            $hargaDiskon = $hargaAwal - ($hargaAwal * $diskonVal / 100);
+        } else {
+            $hargaDiskon = $hargaAwal - $diskonVal;
+        }
+        $hargaDiskon = max(0, $hargaDiskon);
+
+        $pengajuan->update([
+            'harga_awal' => $hargaAwal,
+            'mode_diskon' => $modeDiskon,
+            'diskon' => $diskonVal,
+            'harga_diskon' => $hargaDiskon,
+        ]);
+
+        return redirect()->back()->with('success', 'Pengajuan diskon berhasil diupdate');
+    }
+
+    public function detail($id)
+    {
+        $pengajuan = PengajuanDiskon::find($id);
+        if (! $pengajuan) {
+            return response()->json(['error' => 'Data pengajuan tidak ditemukan'], 404);
+        }
+
+        $produksi = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')
+            ->where('no_invoice', $pengajuan->no_invoice)
+            ->whereNotNull('pembayaran')
+            ->get();
+
+        $totalHarga = $produksi->sum('total_harga');
+
+        return response()->json([
+            'pengajuan' => $pengajuan,
+            'produksi' => $produksi,
+            'total_harga' => $totalHarga,
+        ]);
     }
 
     public function approve($id)
