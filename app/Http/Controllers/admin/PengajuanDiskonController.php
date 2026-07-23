@@ -121,7 +121,6 @@ class PengajuanDiskonController extends Controller
 
         $produksi = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam')
             ->where('no_invoice', $pengajuan->no_invoice)
-            ->whereNotNull('pembayaran')
             ->get();
 
         $totalHarga = $produksi->sum('total_harga');

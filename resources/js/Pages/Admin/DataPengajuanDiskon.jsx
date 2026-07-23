@@ -352,9 +352,13 @@ export default function DataPengajuanDiskon({ pengajuan, jenis: jenisFilter }) {
                                                         <td>{item.sisi}</td>
                                                         <td className="tabular-nums font-semibold">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
                                                         <td>
-                                                            <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : 'badge-warning'}`}>
-                                                                {item.pembayaran}
-                                                            </span>
+                                                            {item.pembayaran ? (
+                                                                <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : 'badge-warning'}`}>
+                                                                    {item.pembayaran}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="badge badge-sm badge-ghost">-</span>
+                                                            )}
                                                         </td>
                                                     </tr>
                                                 ))}
