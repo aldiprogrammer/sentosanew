@@ -184,15 +184,18 @@ table.items tr:nth-child(even) { background: #f0fdf4; }
 <div class="signatures">
     <div class="sig-block">
         <p class="label">PENERIMA</p>
+        <br />
         <div class="line">${namaCustomer || '( _____________________ )'}</div>
     </div>
     <div class="sig-block">
         <p class="label">PENGIRIM</p>
+        <br />
         <div class="line">${namaKurir || '( _____________________ )'}</div>
     </div>
     <div class="sig-block">
         <p class="label">MENGETAHUI</p>
-        <div class="line"></div>
+        <br />
+        <div class="line">SENTOSA</div>
     </div>
 </div>
 </body>
