@@ -19,4 +19,9 @@ class ListPoEksternal extends Model
     {
         return $this->belongsTo(Databahan::class, 'id_bahan');
     }
+
+    public function produksi()
+    {
+        return $this->belongsTo(Produksi::class, 'invoice', 'no_invoice');
+    }
 }

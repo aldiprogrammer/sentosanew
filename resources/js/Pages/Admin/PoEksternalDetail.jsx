@@ -107,6 +107,13 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
     return inv?.satuan || "";
   };
 
+  const customerByInvoice = (invoice) => {
+    if (!invoice) return null;
+    const inv = invoices.find((item) => item.no_invoice === invoice);
+
+    return inv?.customer?.nama || null;
+  };
+
   const hitungTotalItem = ({
     idBahan = data.id_bahan,
     tinggi = data.tinggi,
@@ -310,6 +317,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                   <tr>
                     <th>No</th>
                     <th>Invoice</th>
+                    <th>Customer</th>
                     <th>Bahan</th>
                     <th>SPK</th>
                     <th>Lebar</th>
@@ -325,18 +333,20 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                 <tbody className="text-xs">
                   {po.items.length === 0 ? (
                     <tr>
-                      <td colSpan={12} className="text-center py-8 text-base-content/50">
+                      <td colSpan={13} className="text-center py-8 text-base-content/50">
                         Belum ada item. Klik "Tambah Item" untuk menambah.
                       </td>
                     </tr>
                   ) : (
                     po.items.map((item, index) => {
                       const satuanUkuran = satuanProduksiByInvoice(item.invoice);
+                      const namaCustomer = customerByInvoice(item.invoice);
 
                       return (
                         <tr key={item.id} onClick={() => openModalEdit(item)} className="cursor-pointer hover:bg-base-200">
                           <td>{index + 1}</td>
                           <td>{item.invoice || "-"}</td>
+                          <td>{namaCustomer || "-"}</td>
                           <td>{item.bahan?.bahan || "-"}</td>
                           <td>{item.spk || "-"}</td>
                           <td>{item.lebar}{satuanUkuran ? ` ${satuanUkuran}` : ""}</td>

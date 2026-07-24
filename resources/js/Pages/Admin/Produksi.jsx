@@ -198,7 +198,6 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
     catatan: "",
     metode_pengambilan: "",
     tgl_kirim: "",
-    minimum_harga: false,
     pinising: {
       atas: "",
       bawah: "",
@@ -463,13 +462,6 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
   };
 
   const luas = hitungLuas();
-  const showMinimumHarga = luas > 0 && luas < 1;
-
-  useEffect(() => {
-    if (!showMinimumHarga && data.minimum_harga) {
-      setData('minimum_harga', false);
-    }
-  }, [showMinimumHarga]);
 
   return (
     <>
@@ -736,26 +728,6 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                     </div>
                                   </div>
                                 ) : null}
-                                {showMinimumHarga && !isDesainer && (
-                                  <label className="flex items-center gap-2 mt-2 cursor-pointer">
-                                    <input
-                                      type="checkbox"
-                                      className="checkbox checkbox-warning checkbox-xs"
-                                      checked={data.minimum_harga}
-                                      onChange={(e) => {
-                                        const checked = e.target.checked;
-                                        setData('minimum_harga', checked);
-                                        if (checked) {
-                                          const harga = hitungHarga(data.id_bahan, data.pilihan_harga, data.qty, data.sisi);
-                                          setData('harga_tampil', harga);
-                                        } else {
-                                          setData('harga_tampil', hitungHarga(data.id_bahan, data.pilihan_harga, data.qty, data.sisi));
-                                        }
-                                      }}
-                                    />
-                                    <span className="text-sm font-medium">Minimum Harga</span>
-                                  </label>
-                                )}
                               </label>
 
                               {/* Satuan Ukuran */}
@@ -1101,7 +1073,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   onChange={(e) =>
                                     setData("keterangan", e.target.value)
                                   }
-                                  className="textarea textarea-bordered textarea-success w-full h-20"
+                                  className="textarea textarea-bordered textarea-success w-full h-20" required
                                 ></textarea>
                               </label>
                             </div>
@@ -1226,26 +1198,6 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                     </div>
                                   </div>
                                 ) : null}
-                                {showMinimumHarga && !isDesainer && (
-                                  <label className="flex items-center gap-2 mt-2 cursor-pointer">
-                                    <input
-                                      type="checkbox"
-                                      className="checkbox checkbox-warning checkbox-xs"
-                                      checked={data.minimum_harga}
-                                      onChange={(e) => {
-                                        const checked = e.target.checked;
-                                        setData('minimum_harga', checked);
-                                        if (checked) {
-                                          const harga = hitungHarga(data.id_bahan, data.pilihan_harga, data.qty, data.sisi);
-                                          setData('harga_tampil', harga);
-                                        } else {
-                                          setData('harga_tampil', hitungHarga(data.id_bahan, data.pilihan_harga, data.qty, data.sisi));
-                                        }
-                                      }}
-                                    />
-                                    <span className="text-sm font-medium">Minimum Harga</span>
-                                  </label>
-                                )}
                               </label>
 
                               {/* Satuan Ukuran */}

@@ -19,7 +19,7 @@ class PoEksternalController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
-        $poEksternal = PoEksternal::with('suplayer', 'bahan')
+        $poEksternal = PoEksternal::with('suplayer', 'bahan', 'items.produksi.customer')
             ->when($search, function ($q, $search) {
                 $q->where('no_po', 'like', "%{$search}%")
                     ->orWhere('invoice', 'like', "%{$search}%")
@@ -27,6 +27,17 @@ class PoEksternalController extends Controller
             })
             ->orderBy('id', 'desc')
             ->paginate(10);
+
+        $poEksternal->getCollection()->transform(function ($po) {
+            $customerNames = $po->items
+                ->pluck('produksi.customer.nama')
+                ->filter()
+                ->unique()
+                ->values()
+                ->implode(', ');
+            $po->customer_names = $customerNames ?: '-';
+            return $po;
+        });
         $poEksternal->appends(['search' => $search]);
 
         $prefix = 'PO-'.date('ym').'-';
@@ -206,11 +217,11 @@ class PoEksternalController extends Controller
                 'cara_perhitungan',
             ]);
 
-        $invoices = Produksi::with('bahan', 'pinising', 'mataAyam')
+        $invoices = Produksi::with('bahan', 'pinising', 'mataAyam', 'customer')
             ->whereHas('bahan', fn ($q) => $q->whereRaw('LOWER(jenis) = ?', ['eksternal']))
             ->whereNotNull('no_invoice')
             ->orderBy('no_invoice')
-            ->get(['id', 'no_invoice', 'id_bahan', 'kode_spk', 'lebar', 'tinggi', 'qty', 'harga_bahan', 'satuan', 'catatan', 'keterangan', 'sisa_putih_panjang', 'sisa_putih_lebar', 'sisa_putih_total']);
+            ->get(['id', 'no_invoice', 'id_bahan', 'id_customer', 'kode_spk', 'lebar', 'tinggi', 'qty', 'harga_bahan', 'satuan', 'catatan', 'keterangan', 'sisa_putih_panjang', 'sisa_putih_lebar', 'sisa_putih_total']);
 
         return Inertia::render('Admin/PoEksternalDetail', compact('po', 'bahans', 'invoices'));
     }

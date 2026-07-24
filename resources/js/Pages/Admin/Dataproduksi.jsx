@@ -33,6 +33,8 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
     })
     const [batalForm, setBatalForm] = React.useState({ ids: [], alasan_pembatalan: '' })
     const batalModalRef = useRef(null)
+    const [useMinimumHarga, setUseMinimumHarga] = React.useState(false)
+    const [minimumHargaValue, setMinimumHargaValue] = React.useState('')
 
 
     React.useEffect(() => {
@@ -97,12 +99,14 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
 
     const selectedItems = selected.filter(item => !(isCs && item.pembayaran))
     const totalHarga = selectedItems.reduce((sum, item) => sum + Number(item.total_harga || 0), 0)
+    const minimumHarga = useMinimumHarga ? (Number(minimumHargaValue) || 0) : 0
+    const totalHargaAkhir = totalHarga + minimumHarga
     const totalQty = selectedItems.reduce((sum, item) => sum + Number(item.qty || 0), 0)
     const firstCustomer = selectedItems.length > 0 ? selectedItems[0].customer : null
     const customerLimit = Number(firstCustomer?.limit || 0)
     const customerLimitAkhir = Number(firstCustomer?.limit_akhir || 0)
     const customerLimitRemaining = customerLimit - customerLimitAkhir
-    const wouldExceedLimit = paymentType === 'utang' && (customerLimitAkhir + totalHarga > customerLimit)
+    const wouldExceedLimit = paymentType === 'utang' && (customerLimitAkhir + totalHargaAkhir > customerLimit)
 
     const selectedInvoice = selectedItems.length > 0 ? selectedItems[0]?.no_invoice : null
 
@@ -116,6 +120,11 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
         return pengajuanDiskons.find(d => d.no_invoice === selectedInvoice && d.status === 'disetujui') || null
     }, [selectedInvoice, pengajuanDiskons])
 
+    const selectedGroupData = React.useMemo(() => {
+        if (!selectedInvoice || !Array.isArray(produksi)) return null
+        return produksi.find(g => g.no_invoice === selectedInvoice) || null
+    }, [selectedInvoice, produksi])
+
     const handleSearch = (e) => {
         e.preventDefault()
         setSelected([])
@@ -128,6 +137,8 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
             auth,
             paymentType,
             diskonInfo: diskonInfoForReceipt,
+            minimumHarga,
+            hargaAkhirInvoice: selectedGroupData?.harga_akhir_invoice ?? null,
         })
 
     const xsrfToken = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || ''
@@ -143,7 +154,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                         'Accept': 'application/json',
                         'X-XSRF-TOKEN': decodeURIComponent('${encodeURIComponent(xsrfToken)}')
                     },
-                    body: JSON.stringify({ ids: ${JSON.stringify(ids)}, payment_type: '${paymentTypeVal}' })
+                    body: JSON.stringify({ ids: ${JSON.stringify(ids)}, payment_type: '${paymentTypeVal}', minimum_faktur: ${minimumHarga || 0} })
                 }).then(function() { window.close(); });
             });
         </script>
@@ -195,6 +206,8 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
         setPaymentType('lunas')
         setPaymentError(null)
         setPrintMode('single')
+        setUseMinimumHarga(false)
+        setMinimumHargaValue('')
         paymentModalRef.current?.showModal()
     }
 
@@ -203,6 +216,8 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
         setPaymentType('lunas')
         setPaymentError(null)
         setPrintMode('combined')
+        setUseMinimumHarga(false)
+        setMinimumHargaValue('')
         paymentModalRef.current?.showModal()
     }
 
@@ -492,6 +507,12 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                                                                 Diskon: {groupDiskon.mode_diskon === 'persen' ? `${groupDiskon.diskon}%` : `Rp ${Number(groupDiskon.diskon).toLocaleString('id-ID')}`}
                                                                             </span>
                                                                         )}
+                                                                        {group.minimum_faktur > 0 && (
+                                                                            <span className="badge badge-sm badge-info gap-1">
+                                                                                <i className="fas fa-arrow-up text-xs"></i>
+                                                                                Min. Harga: Rp {Number(group.minimum_faktur).toLocaleString('id-ID')}
+                                                                            </span>
+                                                                        )}
                                                                     </div>
                                                                     <i className={`fas fa-chevron-${isExpanded ? 'down' : 'right'} text-xs text-base-content/40 transition-transform`}></i>
                                                                 </div>
@@ -631,6 +652,46 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                     </div>
                                 </label>
                             </div>
+                            <div className="p-3 rounded-lg bg-base-200 space-y-2">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="checkbox checkbox-warning checkbox-xs"
+                                        checked={useMinimumHarga}
+                                        onChange={(e) => {
+                                            setUseMinimumHarga(e.target.checked)
+                                            if (!e.target.checked) setMinimumHargaValue('')
+                                        }}
+                                    />
+                                    <span className="text-sm font-medium">Minimum Harga</span>
+                                </label>
+                                {useMinimumHarga && (
+                                    <label className="form-control">
+                                        <div className="label"><span className="label-text text-xs">Nilai Minimum Harga</span></div>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            className="input input-bordered input-error input-sm w-full"
+                                            placeholder="Masukkan nominal minimum harga..."
+                                            value={minimumHargaValue}
+                                            onChange={(e) => setMinimumHargaValue(e.target.value)}
+                                        />
+                                    </label>
+                                )}
+                            </div>
+                            {minimumHarga > 0 && (
+                                <div className="flex justify-between items-center p-3 bg-warning/10 border border-warning/30 rounded-lg">
+                                    <span className="text-sm text-base-content/70">Minimum Harga</span>
+                                    <span className="font-semibold text-dark">+ Rp {minimumHarga.toLocaleString('id-ID')}</span>
+                                </div>
+                            )}
+                            {minimumHarga > 0 && (
+                                <div className="flex justify-between items-center p-3 bg-success/10 border border-success/30 rounded-lg">
+                                    <span className="text-sm font-semibold">Total Bayar</span>
+                                    <span className="font-bold text-dark text-lg">Rp {totalHargaAkhir.toLocaleString('id-ID')}</span>
+                                </div>
+                            )}
                             {paymentType === 'utang' && firstCustomer && (
                                 <div className="p-3 rounded-lg bg-base-200 space-y-2 text-sm">
                                     <div className="flex justify-between">
@@ -643,7 +704,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-base-content/70">Sisa Limit</span>
-                                        <span className={`font-mono font-semibold ${customerLimitRemaining >= totalHarga ? 'text-success' : 'text-error'}`}>Rp {customerLimitRemaining.toLocaleString('id-ID')}</span>
+                                        <span className={`font-mono font-semibold ${customerLimitRemaining >= totalHargaAkhir ? 'text-success' : 'text-error'}`}>Rp {customerLimitRemaining.toLocaleString('id-ID')}</span>
                                     </div>
                                     {wouldExceedLimit && (
                                         <div className="text-error text-xs font-medium mt-1">

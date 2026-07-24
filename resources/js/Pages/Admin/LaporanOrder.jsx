@@ -2,7 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout'
 import { Link, router } from '@inertiajs/react'
 import React, { useState } from 'react'
 
-export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, search, pembayaran, penggunaIds, penggunas, desainBatal }) {
+export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, search, pembayaran, penggunaIds, penggunas, desainBatal, customers, customerIds }) {
     const [filterTglAwal, setFilterTglAwal] = useState(tglAwal || '')
     const [filterTglAkhir, setFilterTglAkhir] = useState(tglAkhir || '')
     const [filterSearch, setFilterSearch] = useState(search || '')
@@ -13,6 +13,33 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
     const [tab, setTab] = useState('produksi')
     const [showPegawaiDropdown, setShowPegawaiDropdown] = useState(false)
     const pegawaiDropdownRef = React.useRef(null)
+    const customerSelectRef = React.useRef(null)
+    const [filterCustomer, setFilterCustomer] = useState(
+        Array.isArray(customerIds) ? customerIds.map(String) : (customerIds ? [String(customerIds)] : [])
+    )
+
+    React.useEffect(() => {
+        if (!customerSelectRef.current || !window.jQuery) return
+        const $el = window.jQuery(customerSelectRef.current)
+        $el.select2({
+            placeholder: 'Semua Customer',
+            allowClear: true,
+            width: '100%',
+        })
+        $el.val(filterCustomer.length > 0 ? filterCustomer : null).trigger('change.select2')
+        $el.on('select2:select', function (e) {
+            const val = String(e.params.data.id)
+            setFilterCustomer((prev) => prev.includes(val) ? prev : [...prev, val])
+        })
+        $el.on('select2:unselect', function (e) {
+            const val = String(e.params.data.id)
+            setFilterCustomer((prev) => prev.filter((x) => x !== val))
+        })
+        $el.on('select2:clear', function () {
+            setFilterCustomer([])
+        })
+        return () => { if ($el.data('select2')) $el.select2('destroy') }
+    }, [])
 
     React.useEffect(() => {
         const handleClickOutside = (e) => {
@@ -43,6 +70,9 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
         if (filterPengguna.length > 0) {
             params['pengguna_id[]'] = filterPengguna
         }
+        if (filterCustomer.length > 0) {
+            params['customer_id[]'] = filterCustomer
+        }
         router.get(route('laporan-order'), params, { preserveState: true, replace: true })
     }
 
@@ -57,6 +87,7 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
         if (filterSearch) params.set('search', filterSearch)
         if (filterPembayaran) params.set('pembayaran', filterPembayaran)
         filterPengguna.forEach((id) => params.append('pengguna_id[]', id))
+        filterCustomer.forEach((id) => params.append('customer_id[]', id))
         return params.toString()
     }
 
@@ -98,13 +129,21 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                             </div>
                             <div className="form-control">
                                 <label className="label"><span className="label-text">Pembayaran</span></label>
-                                <select className="select select-bordered select-sm text-sm"
+                                <select className="select select-bordered select-sm text-xs"
                                     value={filterPembayaran} onChange={(e) => setFilterPembayaran(e.target.value)}>
                                     <option value="">Semua</option>
                                     <option value="lunas">Lunas</option>
                                     <option value="transfer">Transfer</option>
                                     <option value="qris">QRIS</option>
                                     <option value="utang">Hutang</option>
+                                </select>
+                            </div>
+                            <div className="form-control">
+                                <label className="label"><span className="label-text">Customer</span></label>
+                                <select ref={customerSelectRef} multiple>
+                                    {customers?.map((c) => (
+                                        <option key={c.id} value={c.id}>{c.nama}</option>
+                                    ))}
                                 </select>
                             </div>
                             <div className="form-control" ref={pegawaiDropdownRef}>

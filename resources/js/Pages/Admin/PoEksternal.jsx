@@ -201,6 +201,7 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
                     <th>No</th>
                     <th>Tgl</th>
                     <th>No PO</th>
+                    <th>Customer</th>
                     <th>Hal</th>
                     <th>Mata Uang</th>
                     <th>Batas Bayar</th>
@@ -215,6 +216,7 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
                       <td>{poEksternal.from + index}</td>
                       <td>{item.tgl}</td>
                       <td className="font-semibold">{item.no_po}</td>
+                      <td>{item.customer_names}</td>
                       <td>{item.hal || "-"}</td>
 
                       <td>{item.mata_uang || "-"}</td>
@@ -227,7 +229,7 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
                           className="btn btn-xs btn-info"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <i className="fas fa-list"></i> Detail
+                          Detail
                         </Link>
                       </td>
                     </tr>

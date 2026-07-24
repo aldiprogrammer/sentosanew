@@ -81,16 +81,22 @@ class ProduksiController extends Controller
             ->get();
 
         $grouped = $items->groupBy('no_invoice')->map(function ($group) {
+            $firstItem = $group->first();
+            $invoiceProduksi = InvoiceProduksi::where('no_invoice', $firstItem->no_invoice)->first();
+            $minimumFaktur = $invoiceProduksi?->minimum_faktur ?? 0;
+
             return [
-                'no_invoice' => $group->first()->no_invoice,
+                'no_invoice' => $firstItem->no_invoice,
                 'items' => $group->values(),
-                'customer' => $group->first()->customer,
+                'customer' => $firstItem->customer,
                 'total_qty' => $group->sum('qty'),
-                'total_harga' => $group->sum('total_harga'),
+                'total_harga' => $group->sum('total_harga') + $minimumFaktur,
                 'item_count' => $group->count(),
                 'has_payment' => $group->some(fn ($item) => $item->pembayaran),
                 'all_lunas' => $group->every(fn ($item) => $item->pembayaran === 'lunas'),
                 'all_utang' => $group->every(fn ($item) => $item->pembayaran === 'utang'),
+                'minimum_faktur' => $minimumFaktur,
+                'harga_akhir_invoice' => $invoiceProduksi?->harga_akhir ?? null,
             ];
         })->values();
 
@@ -110,13 +116,14 @@ class ProduksiController extends Controller
     {
         $ids = $request->input('ids', []);
         $paymentType = $request->input('payment_type');
+        $minimumFaktur = (float) ($request->input('minimum_faktur', 0) ?: 0);
         $isApi = $request->expectsJson();
 
         if ($paymentType === 'utang') {
             $firstItem = Produksi::with('customer')->whereIn('id', $ids)->first();
             if ($firstItem && $firstItem->customer) {
                 $customer = $firstItem->customer;
-                $total = Produksi::whereIn('id', $ids)->sum('total_harga');
+                $total = Produksi::whereIn('id', $ids)->sum('total_harga') + $minimumFaktur;
 
                 if (($customer->limit_akhir + $total) > $customer->limit) {
                     $error = [
@@ -172,25 +179,35 @@ class ProduksiController extends Controller
 
         $processedItems = Produksi::with('customer')->whereIn('id', $ids)->get();
         $groupedByInvoice = $processedItems->groupBy('no_invoice');
+        $minimumFakturApplied = false;
         foreach ($groupedByInvoice as $noInvoice => $items) {
             if (! $noInvoice) {
                 continue;
             }
+
+            $thisMinimumFaktur = 0;
+            $approvedDiskon = PengajuanDiskon::where('no_invoice', $noInvoice)
+                ->where('status', 'disetujui')
+                ->first();
+            $totalHarga = $items->sum('total_harga');
+            $baseHarga = $approvedDiskon?->harga_diskon ?? $totalHarga;
+            if ($minimumFaktur > 0 && ! $minimumFakturApplied) {
+                $thisMinimumFaktur = $minimumFaktur;
+                $minimumFakturApplied = true;
+            }
+
             $exists = InvoiceProduksi::where('no_invoice', $noInvoice)->exists();
             if (! $exists) {
                 $firstItem = $items->first();
-                $totalHarga = $items->sum('total_harga');
-                $approvedDiskon = PengajuanDiskon::where('no_invoice', $noInvoice)
-                    ->where('status', 'disetujui')
-                    ->first();
                 InvoiceProduksi::create([
                     'no_invoice' => $noInvoice,
                     'id_customer' => $firstItem->id_customer,
                     'customer' => $firstItem->customer->nama ?? '',
-                    'harga_awal' => $totalHarga,
-                    'diskon' => $approvedDiskon?->diskon,
-                    'mode_diskon' => $approvedDiskon?->mode_diskon,
-                    'harga_akhir' => $approvedDiskon?->harga_diskon ?? $totalHarga,
+                    'harga_awal' => $baseHarga,
+                    'diskon' => $approvedDiskon?->diskon ?? null,
+                    'mode_diskon' => $approvedDiskon?->mode_diskon ?? null,
+                    'harga_akhir' => $baseHarga + $thisMinimumFaktur,
+                    'minimum_faktur' => $thisMinimumFaktur,
                     'tanggal' => date('Y-m-d'),
                 ]);
             }
