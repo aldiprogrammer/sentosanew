@@ -129,12 +129,12 @@ export default function PoPembelianBahan({ po, no_po, suplayers }) {
                       <td>{item.suplayer?.nama_suplayer || "-"}</td>
                       <td>{item.hal || "-"}</td>
                       <td>{item.pembayaran || "-"}</td>
-                      <td>{item.diskon ? item.diskon + "%" : "-"}</td>
+                      <td>{item.diskon ? (item.diskon_type === 'rupiah' ? formatRp(item.diskon) : item.diskon + "%") : "-"}</td>
                       <td>{item.ppn ? item.ppn + "%" : "-"}</td>
                       <td>{formatRp(item.sub_total)}</td>
                       <td>
                         <Link href={"/po-pembelian-bahan/" + item.id + "/detail"} className="btn btn-xs btn-info" onClick={(e) => e.stopPropagation()}>
-                          <i className="fas fa-list"></i> Detail
+                          Detail
                         </Link>
                       </td>
                     </tr>

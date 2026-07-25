@@ -70,7 +70,7 @@ class PoPembelianBahanController extends Controller
     {
         $po = PoPembelianBahan::with('suplayer', 'items.bahan', 'items.itemStok')->findOrFail($id);
         $totalHarga = PoPembelianBahanItem::where('po_pembelian_bahan_id', $po->id)->sum('total_harga');
-        $diskonAmount = $totalHarga * ($po->diskon / 100);
+        $diskonAmount = $this->hitungDiskon($totalHarga, $po->diskon, $po->diskon_type);
         $ppnAmount = $totalHarga * ($po->ppn / 100);
         $po->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
         $po->update();
@@ -159,17 +159,20 @@ class PoPembelianBahanController extends Controller
 
         $data = $request->validate([
             'diskon' => 'nullable|numeric',
+            'diskon_type' => 'nullable|in:persen,rupiah',
             'ppn' => 'nullable|numeric',
         ]);
 
         $totalHarga = PoPembelianBahanItem::where('po_pembelian_bahan_id', $po->id)->sum('total_harga');
         $diskon = $data['diskon'] ?? 0;
+        $diskonType = $data['diskon_type'] ?? 'persen';
         $ppn = $data['ppn'] ?? 0;
-        $diskonAmount = $totalHarga * ($diskon / 100);
+        $diskonAmount = $this->hitungDiskon($totalHarga, $diskon, $diskonType);
         $ppnAmount = $totalHarga * ($ppn / 100);
         $subTotal = $totalHarga - $diskonAmount + $ppnAmount;
 
         $po->diskon = $diskon;
+        $po->diskon_type = $diskonType;
         $po->ppn = $ppn;
         $po->sub_total = $subTotal;
         $po->update();
@@ -249,12 +252,21 @@ class PoPembelianBahanController extends Controller
         return redirect()->back()->with('success', 'Stok berhasil ditarik');
     }
 
+    private function hitungDiskon($totalHarga, $diskon, $diskonType)
+    {
+        if (($diskonType ?? 'persen') === 'rupiah') {
+            return (float) $diskon;
+        }
+
+        return $totalHarga * ((float) $diskon / 100);
+    }
+
     private function recalculateTotalHarga($poId)
     {
         $totalHarga = PoPembelianBahanItem::where('po_pembelian_bahan_id', $poId)->sum('total_harga');
         $po = PoPembelianBahan::find($poId);
         if ($po) {
-            $diskonAmount = $totalHarga * ($po->diskon / 100);
+            $diskonAmount = $this->hitungDiskon($totalHarga, $po->diskon, $po->diskon_type);
             $ppnAmount = $totalHarga * ($po->ppn / 100);
             $po->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
             $po->update();

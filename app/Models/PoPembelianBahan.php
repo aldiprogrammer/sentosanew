@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PoPembelianBahan extends Model
 {
-    protected $fillable = ['tgl', 'no_po', 'id_suplayer', 'hal', 'pembayaran', 'diskon', 'ppn', 'sub_total', 'status'];
+    protected $fillable = ['tgl', 'no_po', 'id_suplayer', 'hal', 'pembayaran', 'diskon', 'diskon_type', 'ppn', 'sub_total', 'status'];
 
     public function suplayer()
     {

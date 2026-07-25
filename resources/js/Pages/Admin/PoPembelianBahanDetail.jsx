@@ -74,6 +74,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
 
   const headerForm = useForm({
     diskon: po.diskon || "",
+    diskon_type: po.diskon_type || "persen",
     ppn: po.ppn || "",
   });
 
@@ -181,6 +182,12 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
     return "Rp " + num.toLocaleString("id-ID");
   };
 
+  const hitungDiskon = (totalHarga, diskon, diskonType) => {
+    const d = parseFloat(diskon || 0);
+    if (diskonType === 'rupiah') return d;
+    return totalHarga * (d / 100);
+  };
+
   const cetakPDF = () => {
     const img = new Image();
     img.src = "/logonew.png";
@@ -276,8 +283,9 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
 
         const th = parseFloat(totalSemua || 0);
         const d = parseFloat(po.diskon || 0);
+        const dt = po.diskon_type || 'persen';
         const p = parseFloat(po.ppn || 0);
-        const diskonAmount = th * (d / 100);
+        const diskonAmount = dt === 'rupiah' ? d : th * (d / 100);
         const ppnAmount = th * (p / 100);
         const subTotal = th - diskonAmount + ppnAmount;
 
@@ -290,7 +298,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
         doc.text("Total Harga", sumLeft + 6, fy + 8);
         doc.text("Rp " + th.toLocaleString("id-ID"), sumRight - 6, fy + 8, { align: "right" });
 
-        doc.text("Diskon (" + d + "%)", sumLeft + 6, fy + 15);
+        doc.text("Diskon (" + d + (dt === 'rupiah' ? '' : '%') + ")", sumLeft + 6, fy + 15);
         doc.text("- Rp " + diskonAmount.toLocaleString("id-ID"), sumRight - 6, fy + 15, { align: "right" });
 
         doc.text("PPN (" + p + "%)", sumLeft + 6, fy + 22);
@@ -621,17 +629,21 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
-                      className="input input-bordered input-success input-sm w-20"
+                      className="input input-bordered input-success input-sm w-24"
                       value={headerForm.data.diskon}
                       onChange={(e) => headerForm.setData("diskon", e.target.value)}
                     />
-                    <span className="text-sm">
-                      - {formatRp((() => {
-                        const th = parseFloat(totalSemua || 0);
-                        const d = parseFloat(headerForm.data.diskon || 0);
-                        return th * (d / 100);
-                      })())}
-                    </span>
+                    <select
+                      className="select select-bordered select-success select-sm w-24 text-xs"
+                      value={headerForm.data.diskon_type}
+                      onChange={(e) => headerForm.setData("diskon_type", e.target.value)}
+                    >
+                      <option value="persen">%</option>
+                      <option value="rupiah">Rp</option>
+                    </select>
+                  </div>
+                  <div className="text-sm mt-1">
+                    - {formatRp(hitungDiskon(totalSemua, headerForm.data.diskon, headerForm.data.diskon_type))}
                   </div>
                 </div>
               </div>
@@ -660,9 +672,8 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                 <div className="stat-value text-lg text-warning">
                   {formatRp((() => {
                     const th = parseFloat(totalSemua || 0);
-                    const d = parseFloat(headerForm.data.diskon || 0);
+                    const diskonAmount = hitungDiskon(th, headerForm.data.diskon, headerForm.data.diskon_type);
                     const p = parseFloat(headerForm.data.ppn || 0);
-                    const diskonAmount = th * (d / 100);
                     const ppnAmount = th * (p / 100);
                     return th - diskonAmount + ppnAmount;
                   })())}
