@@ -140,7 +140,7 @@ body { font-family: Arial, sans-serif; font-size: 13px; margin: 0; padding: 20px
 .info table { width: 100%; font-size: 12px; }
 .info td { padding: 4px 5px; font-weight: 700; }
 table.items { width: 100%; border-collapse: collapse; font-size: 11px; }
-table.items th { background: #16a34a; color: #000; padding: 8px 6px; text-align: center; font-weight: 900; font-size: 12px; }
+table.items th { color: #000; padding: 8px 6px; text-align: center; font-weight: 900; font-size: 12px; }
 table.items td { padding: 6px 6px; border: 2px solid #000; font-weight: 700; }
 table.items tr:nth-child(even) { background: #f0fdf4; }
 .signatures { margin-top: 50px; display: flex; justify-content: space-between; text-align: center; }
@@ -185,7 +185,7 @@ table.items tr:nth-child(even) { background: #f0fdf4; }
     <div class="sig-block">
         <p class="label">PENERIMA</p>
         <br />
-        <div class="line">${namaCustomer || '( _____________________ )'}</div>
+        <div class="line"></div>
     </div>
     <div class="sig-block">
         <p class="label">PENGIRIM</p>
