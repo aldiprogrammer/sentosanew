@@ -1473,8 +1473,8 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                           <td>{item.lebar} {item.satuan}</td>
                           <td>{item.qty} {item.bahan.satuan}</td>
                           <td>{item.sisi}</td>
-                          <td className={isDesainer && item.harga_bahan ? 'blur-sm select-none' : ''}>{isDesainer && item.harga_bahan ? '••••••' : (item.harga_bahan ? Number(item.harga_bahan).toLocaleString('id-ID') : '-')}</td>
-                          <td className={isDesainer && item.total_harga ? 'blur-sm select-none' : ''}>{isDesainer && item.total_harga ? '••••••' : (item.total_harga ? Number(item.total_harga).toLocaleString('id-ID') : '-')}</td>
+                          <td className={isDesainer && item.harga_bahan ? 'blur-sm select-none' : ''}>{isDesainer && item.harga_bahan ? '••••••' : (item.harga_bahan ? Math.round(Number(item.harga_bahan)).toLocaleString('id-ID') : '-')}</td>
+                          <td className={isDesainer && item.total_harga ? 'blur-sm select-none' : ''}>{isDesainer && item.total_harga ? '••••••' : (item.total_harga ? Math.round(Number(item.total_harga)).toLocaleString('id-ID') : '-')}</td>
                           <td>{item.metode_pengantaran}</td>
                           <td>{item.tgl_kirim}</td>
                           <td>{item.pinising?.catatan || ''}</td>

@@ -98,8 +98,8 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
     }
 
     const selectedItems = selected.filter(item => !(isCs && item.pembayaran))
-    const totalHarga = selectedItems.reduce((sum, item) => sum + Number(item.total_harga || 0), 0)
-    const minimumHarga = useMinimumHarga ? (Number(minimumHargaValue) || 0) : 0
+    const totalHarga = Math.round(selectedItems.reduce((sum, item) => sum + Number(item.total_harga || 0), 0))
+    const minimumHarga = useMinimumHarga ? Math.round(Number(minimumHargaValue) || 0) : 0
     const totalHargaAkhir = totalHarga + minimumHarga
     const totalQty = selectedItems.reduce((sum, item) => sum + Number(item.qty || 0), 0)
     const firstCustomer = selectedItems.length > 0 ? selectedItems[0].customer : null
@@ -145,7 +145,10 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
 
     const buildProcessScript = (ids, paymentTypeVal) => `
         <script>
+            var _printed = false;
             window.addEventListener('afterprint', function() {
+                if (_printed) return;
+                _printed = true;
                 fetch('/dataproduksi/proses-produksi', {
                     method: 'PUT',
                     credentials: 'same-origin',
@@ -170,7 +173,8 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
             w.document.open()
             w.document.write(html.replace('</head>', script + '</head>'))
             w.document.close()
-            w.addEventListener('load', () => { w.focus(); setTimeout(() => w.print(), 300) })
+            var _printDone = false
+            w.addEventListener('load', () => { if (_printDone) return; _printDone = true; w.focus(); setTimeout(() => w.print(), 300) })
         } else {
             let idx = 0
             const openNext = () => {
@@ -182,7 +186,8 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                 w.document.open()
                 w.document.write(html.replace('</head>', script + '</head>'))
                 w.document.close()
-                w.addEventListener('load', () => { w.focus(); setTimeout(() => w.print(), 300) })
+                var _printDone = false
+                w.addEventListener('load', () => { if (_printDone) return; _printDone = true; w.focus(); setTimeout(() => w.print(), 300) })
                 const t = setInterval(() => { if (w.closed) { clearInterval(t); idx++; openNext() } }, 500)
             }
             openNext()
@@ -198,7 +203,8 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
         w.document.open()
         w.document.write(html.replace('</head>', script + '</head>'))
         w.document.close()
-        w.addEventListener('load', () => { w.focus(); setTimeout(() => w.print(), 300) })
+        var _printDone = false
+        w.addEventListener('load', () => { if (_printDone) return; _printDone = true; w.focus(); setTimeout(() => w.print(), 300) })
     }
 
     const handleCetakStruk = () => {
@@ -251,7 +257,10 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
         w.document.open()
         w.document.write(buildReceiptHtml(items))
         w.document.close()
+        var _printDone = false
         w.addEventListener('load', () => {
+            if (_printDone) return
+            _printDone = true
             w.focus()
             setTimeout(() => w.print(), 300)
         })
@@ -320,9 +329,9 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
 
     const hargaAwalDiskon = Number(diskonForm.harga_awal || 0)
     const diskonVal = Number(diskonForm.diskon || 0)
-    const hargaDiskon = diskonForm.mode_diskon === 'persen'
+    const hargaDiskon = Math.round(diskonForm.mode_diskon === 'persen'
         ? Math.max(0, hargaAwalDiskon - (hargaAwalDiskon * diskonVal / 100))
-        : Math.max(0, hargaAwalDiskon - diskonVal)
+        : Math.max(0, hargaAwalDiskon - diskonVal))
 
     return (
         <AdminLayout>
@@ -384,7 +393,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                             </span>
                                             <span className="text-white">|</span>
                                             <span className="text-white">
-                                                Total: <strong className="text-white">Rp {totalHarga.toLocaleString('id-ID')}</strong>
+                                                Total: <strong className="text-white">Rp {Math.round(totalHarga).toLocaleString('id-ID')}</strong>
                                             </span>
                                             {existingDiskon && (
                                                 <>
@@ -398,7 +407,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                                         <>
                                                             <span className="text-white">|</span>
                                                             <span className="text-green-200">
-                                                                Harga Akhir: <strong className="text-green-200">Rp {Number(existingDiskon.harga_diskon).toLocaleString('id-ID')}</strong>
+                                                                Harga Akhir: <strong className="text-green-200">Rp {Math.round(Number(existingDiskon.harga_diskon)).toLocaleString('id-ID')}</strong>
                                                             </span>
                                                         </>
                                                     )}
@@ -500,7 +509,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                                                             {group.item_count} item
                                                                         </span>
                                                                         <span className="text-base-content/60">Qty: <strong>{group.total_qty}</strong></span>
-                                                                        <span className="text-success font-semibold">Rp {Number(group.total_harga).toLocaleString('id-ID')}</span>
+                                                                        <span className="text-success font-semibold">Rp {Math.round(Number(group.total_harga)).toLocaleString('id-ID')}</span>
                                                                         {groupDiskon && (
                                                                             <span className="badge badge-sm badge-warning gap-1">
                                                                                 <i className="fas fa-percent text-xs"></i>
@@ -533,8 +542,8 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                                                 <td className="tabular-nums">{item.lebar} {item.satuan}</td>
                                                                 <td className="tabular-nums text-center">{item.qty}</td>
                                                                 <td className="text-center">{item.sisi}</td>
-                                                                <td className={'tabular-nums' + (isDesainer && item.harga_bahan ? ' blur-sm select-none' : '')}>{isDesainer && item.harga_bahan ? '••••••' : (item.harga_bahan ? Number(item.harga_bahan).toLocaleString('id-ID') : '-')}</td>
-                                                                <td className={'tabular-nums' + (isDesainer && item.total_harga ? ' blur-sm select-none' : '')}>{isDesainer && item.total_harga ? '••••••' : (item.total_harga ? Number(item.total_harga).toLocaleString('id-ID') : '-')}</td>
+                                                                <td className={'tabular-nums' + (isDesainer && item.harga_bahan ? ' blur-sm select-none' : '')}>{isDesainer && item.harga_bahan ? '••••••' : (item.harga_bahan ? Math.round(Number(item.harga_bahan)).toLocaleString('id-ID') : '-')}</td>
+                                                                <td className={'tabular-nums' + (isDesainer && item.total_harga ? ' blur-sm select-none' : '')}>{isDesainer && item.total_harga ? '••••••' : (item.total_harga ? Math.round(Number(item.total_harga)).toLocaleString('id-ID') : '-')}</td>
                                                                 <td>
                                                                     {item.alasan_pembatalan ? (
                                                                         <span className="badge badge-sm badge-error">
@@ -600,20 +609,20 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                             </div>
                             <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
                                 <span className="text-sm text-base-content/70">Total Harga</span>
-                                <span className="font-semibold text-success">Rp {totalHarga.toLocaleString('id-ID')}</span>
+                                <span className="font-semibold text-success">Rp {Math.round(totalHarga).toLocaleString('id-ID')}</span>
                             </div>
                             {diskonInfoForReceipt && (
                                 <div className="flex justify-between items-center p-3 bg-warning/10 border border-warning/30 rounded-lg">
                                     <span className="text-sm text-base-content/70">
-                                        Diskon ({diskonInfoForReceipt.mode_diskon === 'persen' ? `${diskonInfoForReceipt.diskon}%` : `Rp ${Number(diskonInfoForReceipt.diskon).toLocaleString('id-ID')}`})
+                                        Diskon ({diskonInfoForReceipt.mode_diskon === 'persen' ? `${diskonInfoForReceipt.diskon}%` : `Rp ${Math.round(Number(diskonInfoForReceipt.diskon)).toLocaleString('id-ID')}`})
                                     </span>
-                                    <span className="font-semibold text-error">- Rp {(totalHarga - Number(diskonInfoForReceipt.harga_diskon)).toLocaleString('id-ID')}</span>
+                                    <span className="font-semibold text-error">- Rp {Math.round(totalHarga - Number(diskonInfoForReceipt.harga_diskon)).toLocaleString('id-ID')}</span>
                                 </div>
                             )}
                             {diskonInfoForReceipt && (
                                 <div className="flex justify-between items-center p-3 bg-success/10 border border-success/30 rounded-lg">
                                     <span className="text-sm font-semibold">Harga Akhir</span>
-                                    <span className="font-bold text-success text-lg">Rp {Number(diskonInfoForReceipt.harga_diskon).toLocaleString('id-ID')}</span>
+                                    <span className="font-bold text-success text-lg">Rp {Math.round(Number(diskonInfoForReceipt.harga_diskon)).toLocaleString('id-ID')}</span>
                                 </div>
                             )}
                             <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
@@ -683,28 +692,28 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                             {minimumHarga > 0 && (
                                 <div className="flex justify-between items-center p-3 bg-warning/10 border border-warning/30 rounded-lg">
                                     <span className="text-sm text-base-content/70">Minimum Harga</span>
-                                    <span className="font-semibold text-dark">+ Rp {minimumHarga.toLocaleString('id-ID')}</span>
+                                    <span className="font-semibold text-dark">+ Rp {Math.round(minimumHarga).toLocaleString('id-ID')}</span>
                                 </div>
                             )}
                             {minimumHarga > 0 && (
                                 <div className="flex justify-between items-center p-3 bg-success/10 border border-success/30 rounded-lg">
                                     <span className="text-sm font-semibold">Total Bayar</span>
-                                    <span className="font-bold text-dark text-lg">Rp {totalHargaAkhir.toLocaleString('id-ID')}</span>
+                                    <span className="font-bold text-dark text-lg">Rp {Math.round(totalHargaAkhir).toLocaleString('id-ID')}</span>
                                 </div>
                             )}
                             {paymentType === 'utang' && firstCustomer && (
                                 <div className="p-3 rounded-lg bg-base-200 space-y-2 text-sm">
                                     <div className="flex justify-between">
                                         <span className="text-base-content/70">Limit Customer</span>
-                                        <span className="font-mono">Rp {customerLimit.toLocaleString('id-ID')}</span>
+                                        <span className="font-mono">Rp {Math.round(customerLimit).toLocaleString('id-ID')}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-base-content/70">Limit Terpakai</span>
-                                        <span className="font-mono">Rp {customerLimitAkhir.toLocaleString('id-ID')}</span>
+                                        <span className="font-mono">Rp {Math.round(customerLimitAkhir).toLocaleString('id-ID')}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-base-content/70">Sisa Limit</span>
-                                        <span className={`font-mono font-semibold ${customerLimitRemaining >= totalHargaAkhir ? 'text-success' : 'text-error'}`}>Rp {customerLimitRemaining.toLocaleString('id-ID')}</span>
+                                        <span className={`font-mono font-semibold ${customerLimitRemaining >= totalHargaAkhir ? 'text-success' : 'text-error'}`}>Rp {Math.round(customerLimitRemaining).toLocaleString('id-ID')}</span>
                                     </div>
                                     {wouldExceedLimit && (
                                         <div className="text-error text-xs font-medium mt-1">
@@ -770,7 +779,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                             <input
                                 type="text"
                                 className="input input-bordered input-sm bg-base-200"
-                                value={`Rp ${Number(diskonForm.harga_awal || 0).toLocaleString('id-ID')}`}
+                                value={`Rp ${Math.round(Number(diskonForm.harga_awal || 0)).toLocaleString('id-ID')}`}
                                 readOnly
                             />
                         </label>
