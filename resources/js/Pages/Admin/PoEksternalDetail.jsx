@@ -42,8 +42,13 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
     const map = new Map();
     invoices.forEach((inv) => {
       if (!map.has(inv.no_invoice)) {
-        map.set(inv.no_invoice, inv.no_invoice);
+        map.set(inv.no_invoice, {
+          no_invoice: inv.no_invoice,
+          customer: inv.customer?.nama || '-',
+          count: 0,
+        });
       }
+      map.get(inv.no_invoice).count++;
     });
     return Array.from(map.values());
   }, [invoices]);
@@ -165,18 +170,68 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
 
   const headerForm = useForm({
     diskon: po.diskon || "",
+    diskon_type: po.diskon_type || "persen",
     ppn: po.ppn || "",
   });
 
   const modalRef = useRef(null);
   const editModalRef = useRef(null);
+  const addInvoiceRef = useRef(null);
+  const editInvoiceRef = useRef(null);
 
   const openModal = () => {
     reset();
+    setSelectedInvoice('');
+    setSelectedSpkId('');
     modalRef.current.showModal();
+    setTimeout(() => {
+      if (addInvoiceRef.current && window.jQuery) {
+        const $el = window.jQuery(addInvoiceRef.current);
+        $el.select2({
+          placeholder: '-- Pilih Invoice --',
+          allowClear: true,
+          width: '100%',
+          dropdownParent: $el.closest('.modal-box'),
+          templateResult: (data) => {
+            if (!data.element) return data.text;
+            const $el = window.jQuery(data.element);
+            const customer = $el.data('customer');
+            const count = $el.data('count');
+            if (!customer) return data.text;
+            return window.jQuery(`<span><b>${data.text.split(' - ')[0]}</b> - ${customer} <span class="badge badge-sm badge-ghost">${count} SPK</span></span>`);
+          },
+          templateSelection: (data) => {
+            if (!data.element) return data.text;
+            return data.text.split(' - ').slice(0, 1).join(' - ');
+          },
+        });
+        $el.val(null).trigger('change.select2');
+        $el.on('select2:select', function (e) {
+          const noInv = String(e.params.data.id);
+          setSelectedInvoice(noInv);
+          setSelectedSpkId('');
+          reset();
+          if (noInv) {
+            const spks = invoices.filter((inv) => inv.no_invoice === noInv);
+            if (spks.length === 1) {
+              handleSpkSelect(spks[0]);
+            }
+          }
+        });
+        $el.on('select2:clear', function () {
+          setSelectedInvoice('');
+          setSelectedSpkId('');
+          reset();
+        });
+      }
+    }, 100);
   };
 
   const closeModal = () => {
+    if (addInvoiceRef.current && window.jQuery) {
+      const $el = window.jQuery(addInvoiceRef.current);
+      if ($el.data('select2')) $el.select2('destroy');
+    }
     modalRef.current.close();
     setSelectedInvoice('');
     setSelectedSpkId('');
@@ -199,9 +254,44 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
       total: item.total?.toString() || "",
       keterangan: item.keterangan || "",
     });
+    setTimeout(() => {
+      if (editInvoiceRef.current && window.jQuery) {
+        const $el = window.jQuery(editInvoiceRef.current);
+        $el.select2({
+          placeholder: '-- Pilih Invoice --',
+          allowClear: true,
+          width: '100%',
+          dropdownParent: $el.closest('.modal-box'),
+          templateResult: (data) => {
+            if (!data.element) return data.text;
+            const $opt = window.jQuery(data.element);
+            const customer = $opt.data('customer');
+            const count = $opt.data('count');
+            if (!customer) return data.text;
+            return window.jQuery(`<span><b>${data.text.split(' - ')[0]}</b> - ${customer} <span class="badge badge-sm badge-ghost">${count} SPK</span></span>`);
+          },
+          templateSelection: (data) => {
+            if (!data.element) return data.text;
+            return data.text.split(' - ').slice(0, 1).join(' - ');
+          },
+        });
+        $el.val(item.invoice || null).trigger('change.select2');
+        $el.on('select2:select', function (e) {
+          const noInv = String(e.params.data.id);
+          setData("invoice", noInv);
+        });
+        $el.on('select2:clear', function () {
+          setData("invoice", "");
+        });
+      }
+    }, 100);
   };
 
   const closeModalEdit = () => {
+    if (editInvoiceRef.current && window.jQuery) {
+      const $el = window.jQuery(editInvoiceRef.current);
+      if ($el.data('select2')) $el.select2('destroy');
+    }
     editModalRef.current.close();
     reset();
   };
@@ -253,6 +343,12 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
     const num = parseFloat(val);
     if (isNaN(num)) return "-";
     return "Rp " + num.toLocaleString("id-ID");
+  };
+
+  const hitungDiskon = (totalHarga, diskon, diskonType) => {
+    const d = parseFloat(diskon || 0);
+    if (diskonType === 'rupiah') return d;
+    return totalHarga * (d / 100);
   };
 
   return (
@@ -382,13 +478,17 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                       value={headerForm.data.diskon}
                       onChange={(e) => headerForm.setData("diskon", e.target.value)}
                     />
-                    <span className="text-sm">
-                      - {formatRp((() => {
-                        const th = parseFloat(po.total_harga || 0);
-                        const d = parseFloat(headerForm.data.diskon || 0);
-                        return th * (d / 100);
-                      })())}
-                    </span>
+                    <select
+                      className="select select-bordered select-success select-sm w-21 text-xs"
+                      value={headerForm.data.diskon_type}
+                      onChange={(e) => headerForm.setData("diskon_type", e.target.value)}
+                    >
+                      <option value="persen">%</option>
+                      <option value="rupiah">Rp</option>
+                    </select>
+                  </div>
+                  <div className="text-sm mt-1">
+                    - {formatRp(hitungDiskon(parseFloat(po.total_harga || 0), headerForm.data.diskon, headerForm.data.diskon_type))}
                   </div>
                 </div>
               </div>
@@ -417,9 +517,8 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                 <div className="stat-value text-lg text-success">
                   {formatRp((() => {
                     const th = parseFloat(po.total_harga || 0);
-                    const d = parseFloat(headerForm.data.diskon || 0);
+                    const diskonAmount = hitungDiskon(th, headerForm.data.diskon, headerForm.data.diskon_type);
                     const p = parseFloat(headerForm.data.ppn || 0);
-                    const diskonAmount = th * (d / 100);
                     const ppnAmount = th * (p / 100);
                     return th - diskonAmount + ppnAmount;
                   })())}
@@ -453,10 +552,10 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
               <div className="bg-gray-100 p-2 rounded-lg">
                 <label className="form-control">
                   <div className="label"><span className="label-text">Invoice</span></div>
-                  <select value={selectedInvoice} className="select select-bordered select-success w-full" onChange={handleInvoiceChange}>
+                  <select ref={addInvoiceRef} className="select select-bordered select-success w-full">
                     <option value="">-- Pilih Invoice --</option>
-                    {uniqueInvoices.map((noInv) => (
-                      <option key={noInv} value={noInv}>{noInv}</option>
+                    {uniqueInvoices.map((inv) => (
+                      <option key={inv.no_invoice} value={inv.no_invoice} data-customer={inv.customer} data-count={inv.count}>{inv.no_invoice} - {inv.customer} ({inv.count} SPK)</option>
                     ))}
                   </select>
                 </label>
@@ -567,7 +666,12 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
               <div className="bg-gray-100 p-2 rounded-lg">
                 <label className="form-control">
                   <div className="label"><span className="label-text">Invoice</span></div>
-                  <input type="text" value={data.invoice} className="input input-bordered input-success w-full" onChange={(e) => setData("invoice", e.target.value)} />
+                  <select ref={editInvoiceRef} className="select select-bordered select-success w-full">
+                    <option value="">-- Pilih Invoice --</option>
+                    {uniqueInvoices.map((inv) => (
+                      <option key={inv.no_invoice} value={inv.no_invoice} data-customer={inv.customer} data-count={inv.count}>{inv.no_invoice} - {inv.customer} ({inv.count} SPK)</option>
+                    ))}
+                  </select>
                 </label>
                 <label className="form-control">
                   <div className="label"><span className="label-text">Kode & Nama Bahan</span></div>

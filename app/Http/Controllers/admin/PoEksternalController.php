@@ -198,8 +198,8 @@ class PoEksternalController extends Controller
         $po = PoEksternal::with('suplayer', 'distributor', 'items.bahan')->findOrFail($id);
 
         $totalHarga = ListPoEksternal::where('po_eksternal_id', $po->id)->sum('total');
-        $diskonAmount = $totalHarga * ($po->diskon / 100);
-        $ppnAmount = $totalHarga * ($po->ppn / 100);
+        $diskonAmount = $po->diskon_type === 'rupiah' ? (float) $po->diskon : $totalHarga * ((float) $po->diskon / 100);
+        $ppnAmount = $totalHarga * ((float) $po->ppn / 100);
         $po->total_harga = $totalHarga;
         $po->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
         $po->update();
@@ -231,7 +231,7 @@ class PoEksternalController extends Controller
         $po = PoEksternal::with('suplayer', 'distributor', 'items.bahan')->findOrFail($id);
 
         $totalHarga = ListPoEksternal::where('po_eksternal_id', $po->id)->sum('total');
-        $diskonAmount = $totalHarga * ((float) $po->diskon / 100);
+        $diskonAmount = $po->diskon_type === 'rupiah' ? (float) $po->diskon : $totalHarga * ((float) $po->diskon / 100);
         $ppnAmount = $totalHarga * ((float) $po->ppn / 100);
         $po->total_harga = $totalHarga;
         $po->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
@@ -354,18 +354,21 @@ class PoEksternalController extends Controller
 
         $data = $request->validate([
             'diskon' => 'nullable|numeric',
+            'diskon_type' => 'nullable|in:persen,rupiah',
             'ppn' => 'nullable|numeric',
         ]);
 
         $totalHarga = ListPoEksternal::where('po_eksternal_id', $po->id)->sum('total');
         $diskon = $data['diskon'] ?? 0;
+        $diskonType = $data['diskon_type'] ?? 'persen';
         $ppn = $data['ppn'] ?? 0;
-        $diskonAmount = $totalHarga * ($diskon / 100);
+        $diskonAmount = $diskonType === 'rupiah' ? $diskon : $totalHarga * ($diskon / 100);
         $ppnAmount = $totalHarga * ($ppn / 100);
         $subTotal = $totalHarga - $diskonAmount + $ppnAmount;
 
         $po->total_harga = $totalHarga;
         $po->diskon = $diskon;
+        $po->diskon_type = $diskonType;
         $po->ppn = $ppn;
         $po->sub_total = $subTotal;
         $po->update();
@@ -378,8 +381,8 @@ class PoEksternalController extends Controller
         $totalHarga = ListPoEksternal::where('po_eksternal_id', $poId)->sum('total');
         $po = PoEksternal::find($poId);
         if ($po) {
-            $diskonAmount = $totalHarga * ($po->diskon / 100);
-            $ppnAmount = $totalHarga * ($po->ppn / 100);
+            $diskonAmount = $po->diskon_type === 'rupiah' ? (float) $po->diskon : $totalHarga * ((float) $po->diskon / 100);
+            $ppnAmount = $totalHarga * ((float) $po->ppn / 100);
             $po->total_harga = $totalHarga;
             $po->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
             $po->update();
