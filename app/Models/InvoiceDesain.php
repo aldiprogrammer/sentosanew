@@ -14,6 +14,8 @@ class InvoiceDesain extends Model
         'diskon',
         'mode_diskon',
         'harga_akhir',
+        'uang',
+        'kembalian',
         'tanggal',
     ];
 

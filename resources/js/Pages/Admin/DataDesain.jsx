@@ -15,6 +15,7 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
     const [paymentError, setPaymentError] = React.useState(null)
     const [processing, setProcessing] = React.useState(false)
     const [printMode, setPrintMode] = React.useState('single')
+    const [uangDibayar, setUangDibayar] = React.useState('')
     const [showPasswordModal, setShowPasswordModal] = React.useState(false)
     const [pendingAction, setPendingAction] = React.useState(null)
     const previewRef = useRef(null)
@@ -65,6 +66,12 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
     const customerLimitAkhir = Number(firstCustomer?.limit_akhir || 0)
     const customerLimitRemaining = customerLimit - customerLimitAkhir
     const wouldExceedLimit = paymentType === 'utang' && (customerLimitAkhir + totalHarga > customerLimit)
+
+    const kembalian = uangDibayar !== '' ? Number(uangDibayar) - totalHarga : 0
+
+    React.useEffect(() => {
+        if (paymentType !== 'lunas') setUangDibayar('')
+    }, [paymentType])
 
     const selectedInvoice = selectedItems.length > 0 ? selectedItems[0]?.no_invoice : null
 
@@ -128,7 +135,7 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
                         'Accept': 'application/json',
                         'X-XSRF-TOKEN': decodeURIComponent('${encodeURIComponent(xsrfToken)}')
                     },
-                    body: JSON.stringify({ ids: ${JSON.stringify(ids)}, payment_type: '${paymentTypeVal}' })
+                    body: JSON.stringify({ ids: ${JSON.stringify(ids)}, payment_type: '${paymentTypeVal}', uang: ${JSON.stringify(uangDibayar)}, kembalian: ${JSON.stringify(kembalian)} })
                 }).then(function() { window.close(); });
             });
         </script>
@@ -180,6 +187,7 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
         setPaymentType('lunas')
         setPaymentError(null)
         setPrintMode('single')
+        setUangDibayar('')
         paymentModalRef.current?.showModal()
     }
 
@@ -188,6 +196,7 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
         setPaymentType('lunas')
         setPaymentError(null)
         setPrintMode('combined')
+        setUangDibayar('')
         paymentModalRef.current?.showModal()
     }
 
@@ -567,6 +576,30 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
                                     </div>
                                 </label>
                             </div>
+                            {paymentType === 'lunas' && (
+                                <>
+                                    <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
+                                        <span className="text-sm text-base-content/70">Uang Dibayar</span>
+                                        <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            className="input input-bordered input-sm w-40 text-right font-semibold"
+                                            placeholder="0"
+                                            value={uangDibayar === '' ? '' : Number(uangDibayar).toLocaleString('id-ID')}
+                                            onChange={(e) => {
+                                                const raw = e.target.value.replace(/[^0-9]/g, '')
+                                                setUangDibayar(raw === '' ? '' : raw)
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
+                                        <span className="text-sm text-base-content/70">Kembalian</span>
+                                        <span className={`font-semibold ${kembalian < 0 ? 'text-error' : 'text-success'}`}>
+                                            Rp {kembalian.toLocaleString('id-ID')}
+                                        </span>
+                                    </div>
+                                </>
+                            )}
                             {paymentType === 'utang' && firstCustomer && (
                                 <div className="p-3 rounded-lg bg-base-200 space-y-2 text-sm">
                                     <div className="flex justify-between">

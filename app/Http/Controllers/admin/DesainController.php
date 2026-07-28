@@ -131,6 +131,8 @@ class DesainController extends Controller
     {
         $ids = $request->input('ids', []);
         $paymentType = $request->input('payment_type');
+        $uang = $request->input('uang');
+        $kembalian = $request->input('kembalian');
 
         if ($paymentType === 'utang') {
             $firstItem = Desain::with('customer')->whereIn('id', $ids)->first();
@@ -208,6 +210,8 @@ class DesainController extends Controller
                     'diskon' => $approvedDiskon?->diskon,
                     'mode_diskon' => $approvedDiskon?->mode_diskon,
                     'harga_akhir' => $approvedDiskon?->harga_diskon ?? $totalHarga,
+                    'uang' => $uang,
+                    'kembalian' => $kembalian,
                     'tanggal' => date('Y-m-d'),
                 ]);
             }
