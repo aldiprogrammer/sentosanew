@@ -407,12 +407,13 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
                                             <th>Pembayaran</th>
                                             <th>Status</th>
                                             <th>Desainer</th>
+                                            <th>CS</th>
                                         </tr>
                                     </thead>
                                     <tbody className="text-xs">
                                         {desain.data.length === 0 ? (
                                             <tr>
-                                                <td colSpan={12} className="text-center py-8 text-base-content/50">
+                                                <td colSpan={13} className="text-center py-8 text-base-content/50">
                                                     Tidak ada data desain
                                                 </td>
                                             </tr>
@@ -453,6 +454,7 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
                                                         )}
                                                     </td>
                                                     <td>{item.desainer?.username || '-'}</td>
+                                                    <td>{item.cs?.username || '-'}</td>
                                                 </tr>
                                             ))
                                         )}

@@ -148,7 +148,7 @@ table.items tr:nth-child(even) { background: #f0fdf4; }
 .signatures .sig-block p.label { font-size: 12px; font-weight: 900; margin: 0 0 8px 0; text-transform: uppercase; }
 .signatures .sig-block .line { margin-top: 35px; border-top: 2px solid #000; padding-top: 8px; font-size: 13px; font-weight: 900; letter-spacing: 1px; }
 .total-row { font-weight: bold; background: #e8f5e9 !important; }
-@media print { body { padding: 10px; } @page { size: 21cm 18cm; margin: 10mm; } }
+@media print { body { padding: 10px; } @page { size: 21cm 18cm; margin: 0mm; } }
 </style>
 </head>
 <body>

@@ -50,7 +50,7 @@ class DesainController extends Controller
         $tglAwal = $request->query('tgl_awal');
         $tglAkhir = $request->query('tgl_akhir');
 
-        $desain = Desain::with('customer', 'kategoridesain', 'desainer')
+        $desain = Desain::with('customer', 'kategoridesain', 'desainer', 'cs')
             ->whereNull('alasan_pembatalan')
             ->when(auth()->user()->role === 'Desainer', function ($q) {
                 $q->where('id_desain', auth()->id())->whereNull('pembayaran');
