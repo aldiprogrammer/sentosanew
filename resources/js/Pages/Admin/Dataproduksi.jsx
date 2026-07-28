@@ -13,6 +13,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
     const [tgl_akhir, setTglAkhir] = React.useState(tglAkhir || '')
     const [selected, setSelected] = React.useState([])
     const [paymentType, setPaymentType] = React.useState('lunas')
+    const [uangDibayar, setUangDibayar] = React.useState('')
     const [paymentError, setPaymentError] = React.useState(null)
     const [processing, setProcessing] = React.useState(false)
     const [printMode, setPrintMode] = React.useState('single')
@@ -101,6 +102,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
     const totalHarga = Math.round(selectedItems.reduce((sum, item) => sum + Number(item.total_harga || 0), 0))
     const minimumHarga = useMinimumHarga ? Math.round(Number(minimumHargaValue) || 0) : 0
     const totalHargaAkhir = totalHarga + minimumHarga
+    const kembalian = Math.round(Number(uangDibayar || 0) - totalHargaAkhir)
     const totalQty = selectedItems.reduce((sum, item) => sum + Number(item.qty || 0), 0)
     const firstCustomer = selectedItems.length > 0 ? selectedItems[0].customer : null
     const customerLimit = Number(firstCustomer?.limit || 0)
@@ -157,7 +159,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                         'Accept': 'application/json',
                         'X-XSRF-TOKEN': decodeURIComponent('${encodeURIComponent(xsrfToken)}')
                     },
-                    body: JSON.stringify({ ids: ${JSON.stringify(ids)}, payment_type: '${paymentTypeVal}', minimum_faktur: ${minimumHarga || 0} })
+                    body: JSON.stringify({ ids: ${JSON.stringify(ids)}, payment_type: '${paymentTypeVal}', minimum_faktur: ${minimumHarga || 0}, uang: ${uangDibayar ? Number(uangDibayar) : 'null'}, kembalian: ${uangDibayar ? Math.round(Number(uangDibayar) - totalHargaAkhir) : 'null'} })
                 }).then(function() { window.close(); });
             });
         </script>
@@ -210,6 +212,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
     const handleCetakStruk = () => {
         if (selectedItems.length === 0) return
         setPaymentType('lunas')
+        setUangDibayar('')
         setPaymentError(null)
         setPrintMode('single')
         setUseMinimumHarga(false)
@@ -220,6 +223,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
     const handleCetakGabungan = () => {
         if (selectedItems.length === 0) return
         setPaymentType('lunas')
+        setUangDibayar('')
         setPaymentError(null)
         setPrintMode('combined')
         setUseMinimumHarga(false)
@@ -640,21 +644,21 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                     </div>
                                 </label>
                                 <label className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${paymentType === 'utang' ? 'border-warning bg-warning/10' : 'border-base-300'}`}>
-                                    <input type="radio" name="paymentType" className="radio radio-warning" checked={paymentType === 'utang'} onChange={() => setPaymentType('utang')} />
+                                    <input type="radio" name="paymentType" className="radio radio-warning" checked={paymentType === 'utang'} onChange={() => { setPaymentType('utang'); setUangDibayar(''); }} />
                                     <div>
                                         <span className="font-semibold text-sm">Utang</span>
                                         <p className="text-xs text-base-content/60">Pembayaran sebagian</p>
                                     </div>
                                 </label>
                                 <label className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${paymentType === 'transfer' ? 'border-info bg-info/10' : 'border-base-300'}`}>
-                                    <input type="radio" name="paymentType" className="radio radio-info" checked={paymentType === 'transfer'} onChange={() => setPaymentType('transfer')} />
+                                    <input type="radio" name="paymentType" className="radio radio-info" checked={paymentType === 'transfer'} onChange={() => { setPaymentType('transfer'); setUangDibayar(''); }} />
                                     <div>
                                         <span className="font-semibold text-sm">Transfer</span>
                                         <p className="text-xs text-base-content/60">Bayar via transfer</p>
                                     </div>
                                 </label>
                                 <label className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${paymentType === 'qris' ? 'border-secondary bg-secondary/10' : 'border-base-300'}`}>
-                                    <input type="radio" name="paymentType" className="radio radio-secondary" checked={paymentType === 'qris'} onChange={() => setPaymentType('qris')} />
+                                    <input type="radio" name="paymentType" className="radio radio-secondary" checked={paymentType === 'qris'} onChange={() => { setPaymentType('qris'); setUangDibayar(''); }} />
                                     <div>
                                         <span className="font-semibold text-sm">QRIS</span>
                                         <p className="text-xs text-base-content/60">Bayar via QRIS</p>
@@ -699,6 +703,28 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                 <div className="flex justify-between items-center p-3 bg-success/10 border border-success/30 rounded-lg">
                                     <span className="text-sm font-semibold">Total Bayar</span>
                                     <span className="font-bold text-dark text-lg">Rp {Math.round(totalHargaAkhir).toLocaleString('id-ID')}</span>
+                                </div>
+                            )}
+                            {paymentType === 'lunas' && (
+                                <div className="p-3 rounded-lg bg-base-200 space-y-2">
+                                    <label className="form-control">
+                                        <div className="label"><span className="label-text text-xs font-semibold">Uang Dibayar</span></div>
+                                        <input
+                                            type="number"
+                                            step="1"
+                                            min="0"
+                                            className="input input-bordered input-success input-sm w-full"
+                                            placeholder="Masukkan jumlah uang..."
+                                            value={uangDibayar}
+                                            onChange={(e) => setUangDibayar(e.target.value)}
+                                        />
+                                    </label>
+                                    {Number(uangDibayar) > 0 && (
+                                        <div className={`flex justify-between items-center p-2 rounded-lg ${kembalian >= 0 ? 'bg-success/10 border border-success/30' : 'bg-error/10 border border-error/30'}`}>
+                                            <span className="text-sm font-semibold">{kembalian >= 0 ? 'Kembalian' : 'Kurang'}</span>
+                                            <span className={`font-bold text-lg ${kembalian >= 0 ? 'text-success' : 'text-error'}`}>Rp {Math.abs(kembalian).toLocaleString('id-ID')}</span>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                             {paymentType === 'utang' && firstCustomer && (

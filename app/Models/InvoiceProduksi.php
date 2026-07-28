@@ -14,6 +14,8 @@ class InvoiceProduksi extends Model
         'diskon',
         'mode_diskon',
         'harga_akhir',
+        'uang',
+        'kembalian',
         'minimum_faktur',
         'tanggal',
     ];

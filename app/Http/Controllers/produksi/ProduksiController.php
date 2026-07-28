@@ -97,6 +97,8 @@ class ProduksiController extends Controller
                 'all_utang' => $group->every(fn ($item) => $item->pembayaran === 'utang'),
                 'minimum_faktur' => $minimumFaktur,
                 'harga_akhir_invoice' => $invoiceProduksi?->harga_akhir ?? null,
+                'uang' => $invoiceProduksi?->uang ?? null,
+                'kembalian' => $invoiceProduksi?->kembalian ?? null,
             ];
         })->values();
 
@@ -117,6 +119,8 @@ class ProduksiController extends Controller
         $ids = $request->input('ids', []);
         $paymentType = $request->input('payment_type');
         $minimumFaktur = (float) ($request->input('minimum_faktur', 0) ?: 0);
+        $uang = $request->input('uang');
+        $kembalian = $request->input('kembalian');
         $isApi = $request->expectsJson();
 
         if ($paymentType === 'utang') {
@@ -207,6 +211,8 @@ class ProduksiController extends Controller
                     'diskon' => $approvedDiskon?->diskon ?? null,
                     'mode_diskon' => $approvedDiskon?->mode_diskon ?? null,
                     'harga_akhir' => $baseHarga + $thisMinimumFaktur,
+                    'uang' => $uang,
+                    'kembalian' => $kembalian,
                     'minimum_faktur' => $thisMinimumFaktur,
                     'tanggal' => date('Y-m-d'),
                 ]);
