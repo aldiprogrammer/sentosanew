@@ -159,6 +159,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/pengajuan-diskon/{id}/reject', [PengajuanDiskonController::class, 'reject'])->name('reject.pengajuan-diskon');
     Route::put('/pengajuan-diskon/{id}/cancel', [PengajuanDiskonController::class, 'cancel'])->name('cancel.pengajuan-diskon');
     Route::get('/data-order', [DataOrderController::class, 'index'])->name('data-order');
+    Route::get('/data-order/produksi-by-invoice/{noInvoice}', [DataOrderController::class, 'produksiByInvoice'])->name('data-order.produksi-by-invoice');
+    Route::put('/data-order/produksi/{id}/payment', [DataOrderController::class, 'updateProduksiPayment'])->name('data-order.update-produksi-payment');
+    Route::get('/data-order/desain-by-invoice/{noInvoice}', [DataOrderController::class, 'desainByInvoice'])->name('data-order.desain-by-invoice');
+    Route::put('/data-order/desain/{id}/payment', [DataOrderController::class, 'updateDesainPayment'])->name('data-order.update-desain-payment');
     Route::get('/pembatalan-order', [PembatalanOrderController::class, 'index'])->name('pembatalan-order');
     Route::get('/data-desain', [DesainController::class, 'dataDesain'])->name('data-desain');
     Route::put('/data-desain/proses-pembayaran', [DesainController::class, 'prosesPembayaran'])->name('proses.pembayaran.desain');

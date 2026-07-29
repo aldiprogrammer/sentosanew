@@ -80,7 +80,7 @@ class LaporanOrderController extends Controller
 
         $penggunas = Pengguna::whereIn('role', ['Customer Service', 'Desainer'])
             ->orderBy('username')
-            ->get(['id', 'username']);
+            ->get(['id', 'username', 'role']);
 
         $customers = Customer::orderBy('nama')
             ->get(['id', 'nama']);
