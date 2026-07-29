@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 
 export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, search, pembayaran, penggunaIds, penggunas, desainBatal, customers, customerIds }) {
     const { auth, flash } = usePage().props
-    const canEdit = ['Admin', 'admin', 'Admin2', 'admin2'].includes(auth?.user?.role)
+    const canEdit = ['Admin', 'admin', 'Admin2', 'admin2', 'Admin 2', 'admin 2'].includes(auth?.user?.role)
 
     React.useEffect(() => {
         if (flash?.success) {

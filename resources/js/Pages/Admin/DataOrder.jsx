@@ -4,7 +4,7 @@ import React from 'react'
 
 export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchDesain, searchProduksi, penggunas }) {
     const { auth } = usePage().props
-    const canEdit = ['Admin', 'admin', 'Admin2', 'admin2'].includes(auth?.user?.role)
+    const canEdit = ['Admin', 'admin', 'Admin2', 'admin2', 'Admin 2', 'admin 2'].includes(auth?.user?.role)
     const [searchDesainVal, setSearchDesainVal] = React.useState(searchDesain || '')
     const [searchProduksiVal, setSearchProduksiVal] = React.useState(searchProduksi || '')
     const [tgl_awal, setTglAwal] = React.useState(tglAwal || '')

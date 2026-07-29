@@ -203,7 +203,7 @@ export default function Desain({
       doc.text("Data Desain", 14, 20);
       doc.setFontSize(10);
       doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 27);
-      const rows = desain.map((item, index) => [index + 1, item.tanggal, item.no_antrian, item.kode_spk, item.customer.nama, item.kategoridesain.kategori, item.qty, item.total_harga ? "Rp " + formatRupiah(String(item.total_harga)) : "-"]);
+      const rows = desain.map((item, index) => [index + 1, item.tanggal, item.no_antrian, item.kode_spk, item.customer?.nama || '-', item.kategoridesain?.kategori || '-', item.qty, item.total_harga ? "Rp " + formatRupiah(String(item.total_harga)) : "-"]);
       autoTable(doc, { startY: 32, head: [["No", "Tgl", "No Antrian", "Kode SPK", "Customer", "Desain", "Qty", "Total Harga"]], body: rows, styles: { fontSize: 8 }, headStyles: { fillColor: [22, 163, 74] }, theme: "grid" });
       doc.save("data_desain.pdf");
     } catch (error) {
@@ -594,17 +594,17 @@ export default function Desain({
                     {desain.map((item, index) => (
                       <tr
                         key={item.id}
-                        onClick={() => openModalEdit(item.id, item.tanggal, item.no_antrian, item.kode_spk, item.id_customer, item.customer.nama, item.id_kategori_desain, item.kategoridesain.kategori, item.kategoridesain.harga, item.qty, item.total_harga, item.pembayaran)}
+                        onClick={() => openModalEdit(item.id, item.tanggal, item.no_antrian, item.kode_spk, item.id_customer, item.customer?.nama || '', item.id_kategori_desain, item.kategoridesain?.kategori || '', item.kategoridesain?.harga || 0, item.qty, item.total_harga, item.pembayaran)}
                         className={isDesainer && item.pembayaran ? 'cursor-default' : 'cursor-pointer hover:bg-base-200'}
                       >
                         <td>{index + 1}</td>
                         <td>{item.tanggal}</td>
                         <td>{item.no_antrian}</td>
 
-                        <td>{item.customer.nama}</td>
-                        <td>{item.kategoridesain.kategori}</td>
+                        <td>{item.customer?.nama || '-'}</td>
+                        <td>{item.kategoridesain?.kategori || '-'}</td>
                         <td>{item.qty}</td>
-                        <td>Rp {formatRupiah(item.total_harga)}</td>
+                        <td>Rp {item.total_harga ? formatRupiah(item.total_harga) : '0'}</td>
                         <td>{item.desainer?.username || item.desainer?.username || '-'}</td>
                       </tr>
                     ))}
