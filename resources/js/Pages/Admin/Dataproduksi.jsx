@@ -531,7 +531,14 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                                                             {group.item_count} item
                                                                         </span>
                                                                         <span className="text-base-content/60">Qty: <strong>{group.total_qty}</strong></span>
-                                                                        <span className="text-success font-semibold">Rp {Math.round(Number(group.total_harga)).toLocaleString('id-ID')}</span>
+                                                                        {groupDiskon ? (
+                                                                            <>
+                                                                                <span className="text-base-content/50 line-through mr-1">Rp {Math.round(Number(group.total_harga)).toLocaleString('id-ID')}</span>
+                                                                                <span className="text-success font-semibold">Rp {Math.round(Number(groupDiskon.harga_diskon) + Number(group.minimum_faktur || 0)).toLocaleString('id-ID')}</span>
+                                                                            </>
+                                                                        ) : (
+                                                                            <span className="text-success font-semibold">Rp {Math.round(Number(group.total_harga)).toLocaleString('id-ID')}</span>
+                                                                        )}
                                                                         {groupDiskon && (
                                                                             <span className="badge badge-sm badge-warning gap-1">
                                                                                 <i className="fas fa-percent text-xs"></i>

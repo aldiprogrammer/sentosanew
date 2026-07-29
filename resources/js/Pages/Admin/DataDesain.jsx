@@ -7,6 +7,17 @@ import { buildDesainReceiptHtml } from './StrukDesainTemplate'
 export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons }) {
     const { auth, flash } = usePage().props
     const isCs = auth?.user?.role === 'Customer Service'
+
+    const diskonMap = React.useMemo(() => {
+        const map = {}
+        if (Array.isArray(pengajuanDiskons)) {
+            pengajuanDiskons.forEach((d) => {
+                if (d.status === 'disetujui') map[d.no_invoice] = d
+            })
+        }
+        return map
+    }, [pengajuanDiskons])
+
     const [search, setSearch] = React.useState('')
     const [tgl_awal, setTglAwal] = React.useState(tglAwal || '')
     const [tgl_akhir, setTglAkhir] = React.useState(tglAkhir || '')
@@ -458,7 +469,18 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
                                                     <td>{item.customer?.nama}</td>
                                                     <td>{item.kategoridesain?.kategori}</td>
                                                     <td className="tabular-nums text-center">{item.qty}</td>
-                                                    <td className="tabular-nums">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
+                                                    <td className="tabular-nums">
+                                                        {(() => {
+                                                            const d = diskonMap[item.no_invoice]
+                                                            if (d) {
+                                                                return <>
+                                                                    <span className="line-through text-base-content/50 mr-1">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</span>
+                                                                    <span className="text-success font-semibold">Rp {Number(d.harga_diskon).toLocaleString('id-ID')}</span>
+                                                                </>
+                                                            }
+                                                            return <>Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</>
+                                                        })()}
+                                                    </td>
                                                     <td>
                                                         {item.alasan_pembatalan ? (
                                                             <span className="badge badge-sm badge-error">
