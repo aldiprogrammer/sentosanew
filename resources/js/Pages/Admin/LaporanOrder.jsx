@@ -2,7 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout'
 import { Link, router, usePage } from '@inertiajs/react'
 import React, { useState } from 'react'
 
-export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, search, pembayaran, penggunaIds, penggunas, desainBatal, customers, customerIds }) {
+export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, search, pembayaran, penggunaIds, penggunas, desainBatal, customers, customerIds, invoiceProduksiData, produksiInvoiceTotals, invoiceDesainData, desainInvoiceTotals }) {
     const { auth, flash } = usePage().props
     const canEdit = ['Admin', 'admin', 'Admin2', 'admin2', 'Admin 2', 'admin 2'].includes(auth?.user?.role)
 
@@ -29,6 +29,24 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
     const [filterCustomer, setFilterCustomer] = useState(
         Array.isArray(customerIds) ? customerIds.map(String) : (customerIds ? [String(customerIds)] : [])
     )
+
+    const groupByInvoice = (items) => {
+        const map = new Map()
+        items.forEach(item => {
+            const key = item.no_invoice || ''
+            if (!map.has(key)) {
+                map.set(key, { no_invoice: item.no_invoice, items: [], total: 0 })
+            }
+            const g = map.get(key)
+            g.items.push(item)
+            g.total += Number(item.total_harga || 0)
+        })
+        return Array.from(map.values())
+    }
+
+    const groupedProduksi = React.useMemo(() => groupByInvoice(produksi.data), [produksi.data])
+    const groupedDesain = React.useMemo(() => groupByInvoice(desain.data), [desain.data])
+    const groupedBatal = React.useMemo(() => groupByInvoice(desainBatal?.data || []), [desainBatal?.data])
 
     const csList = React.useMemo(() => {
         return Array.isArray(penggunas) ? penggunas.filter((p) => p.role === 'Customer Service') : []
@@ -185,8 +203,14 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
         window.open(`/laporan-order/pdf-produksi?${buildFilterParams()}`, '_blank')
     }
 
-    const totalDesain = desain.data.reduce((sum, item) => sum + Number(item.total_harga || 0), 0)
-    const totalProduksi = produksi.data.reduce((sum, item) => sum + Number(item.total_harga || 0), 0)
+    const totalDesain = groupedDesain.reduce((sum, g) => {
+        const inv = invoiceDesainData?.[g.no_invoice]
+        return sum + Number(inv?.harga_akhir ?? desainInvoiceTotals?.[g.no_invoice] ?? g.total)
+    }, 0)
+    const totalProduksi = groupedProduksi.reduce((sum, g) => {
+        const inv = invoiceProduksiData?.[g.no_invoice]
+        return sum + Number(inv?.harga_akhir ?? produksiInvoiceTotals?.[g.no_invoice] ?? g.total)
+    }, 0)
 
     return (
         <AdminLayout>
@@ -338,39 +362,78 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                                 <tr>
                                                     <td colSpan={11} className="text-center py-8 text-base-content/50">Tidak ada data produksi</td>
                                                 </tr>
-                                            ) : (
-                                                produksi.data.map((item, i) => (
-                                                    <tr key={item.id} className={`${canEdit ? 'cursor-pointer hover:bg-base-200' : ''}`} onClick={() => canEdit && openEditProduksi(item)}>
-                                                        <td>{produksi.from + i}</td>
-                                                        <td>{item.tanggal}</td>
-                                                        <td className="font-mono">{item.no_invoice}</td>
-                                                        <td className="font-mono">{item.kode_spk}</td>
-                                                        <td>{item.customer?.nama}</td>
-                                                        <td>{item.bahan?.bahan}</td>
-                                                        <td className="text-center">{item.qty}</td>
-                                                        <td className="text-right font-semibold">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
-                                                        <td>
-                                                            {item.pembayaran ? (
-                                                                <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'transfer' ? 'badge-info' : item.pembayaran === 'qris' ? 'badge-secondary' : 'badge-warning'}`}>
-                                                                    {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'transfer' ? 'Transfer' : item.pembayaran === 'qris' ? 'QRIS' : 'Hutang'}
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-base-content/30">-</span>
-                                                            )}
-                                                        </td>
-                                                        <td>
-                                                            {(() => {
-                                                                if (item.status_selesai == 1) return <span className="text-success font-semibold">Selesai</span>
-                                                                if (item.status_logistik == 1) return <span className="text-info font-semibold">Logistik</span>
-                                                                if (item.status_finishing == 1) return <span className="text-warning font-semibold">Finishing</span>
-                                                                if (item.status_produksi == 1) return <span className="text-error font-semibold">Produksi</span>
-                                                                return '-'
-                                                            })()}
-                                                        </td>
-                                                        <td>{item.cs?.username || '-'}</td>
-                                                    </tr>
+                                            ) : (() => {
+                                                let counter = produksi.from
+                                                return groupedProduksi.map(group => (
+                                                    <React.Fragment key={group.no_invoice || '__nil__'}>
+                                                        {(() => {
+                                                            const inv = invoiceProduksiData?.[group.no_invoice]
+                                                            const fullTotal = inv?.harga_akhir ?? produksiInvoiceTotals?.[group.no_invoice] ?? group.total
+                                                            const hasDiskon = inv?.diskon != null && Number(inv.diskon) !== 0 && inv?.harga_awal != null && inv?.harga_akhir != null
+                                                            const hasMinFaktur = !hasDiskon && inv?.minimum_faktur != null && Number(inv.minimum_faktur) > 0 && inv?.harga_awal != null && inv?.harga_akhir != null
+                                                            const headerBg = hasDiskon ? 'bg-orange-100' : hasMinFaktur ? 'bg-blue-100' : 'bg-base-300'
+                                                            return (
+                                                                <tr className={`${headerBg} font-semibold text-sm`}>
+                                                                    <td colSpan={11} className="p-2">
+                                                                        <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+                                                                            <span className="font-bold">Inv: {group.no_invoice || '-'}</span>
+                                                                            <span>Customer: {group.items[0]?.customer?.nama || '-'}</span>
+                                                                            {hasDiskon ? (
+                                                                                <span className="ml-auto font-bold text-success">
+                                                                                    Diskon: {inv.mode_diskon === 'persen' ? `${inv.diskon}%` : `Rp ${Number(inv.diskon).toLocaleString('id-ID')}`}
+                                                                                    {` | Awal: Rp ${Number(inv.harga_awal).toLocaleString('id-ID')}`}
+                                                                                    {` | Akhir: Rp ${Number(fullTotal).toLocaleString('id-ID')}`}
+                                                                                </span>
+                                                                            ) : hasMinFaktur ? (
+                                                                                <span className="ml-auto font-bold text-success">
+                                                                                    Min Faktur: Rp {Number(inv.minimum_faktur).toLocaleString('id-ID')}
+                                                                                    {` | Awal: Rp ${Number(inv.harga_awal).toLocaleString('id-ID')}`}
+                                                                                    {` | Akhir: Rp ${Number(fullTotal).toLocaleString('id-ID')}`}
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span className="ml-auto font-bold text-success">
+                                                                                    Total: Rp {Number(fullTotal).toLocaleString('id-ID')}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            )
+                                                        })()}
+                                                        {group.items.map(item => (
+                                                            <tr key={item.id} className={`${canEdit ? 'cursor-pointer hover:bg-base-200' : ''}`} onClick={() => canEdit && openEditProduksi(item)}>
+                                                                <td>{counter++}</td>
+                                                                <td>{item.tanggal}</td>
+                                                                <td className="font-mono">{item.no_invoice}</td>
+                                                                <td className="font-mono">{item.kode_spk}</td>
+                                                                <td>{item.customer?.nama}</td>
+                                                                <td>{item.bahan?.bahan}</td>
+                                                                <td className="text-center">{item.qty}</td>
+                                                                <td className="text-right font-semibold">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
+                                                                <td>
+                                                                    {item.pembayaran ? (
+                                                                        <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'transfer' ? 'badge-info' : item.pembayaran === 'qris' ? 'badge-secondary' : 'badge-warning'}`}>
+                                                                            {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'transfer' ? 'Transfer' : item.pembayaran === 'qris' ? 'QRIS' : 'Hutang'}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-base-content/30">-</span>
+                                                                    )}
+                                                                </td>
+                                                                <td>
+                                                                    {(() => {
+                                                                        if (item.status_selesai == 1) return <span className="text-success font-semibold">Selesai</span>
+                                                                        if (item.status_logistik == 1) return <span className="text-info font-semibold">Logistik</span>
+                                                                        if (item.status_finishing == 1) return <span className="text-warning font-semibold">Finishing</span>
+                                                                        if (item.status_produksi == 1) return <span className="text-error font-semibold">Produksi</span>
+                                                                        return '-'
+                                                                    })()}
+                                                                </td>
+                                                                <td>{item.cs?.username || '-'}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </React.Fragment>
                                                 ))
-                                            )}
+                                            })()}
                                         </tbody>
                                     </table>
                                 </div>
@@ -419,31 +482,63 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                                 <tr>
                                                     <td colSpan={11} className="text-center py-8 text-base-content/50">Tidak ada data desain</td>
                                                 </tr>
-                                            ) : (
-                                                desain.data.map((item, i) => (
-                                                    <tr key={item.id} className={`${canEdit ? 'cursor-pointer hover:bg-base-200' : ''}`} onClick={() => canEdit && openEditDesain(item)}>
-                                                        <td>{desain.from + i}</td>
-                                                        <td>{item.tanggal}</td>
-                                                        <td className="font-mono">{item.no_invoice || item.kode_spk}</td>
-                                                        <td>{item.no_antrian}</td>
-                                                        <td>{item.customer?.nama}</td>
-                                                        <td>{item.kategoridesain?.kategori}</td>
-                                                        <td className="text-center">{item.qty}</td>
-                                                        <td className="text-right font-semibold">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
-                                                        <td>
-                                                            {item.pembayaran ? (
-                                                                <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'transfer' ? 'badge-info' : item.pembayaran === 'qris' ? 'badge-secondary' : 'badge-warning'}`}>
-                                                                    {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'transfer' ? 'Transfer' : item.pembayaran === 'qris' ? 'QRIS' : 'Hutang'}
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-base-content/30">-</span>
-                                                            )}
-                                                        </td>
-                                                        <td>{item.desainer?.username || '-'}</td>
-                                                        <td>{item.cs?.username || '-'}</td>
-                                                    </tr>
+                                            ) : (() => {
+                                                let counter = desain.from
+                                                return groupedDesain.map(group => (
+                                                    <React.Fragment key={group.no_invoice || '__nil__'}>
+                                                        {(() => {
+                                                            const inv = invoiceDesainData?.[group.no_invoice]
+                                                            const fullTotal = inv?.harga_akhir ?? desainInvoiceTotals?.[group.no_invoice] ?? group.total
+                                                            const hasDiskon = inv?.diskon != null && Number(inv.diskon) !== 0 && inv?.harga_awal != null && inv?.harga_akhir != null
+                                                            const headerBg = hasDiskon ? 'bg-orange-100' : 'bg-base-300'
+                                                            return (
+                                                                <tr className={`${headerBg} font-semibold text-sm`}>
+                                                                    <td colSpan={11} className="p-2">
+                                                                        <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+                                                                            <span className="font-bold">Inv: {group.no_invoice || '-'}</span>
+                                                                            <span>Customer: {group.items[0]?.customer?.nama || '-'}</span>
+                                                                            {hasDiskon ? (
+                                                                                <span className="ml-auto font-bold text-success">
+                                                                                    Diskon: {inv.mode_diskon === 'persen' ? `${inv.diskon}%` : `Rp ${Number(inv.diskon).toLocaleString('id-ID')}`}
+                                                                                    {` | Awal: Rp ${Number(inv.harga_awal).toLocaleString('id-ID')}`}
+                                                                                    {` | Akhir: Rp ${Number(fullTotal).toLocaleString('id-ID')}`}
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span className="ml-auto font-bold text-success">
+                                                                                    Total: Rp {Number(fullTotal).toLocaleString('id-ID')}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            )
+                                                        })()}
+                                                        {group.items.map(item => (
+                                                            <tr key={item.id} className={`${canEdit ? 'cursor-pointer hover:bg-base-200' : ''}`} onClick={() => canEdit && openEditDesain(item)}>
+                                                                <td>{counter++}</td>
+                                                                <td>{item.tanggal}</td>
+                                                                <td className="font-mono">{item.no_invoice || item.kode_spk}</td>
+                                                                <td>{item.no_antrian}</td>
+                                                                <td>{item.customer?.nama}</td>
+                                                                <td>{item.kategoridesain?.kategori}</td>
+                                                                <td className="text-center">{item.qty}</td>
+                                                                <td className="text-right font-semibold">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
+                                                                <td>
+                                                                    {item.pembayaran ? (
+                                                                        <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'transfer' ? 'badge-info' : item.pembayaran === 'qris' ? 'badge-secondary' : 'badge-warning'}`}>
+                                                                            {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'transfer' ? 'Transfer' : item.pembayaran === 'qris' ? 'QRIS' : 'Hutang'}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-base-content/30">-</span>
+                                                                    )}
+                                                                </td>
+                                                                <td>{item.desainer?.username || '-'}</td>
+                                                                <td>{item.cs?.username || '-'}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </React.Fragment>
                                                 ))
-                                            )}
+                                            })()}
                                         </tbody>
                                     </table>
                                 </div>
@@ -488,26 +583,42 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                                 <tr>
                                                     <td colSpan={10} className="text-center py-8 text-base-content/50">Tidak ada data dibatalkan</td>
                                                 </tr>
-                                            ) : (
-                                                desainBatal.data.map((item, i) => (
-                                                    <tr key={item.id} className="bg-red-50">
-                                                        <td>{desainBatal.from + i}</td>
-                                                        <td>{item.tanggal}</td>
-                                                        <td className="font-mono">{item.no_invoice || item.kode_spk}</td>
-                                                        <td>{item.no_antrian}</td>
-                                                        <td>{item.customer?.nama}</td>
-                                                        <td>{item.kategoridesain?.kategori}</td>
-                                                        <td className="text-center">{item.qty}</td>
-                                                        <td className="text-right font-semibold">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
-                                                        <td>{item.desainer?.username || '-'}</td>
-                                                        <td>
-                                                            <span className="text-error text-xs" title={item.alasan_pembatalan}>
-                                                                <i className="fas fa-ban"></i> {item.alasan_pembatalan}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
+                                            ) : (() => {
+                                                let counter = desainBatal.from
+                                                return groupedBatal.map(group => (
+                                                    <React.Fragment key={group.no_invoice || '__nil__'}>
+                                                        <tr className="bg-red-100 font-semibold text-sm">
+                                                            <td colSpan={10} className="p-2">
+                                                                <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+                                                                    <span className="font-bold">Inv: {group.no_invoice || '-'}</span>
+                                                                    <span>Customer: {group.items[0]?.customer?.nama || '-'}</span>
+                                                                    <span className="ml-auto font-bold text-error">
+                                                                        Total: Rp {Number(group.total).toLocaleString('id-ID')}
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        {group.items.map(item => (
+                                                            <tr key={item.id} className="bg-red-50">
+                                                                <td>{counter++}</td>
+                                                                <td>{item.tanggal}</td>
+                                                                <td className="font-mono">{item.no_invoice || item.kode_spk}</td>
+                                                                <td>{item.no_antrian}</td>
+                                                                <td>{item.customer?.nama}</td>
+                                                                <td>{item.kategoridesain?.kategori}</td>
+                                                                <td className="text-center">{item.qty}</td>
+                                                                <td className="text-right font-semibold">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
+                                                                <td>{item.desainer?.username || '-'}</td>
+                                                                <td>
+                                                                    <span className="text-error text-xs" title={item.alasan_pembatalan}>
+                                                                        <i className="fas fa-ban"></i> {item.alasan_pembatalan}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </React.Fragment>
                                                 ))
-                                            )}
+                                            })()}
                                         </tbody>
                                     </table>
                                 </div>

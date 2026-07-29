@@ -194,7 +194,8 @@ class ProduksiController extends Controller
                 ->where('status', 'disetujui')
                 ->first();
             $totalHarga = $items->sum('total_harga');
-            $baseHarga = $approvedDiskon?->harga_diskon ?? $totalHarga;
+            $hargaSetelahDiskon = $approvedDiskon?->harga_diskon ?? $totalHarga;
+            $hargaAwal = $approvedDiskon?->harga_awal ?? $totalHarga;
             if ($minimumFaktur > 0 && ! $minimumFakturApplied) {
                 $thisMinimumFaktur = $minimumFaktur;
                 $minimumFakturApplied = true;
@@ -207,10 +208,10 @@ class ProduksiController extends Controller
                     'no_invoice' => $noInvoice,
                     'id_customer' => $firstItem->id_customer,
                     'customer' => $firstItem->customer->nama ?? '',
-                    'harga_awal' => $baseHarga,
+                    'harga_awal' => $hargaAwal,
                     'diskon' => $approvedDiskon?->diskon ?? null,
                     'mode_diskon' => $approvedDiskon?->mode_diskon ?? null,
-                    'harga_akhir' => $baseHarga + $thisMinimumFaktur,
+                    'harga_akhir' => $hargaSetelahDiskon + $thisMinimumFaktur,
                     'uang' => $uang,
                     'kembalian' => $kembalian,
                     'minimum_faktur' => $thisMinimumFaktur,

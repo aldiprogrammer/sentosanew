@@ -5,6 +5,8 @@ namespace App\Http\Controllers\admin;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Desain;
+use App\Models\InvoiceDesain;
+use App\Models\InvoiceProduksi;
 use App\Models\Pengguna;
 use App\Models\Produksi;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -85,8 +87,25 @@ class LaporanOrderController extends Controller
         $customers = Customer::orderBy('nama')
             ->get(['id', 'nama']);
 
+        $produksiInvoiceNos = collect($produksi->items())->pluck('no_invoice')->filter()->unique()->values();
+        $produksiInvoiceTotals = Produksi::whereIn('no_invoice', $produksiInvoiceNos)
+            ->whereNull('alasan_pembatalan')
+            ->groupBy('no_invoice')
+            ->selectRaw('no_invoice, SUM(total_harga) as total')
+            ->pluck('total', 'no_invoice');
+        $invoiceProduksiData = InvoiceProduksi::whereIn('no_invoice', $produksiInvoiceNos)->get()->keyBy('no_invoice');
+
+        $desainInvoiceNos = collect($desain->items())->pluck('no_invoice')->filter()->unique()->values();
+        $desainInvoiceTotals = Desain::whereIn('no_invoice', $desainInvoiceNos)
+            ->whereNull('alasan_pembatalan')
+            ->groupBy('no_invoice')
+            ->selectRaw('no_invoice, SUM(total_harga) as total')
+            ->pluck('total', 'no_invoice');
+        $invoiceDesainData = InvoiceDesain::whereIn('no_invoice', $desainInvoiceNos)->get()->keyBy('no_invoice');
+
         return Inertia::render('Admin/LaporanOrder', compact(
-            'desain', 'produksi', 'tglAwal', 'tglAkhir', 'search', 'pembayaran', 'penggunaIds', 'penggunas', 'desainBatal', 'customers', 'customerIds'
+            'desain', 'produksi', 'tglAwal', 'tglAkhir', 'search', 'pembayaran', 'penggunaIds', 'penggunas', 'desainBatal', 'customers', 'customerIds',
+            'produksiInvoiceTotals', 'invoiceProduksiData', 'desainInvoiceTotals', 'invoiceDesainData'
         ));
     }
 

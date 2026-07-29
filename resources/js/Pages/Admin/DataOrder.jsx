@@ -2,7 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout'
 import { Link, router, usePage } from '@inertiajs/react'
 import React from 'react'
 
-export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchDesain, searchProduksi, penggunas }) {
+export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchDesain, searchProduksi, penggunas, invoiceProduksiData, produksiInvoiceTotals, invoiceDesainData, desainInvoiceTotals }) {
     const { auth } = usePage().props
     const canEdit = ['Admin', 'admin', 'Admin2', 'admin2', 'Admin 2', 'admin 2'].includes(auth?.user?.role)
     const [searchDesainVal, setSearchDesainVal] = React.useState(searchDesain || '')
@@ -20,6 +20,23 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
             Swal.fire({ icon: 'error', title: 'Gagal', text: flash.error })
         }
     }, [flash])
+
+    const groupByInvoice = (items) => {
+        const map = new Map()
+        items.forEach(item => {
+            const key = item.no_invoice || ''
+            if (!map.has(key)) {
+                map.set(key, { no_invoice: item.no_invoice, items: [], total: 0 })
+            }
+            const g = map.get(key)
+            g.items.push(item)
+            g.total += Number(item.total_harga || 0)
+        })
+        return Array.from(map.values())
+    }
+
+    const groupedProduksi = React.useMemo(() => groupByInvoice(produksi.data), [produksi.data])
+    const groupedDesain = React.useMemo(() => groupByInvoice(desain.data), [desain.data])
 
     const csList = React.useMemo(() => {
         return Array.isArray(penggunas) ? penggunas.filter((p) => p.role === 'Customer Service') : []
@@ -167,32 +184,71 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
                                         <tr>
                                             <td colSpan={12} className="text-center py-8 text-base-content/50">Tidak ada data produksi</td>
                                         </tr>
-                                    ) : (
-                                        produksi.data.map((item, index) => (
-                                            <tr key={item.id} className={`${canEdit ? 'cursor-pointer hover:bg-base-200' : ''}`} onClick={() => canEdit && openEditProduksi(item)}>
-                                                <td>{produksi.from + index}</td>
-                                                <td>{item.tanggal}</td>
-                                                <td>{item.tgl_kirim}</td>
-                                                <td className="font-mono font-medium">{item.no_invoice}</td>
-                                                <td className="font-mono">{item.kode_spk}</td>
-                                                <td>{item.customer?.nama}</td>
-                                                <td>{item.bahan?.bahan}</td>
-                                                <td>{item.keterangan}</td>
-                                                <td className="tabular-nums text-center">{item.qty}</td>
-                                                <td className="tabular-nums">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
-                                                <td>
-                                                    {item.pembayaran ? (
-                                                        <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'utang' ? 'badge-warning' : item.pembayaran === 'transfer' ? 'badge-info' : 'badge-secondary'}`}>
-                                                            {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'utang' ? 'Utang' : item.pembayaran === 'transfer' ? 'Transfer' : 'QRIS'}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-base-content/30">-</span>
-                                                    )}
-                                                </td>
-                                                <td>{item.cs?.username || '-'}</td>
-                                            </tr>
+                                    ) : (() => {
+                                        let counter = produksi.from
+                                        return groupedProduksi.map(group => (
+                                            <React.Fragment key={group.no_invoice || '__nil__'}>
+                                                {(() => {
+                                                    const inv = invoiceProduksiData?.[group.no_invoice]
+                                                    const fullTotal = inv?.harga_akhir ?? produksiInvoiceTotals?.[group.no_invoice] ?? group.total
+                                                    const hasDiskon = inv?.diskon != null && Number(inv.diskon) !== 0 && inv?.harga_awal != null && inv?.harga_akhir != null
+                                                    const hasMinFaktur = !hasDiskon && inv?.minimum_faktur != null && Number(inv.minimum_faktur) > 0 && inv?.harga_awal != null && inv?.harga_akhir != null
+                                                    const headerBg = hasDiskon ? 'bg-orange-100' : hasMinFaktur ? 'bg-blue-100' : 'bg-base-300'
+                                                    return (
+                                                        <tr className={`${headerBg} font-semibold text-sm`}>
+                                                            <td colSpan={12} className="p-2">
+                                                                <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+                                                                    <span className="font-bold">Inv: {group.no_invoice || '-'}</span>
+                                                                    <span>Customer: {group.items[0]?.customer?.nama || '-'}</span>
+                                                                    {hasDiskon ? (
+                                                                        <span className="ml-auto font-bold text-success">
+                                                                            Diskon: {inv.mode_diskon === 'persen' ? `${inv.diskon}%` : `Rp ${Number(inv.diskon).toLocaleString('id-ID')}`}
+                                                                            {` | Awal: Rp ${Number(inv.harga_awal).toLocaleString('id-ID')}`}
+                                                                            {` | Akhir: Rp ${Number(fullTotal).toLocaleString('id-ID')}`}
+                                                                        </span>
+                                                                    ) : hasMinFaktur ? (
+                                                                        <span className="ml-auto font-bold text-success">
+                                                                            Min Faktur: Rp {Number(inv.minimum_faktur).toLocaleString('id-ID')}
+                                                                            {` | Awal: Rp ${Number(inv.harga_awal).toLocaleString('id-ID')}`}
+                                                                            {` | Akhir: Rp ${Number(fullTotal).toLocaleString('id-ID')}`}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="ml-auto font-bold text-success">
+                                                                            Total: Rp {Number(fullTotal).toLocaleString('id-ID')}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    )
+                                                })()}
+                                                {group.items.map(item => (
+                                                    <tr key={item.id} className={`${canEdit ? 'cursor-pointer hover:bg-base-200' : ''}`} onClick={() => canEdit && openEditProduksi(item)}>
+                                                        <td>{counter++}</td>
+                                                        <td>{item.tanggal}</td>
+                                                        <td>{item.tgl_kirim}</td>
+                                                        <td className="font-mono font-medium">{item.no_invoice}</td>
+                                                        <td className="font-mono">{item.kode_spk}</td>
+                                                        <td>{item.customer?.nama}</td>
+                                                        <td>{item.bahan?.bahan}</td>
+                                                        <td>{item.keterangan}</td>
+                                                        <td className="tabular-nums text-center">{item.qty}</td>
+                                                        <td className="tabular-nums">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
+                                                        <td>
+                                                            {item.pembayaran ? (
+                                                                <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'utang' ? 'badge-warning' : item.pembayaran === 'transfer' ? 'badge-info' : 'badge-secondary'}`}>
+                                                                    {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'utang' ? 'Utang' : item.pembayaran === 'transfer' ? 'Transfer' : 'QRIS'}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-base-content/30">-</span>
+                                                            )}
+                                                        </td>
+                                                        <td>{item.cs?.username || '-'}</td>
+                                                    </tr>
+                                                ))}
+                                            </React.Fragment>
                                         ))
-                                    )}
+                                    })()}
                                 </tbody>
                             </table>
                             {produksi.links && (
@@ -243,31 +299,63 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
                                         <tr>
                                             <td colSpan={11} className="text-center py-8 text-base-content/50">Tidak ada data desain</td>
                                         </tr>
-                                    ) : (
-                                        desain.data.map((item, index) => (
-                                            <tr key={item.id} className={`${canEdit ? 'cursor-pointer hover:bg-base-200' : ''}`} onClick={() => canEdit && openEditDesain(item)}>
-                                                <td>{desain.from + index}</td>
-                                                <td>{item.tanggal}</td>
-                                                <td>{item.no_antrian}</td>
-                                                <td className="font-mono font-medium">{item.kode_spk || item.no_invoice}</td>
-                                                <td>{item.customer?.nama}</td>
-                                                <td>{item.kategoridesain?.kategori}</td>
-                                                <td className="tabular-nums text-center">{item.qty}</td>
-                                                <td className="tabular-nums">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
-                                                <td>
-                                                    {item.pembayaran ? (
-                                                        <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'transfer' ? 'badge-info' : item.pembayaran === 'qris' ? 'badge-secondary' : 'badge-warning'}`}>
-                                                            {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'transfer' ? 'Transfer' : item.pembayaran === 'qris' ? 'QRIS' : 'Hutang'}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-base-content/30">-</span>
-                                                    )}
-                                                </td>
-                                                <td>{item.desainer?.username || '-'}</td>
-                                                <td>{item.cs?.username || '-'}</td>
-                                            </tr>
+                                    ) : (() => {
+                                        let counter = desain.from
+                                        return groupedDesain.map(group => (
+                                            <React.Fragment key={group.no_invoice || '__nil__'}>
+                                                {(() => {
+                                                    const inv = invoiceDesainData?.[group.no_invoice]
+                                                    const fullTotal = inv?.harga_akhir ?? desainInvoiceTotals?.[group.no_invoice] ?? group.total
+                                                    const hasDiskon = inv?.diskon != null && Number(inv.diskon) !== 0 && inv?.harga_awal != null && inv?.harga_akhir != null
+                                                    const headerBg = hasDiskon ? 'bg-orange-100' : 'bg-base-300'
+                                                    return (
+                                                        <tr className={`${headerBg} font-semibold text-sm`}>
+                                                            <td colSpan={11} className="p-2">
+                                                                <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+                                                                    <span className="font-bold">Inv: {group.no_invoice || '-'}</span>
+                                                                    <span>Customer: {group.items[0]?.customer?.nama || '-'}</span>
+                                                                    {hasDiskon ? (
+                                                                        <span className="ml-auto font-bold text-success">
+                                                                            Diskon: {inv.mode_diskon === 'persen' ? `${inv.diskon}%` : `Rp ${Number(inv.diskon).toLocaleString('id-ID')}`}
+                                                                            {` | Awal: Rp ${Number(inv.harga_awal).toLocaleString('id-ID')}`}
+                                                                            {` | Akhir: Rp ${Number(fullTotal).toLocaleString('id-ID')}`}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="ml-auto font-bold text-success">
+                                                                            Total: Rp {Number(fullTotal).toLocaleString('id-ID')}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    )
+                                                })()}
+                                                {group.items.map(item => (
+                                                    <tr key={item.id} className={`${canEdit ? 'cursor-pointer hover:bg-base-200' : ''}`} onClick={() => canEdit && openEditDesain(item)}>
+                                                        <td>{counter++}</td>
+                                                        <td>{item.tanggal}</td>
+                                                        <td>{item.no_antrian}</td>
+                                                        <td className="font-mono font-medium">{item.kode_spk || item.no_invoice}</td>
+                                                        <td>{item.customer?.nama}</td>
+                                                        <td>{item.kategoridesain?.kategori}</td>
+                                                        <td className="tabular-nums text-center">{item.qty}</td>
+                                                        <td className="tabular-nums">Rp {Number(item.total_harga || 0).toLocaleString('id-ID')}</td>
+                                                        <td>
+                                                            {item.pembayaran ? (
+                                                                <span className={`badge badge-sm ${item.pembayaran === 'lunas' ? 'badge-success' : item.pembayaran === 'transfer' ? 'badge-info' : item.pembayaran === 'qris' ? 'badge-secondary' : 'badge-warning'}`}>
+                                                                    {item.pembayaran === 'lunas' ? 'Lunas' : item.pembayaran === 'transfer' ? 'Transfer' : item.pembayaran === 'qris' ? 'QRIS' : 'Hutang'}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-base-content/30">-</span>
+                                                            )}
+                                                        </td>
+                                                        <td>{item.desainer?.username || '-'}</td>
+                                                        <td>{item.cs?.username || '-'}</td>
+                                                    </tr>
+                                                ))}
+                                            </React.Fragment>
                                         ))
-                                    )}
+                                    })()}
                                 </tbody>
                             </table>
                             {desain.links && (
