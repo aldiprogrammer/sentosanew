@@ -65,14 +65,6 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
     const customerLimit = Number(firstCustomer?.limit || 0)
     const customerLimitAkhir = Number(firstCustomer?.limit_akhir || 0)
     const customerLimitRemaining = customerLimit - customerLimitAkhir
-    const wouldExceedLimit = paymentType === 'utang' && (customerLimitAkhir + totalHarga > customerLimit)
-
-    const kembalian = uangDibayar !== '' ? Number(uangDibayar) - totalHarga : 0
-
-    React.useEffect(() => {
-        if (paymentType !== 'lunas') setUangDibayar('')
-    }, [paymentType])
-
     const selectedInvoice = selectedItems.length > 0 ? selectedItems[0]?.no_invoice : null
 
     const existingDiskon = React.useMemo(() => {
@@ -84,6 +76,22 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
         if (!selectedInvoice || !Array.isArray(pengajuanDiskons)) return null
         return pengajuanDiskons.find(d => d.no_invoice === selectedInvoice && d.status === 'disetujui') || null
     }, [selectedInvoice, pengajuanDiskons])
+
+    const hargaAkhir = diskonInfoForReceipt ? Number(diskonInfoForReceipt.harga_diskon) : totalHarga
+    const wouldExceedLimit = paymentType === 'utang' && (customerLimitAkhir + hargaAkhir > customerLimit)
+
+    const kembalian = uangDibayar !== '' ? Number(uangDibayar) - hargaAkhir : 0
+
+    const storedInvoiceDesain = selectedItems[0]?.invoice_desain
+
+    React.useEffect(() => {
+        if (storedInvoiceDesain?.uang) return
+        if (paymentType === 'transfer' || paymentType === 'qris') {
+            setUangDibayar(String(hargaAkhir))
+        } else if (paymentType !== 'lunas') {
+            setUangDibayar('')
+        }
+    }, [paymentType, hargaAkhir, storedInvoiceDesain?.uang])
 
     const handleSearch = (e) => {
         e.preventDefault()
@@ -119,8 +127,17 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
         ? Math.max(0, hargaAwalDiskon - (hargaAwalDiskon * diskonVal / 100))
         : Math.max(0, hargaAwalDiskon - diskonVal)
 
-    const buildReceiptHtml = (items) =>
-        buildDesainReceiptHtml({ items, auth, paymentType })
+    const buildReceiptHtml = (items) => {
+        const stored = items[0]?.invoice_desain
+        const gtHarga = items.reduce((s, it) => s + Number(it.total_harga || 0), 0)
+        const groupHargaAkhir = diskonInfoForReceipt ? Number(diskonInfoForReceipt.harga_diskon) : gtHarga
+        return buildDesainReceiptHtml({
+            items, auth, paymentType,
+            diskonInfo: diskonInfoForReceipt,
+            uang: stored?.uang ?? (uangDibayar || groupHargaAkhir),
+            kembalian: stored?.kembalian ?? (kembalian < 0 ? 0 : kembalian),
+        })
+    }
 
     const xsrfToken = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || ''
 
@@ -184,19 +201,21 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
 
     const handleCetakStruk = () => {
         if (selectedItems.length === 0) return
-        setPaymentType('lunas')
+        const storedType = selectedItems[0]?.pembayaran || 'lunas'
+        setPaymentType(storedType)
         setPaymentError(null)
         setPrintMode('single')
-        setUangDibayar('')
+        setUangDibayar(storedInvoiceDesain?.uang ?? '')
         paymentModalRef.current?.showModal()
     }
 
     const handleCetakGabungan = () => {
         if (selectedItems.length === 0) return
-        setPaymentType('lunas')
+        const storedType = selectedItems[0]?.pembayaran || 'lunas'
+        setPaymentType(storedType)
         setPaymentError(null)
         setPrintMode('combined')
-        setUangDibayar('')
+        setUangDibayar(storedInvoiceDesain?.uang ?? '')
         paymentModalRef.current?.showModal()
     }
 
@@ -531,6 +550,20 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
                                 <span className="text-sm text-base-content/70">Total Harga</span>
                                 <span className="font-semibold text-success">Rp {totalHarga.toLocaleString('id-ID')}</span>
                             </div>
+                            {diskonInfoForReceipt && (
+                                <div className="flex justify-between items-center p-3 bg-warning/10 border border-warning/30 rounded-lg">
+                                    <span className="text-sm text-base-content/70">
+                                        Diskon ({diskonInfoForReceipt.mode_diskon === 'persen' ? `${diskonInfoForReceipt.diskon}%` : `Rp ${Number(diskonInfoForReceipt.diskon).toLocaleString('id-ID')}`})
+                                    </span>
+                                    <span className="font-semibold text-error">- Rp {Number(totalHarga - Number(diskonInfoForReceipt.harga_diskon)).toLocaleString('id-ID')}</span>
+                                </div>
+                            )}
+                            {diskonInfoForReceipt && (
+                                <div className="flex justify-between items-center p-3 bg-success/10 border border-success/30 rounded-lg">
+                                    <span className="text-sm font-semibold">Harga Akhir</span>
+                                    <span className="font-bold text-success text-lg">Rp {Number(diskonInfoForReceipt.harga_diskon).toLocaleString('id-ID')}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
                                 <span className="text-sm text-base-content/70">Customer</span>
                                 <span className="font-medium">{firstCustomer?.nama || '-'}</span>
@@ -576,7 +609,7 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
                                     </div>
                                 </label>
                             </div>
-                            {paymentType === 'lunas' && (
+                            {(paymentType === 'lunas' || paymentType === 'transfer' || paymentType === 'qris') && (
                                 <>
                                     <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
                                         <span className="text-sm text-base-content/70">Uang Dibayar</span>
@@ -590,6 +623,7 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
                                                 const raw = e.target.value.replace(/[^0-9]/g, '')
                                                 setUangDibayar(raw === '' ? '' : raw)
                                             }}
+                                            readOnly={paymentType !== 'lunas'}
                                         />
                                     </div>
                                     <div className="flex justify-between items-center p-3 bg-base-200 rounded-lg">

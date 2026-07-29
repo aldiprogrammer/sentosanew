@@ -98,7 +98,7 @@ const receiptStyles = `
     .printed { display: flex; justify-content: space-between; margin-top: 3px; font-size: 10px; }
 `
 
-export const buildProductionReceiptHtml = ({ items, auth, paymentType, diskonInfo, minimumHarga = 0, hargaAkhirInvoice = null }) => {
+export const buildProductionReceiptHtml = ({ items, auth, paymentType, diskonInfo, minimumHarga = 0, hargaAkhirInvoice = null, uang = null, kembalian = null }) => {
     const printedAt = new Date()
     const gtHarga = items.reduce((s, it) => s + Number(it.total_harga || 0), 0)
     const gtQty = items.reduce((s, it) => s + Number(it.qty || 0), 0)
@@ -109,6 +109,8 @@ export const buildProductionReceiptHtml = ({ items, auth, paymentType, diskonInf
     const cashierName = items[0]?.cs?.username || auth?.user?.username || auth?.user?.name || 'Admin'
     const paymentLabels = { lunas: 'TUNAI', utang: 'UTANG', transfer: 'TRANSFER', qris: 'QRIS' }
     const paymentLabel = paymentLabels[paymentType] || 'TUNAI'
+
+    const safeKembalian = kembalian !== null ? Math.max(0, Number(kembalian)) : null
 
     const hasDiskon = diskonInfo && Number(diskonInfo.diskon || 0) > 0
     const diskonLabel = hasDiskon
@@ -182,6 +184,14 @@ export const buildProductionReceiptHtml = ({ items, auth, paymentType, diskonInf
                 ${hasDiskon || hasMinimumFaktur ? `<tr><td class="summary-label" colspan="3" style="font-weight:900">Harga Akhir</td><td colspan='1' class="summary-amount" style="font-weight:900">${formatMoney(hargaAkhir)}</td></tr>` : ''}
             </tfoot>
         </table>
+
+        ${uang !== null ? `
+        <table>
+            <tfoot>
+                <tr><td class="summary-label" colspan="3">Uang</td><td class="summary-amount">${formatMoney(uang)}</td></tr>
+                <tr><td class="summary-label" colspan="3">Kembalian</td><td class="summary-amount">${formatMoney(safeKembalian)}</td></tr>
+            </tfoot>
+        </table>` : ''}
 
 <br>
         <div class="notes">

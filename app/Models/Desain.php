@@ -29,4 +29,9 @@ class Desain extends Model
     {
         return $this->belongsTo(Pengguna::class, 'id_cs');
     }
+
+    public function invoiceDesain()
+    {
+        return $this->belongsTo(InvoiceDesain::class, 'no_invoice', 'no_invoice');
+    }
 }
