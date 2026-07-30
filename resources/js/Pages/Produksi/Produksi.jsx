@@ -132,6 +132,8 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans, sea
         return parseFloat(stokTerpilih?.total) < totalAll
     }, [stokTerpilih, totalAll, selectedItemStokIds, selected, itemstokbahans, isIndoor2])
 
+    const xsrfToken = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || ''
+
     const reviewReceipt = (item) => {
         const w = window.open('', '_blank', 'width=420,height=640')
         if (!w) return
@@ -145,6 +147,42 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans, sea
         if (!w) return
         w.document.open()
         w.document.write(buildFinishingReceiptHtml(item, selectedLabels))
+        w.document.close()
+        w.addEventListener('load', () => {
+            w.focus()
+            setTimeout(() => w.print(), 300)
+        })
+    }
+
+    const prosesAfterPrint = (item, payload) => {
+        const script = `
+            <script>
+                var _printed = false;
+                window.addEventListener('afterprint', function() {
+                    if (_printed) return;
+                    _printed = true;
+                    fetch('/produksi/produksi/${item.id}/proses', {
+                        method: 'PUT',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-XSRF-TOKEN': decodeURIComponent('${encodeURIComponent(xsrfToken)}')
+                        },
+                        body: JSON.stringify(${JSON.stringify(payload)})
+                    }).then(function() {
+                        if (window.opener && !window.opener.closed) {
+                            window.opener.location.reload();
+                        }
+                        window.close();
+                    });
+                });
+            </script>
+        `
+        const w = window.open('', '_blank', 'width=420,height=640')
+        if (!w) return
+        w.document.open()
+        w.document.write(buildFinishingReceiptHtml(item, selectedLabels).replace('</head>', script + '</head>'))
         w.document.close()
         w.addEventListener('load', () => {
             w.focus()
@@ -215,6 +253,7 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans, sea
 
     const handleProses = () => {
         if (!selected) return
+        const item = selected
         const payload = {
             sisa_putih_panjang: sisaPutihPanjang,
             sisa_putih_lebar: sisaPutihLebar,
@@ -230,13 +269,8 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans, sea
             payload.item_stok_ids = stokTerpilih?.id ? [stokTerpilih.id] : []
             payload.id_item_stok = stokTerpilih?.id || null
         }
-        router.put(`/produksi/produksi/${selected.id}/proses`, payload, {
-            preserveScroll: true,
-            onSuccess: () => {
-                closeModal()
-                printReceipt(selected)
-            },
-        })
+        closeModal()
+        prosesAfterPrint(item, payload)
     }
 
     const requestPassword = useCallback((action) => {

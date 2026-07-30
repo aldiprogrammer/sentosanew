@@ -176,7 +176,12 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                         'X-XSRF-TOKEN': decodeURIComponent('${encodeURIComponent(xsrfToken)}')
                     },
                     body: JSON.stringify({ ids: ${JSON.stringify(ids)}, payment_type: '${paymentTypeVal}', minimum_faktur: ${minimumHarga || 0}, uang: ${uangDibayar ? Number(uangDibayar) : 'null'}, kembalian: ${uangDibayar ? Math.round(Number(uangDibayar) - totalHargaAkhir) : 'null'} })
-                }).then(function() { window.close(); });
+                }).then(function() {
+                    if (window.opener && !window.opener.closed) {
+                        window.opener.location.reload();
+                    }
+                    window.close();
+                });
             });
         </script>
     `
@@ -261,7 +266,6 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
         } else {
             doPrintReceipt(selectedItems)
         }
-        setSelected([])
         setProcessing(false)
     }
 
