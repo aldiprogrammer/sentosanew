@@ -117,7 +117,6 @@ class LaporanOrderController extends Controller
         $customerIds = array_values(array_filter((array) $request->query('customer_id', []), fn ($id) => $id !== ''));
         $filters['pengguna_id'] = $penggunaIds;
         $filters['customer_id'] = $customerIds;
-        $totalKeseluruhan = $data->sum('total_harga');
         $penggunaName = ! empty($penggunaIds)
             ? Pengguna::whereIn('id', $penggunaIds)->pluck('username')->implode(', ')
             : '';
@@ -125,7 +124,19 @@ class LaporanOrderController extends Controller
             ? Customer::whereIn('id', $customerIds)->pluck('nama')->implode(', ')
             : '';
 
-        $pdf = Pdf::loadView('pdf.laporan-order-desain', compact('data', 'filters', 'totalKeseluruhan', 'penggunaName', 'customerName'))
+        $grouped = $data->groupBy(function ($item) {
+            return $item->no_invoice ?: '__no_invoice__';
+        });
+
+        $invoiceNos = $grouped->keys()->filter(fn ($v) => $v !== '__no_invoice__')->values();
+        $invoiceData = InvoiceDesain::whereIn('no_invoice', $invoiceNos)->get()->keyBy('no_invoice');
+
+        $totalKeseluruhan = $grouped->sum(function ($items, $key) use ($invoiceData) {
+            $inv = $invoiceData[$key] ?? null;
+            return $inv ? (float) $inv->harga_akhir : $items->sum('total_harga');
+        });
+
+        $pdf = Pdf::loadView('pdf.laporan-order-desain', compact('grouped', 'filters', 'totalKeseluruhan', 'penggunaName', 'customerName', 'invoiceData'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->stream('laporan-order-desain.pdf');
@@ -139,7 +150,6 @@ class LaporanOrderController extends Controller
         $customerIds = array_values(array_filter((array) $request->query('customer_id', []), fn ($id) => $id !== ''));
         $filters['pengguna_id'] = $penggunaIds;
         $filters['customer_id'] = $customerIds;
-        $totalKeseluruhan = $data->sum('total_harga');
         $penggunaName = ! empty($penggunaIds)
             ? Pengguna::whereIn('id', $penggunaIds)->pluck('username')->implode(', ')
             : '';
@@ -147,7 +157,19 @@ class LaporanOrderController extends Controller
             ? Customer::whereIn('id', $customerIds)->pluck('nama')->implode(', ')
             : '';
 
-        $pdf = Pdf::loadView('pdf.laporan-order-produksi', compact('data', 'filters', 'totalKeseluruhan', 'penggunaName', 'customerName'))
+        $grouped = $data->groupBy(function ($item) {
+            return $item->no_invoice ?: '__no_invoice__';
+        });
+
+        $invoiceNos = $grouped->keys()->filter(fn ($v) => $v !== '__no_invoice__')->values();
+        $invoiceData = InvoiceProduksi::whereIn('no_invoice', $invoiceNos)->get()->keyBy('no_invoice');
+
+        $totalKeseluruhan = $grouped->sum(function ($items, $key) use ($invoiceData) {
+            $inv = $invoiceData[$key] ?? null;
+            return $inv ? (float) $inv->harga_akhir : $items->sum('total_harga');
+        });
+
+        $pdf = Pdf::loadView('pdf.laporan-order-produksi', compact('grouped', 'filters', 'totalKeseluruhan', 'penggunaName', 'customerName', 'invoiceData'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->stream('laporan-order-produksi.pdf');

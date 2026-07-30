@@ -58,19 +58,45 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($data as $i => $item)
-                <tr>
-                    <td class="text-center">{{ $i + 1 }}</td>
-                    <td>{{ $item->tanggal }}</td>
-                    <td>{{ $item->no_invoice ?? $item->kode_spk }}</td>
-                    <td>{{ $item->no_antrian }}</td>
-                    <td>{{ $item->customer->nama ?? '-' }}</td>
-                    <td>{{ $item->kategoridesain->kategori ?? '-' }}</td>
-                    <td class="text-center">{{ $item->qty }}</td>
-                    <td class="text-right">Rp {{ number_format((float) $item->total_harga, 0, ',', '.') }}</td>
-                    <td class="text-center">{{ $item->pembayaran ? ucfirst($item->pembayaran) : '-' }}</td>
-                    <td>{{ $item->desainer->username ?? '-' }}</td>
+            @php $counter = 1; @endphp
+            @forelse ($grouped as $noInvoice => $items)
+                @php
+                    $groupTotal = $items->sum('total_harga');
+                    $inv = $invoiceData[$noInvoice] ?? null;
+                    $hasDiskon = $inv && $inv->diskon != null && (float) $inv->diskon !== 0.0 && $inv->harga_awal != null && $inv->harga_akhir != null;
+                    $fullTotal = $inv->harga_akhir ?? $groupTotal;
+                @endphp
+                <tr style="background: #d1d5db; font-weight: bold;">
+                    <td colspan="10" style="padding: 6px 8px;">
+                        <span>Inv: {{ $noInvoice === '__no_invoice__' ? '-' : $noInvoice }}</span>
+                        <span style="margin-left: 20px;">Customer: {{ $items->first()->customer->nama ?? '-' }}</span>
+                        @if ($hasDiskon)
+                            <span style="float: right; color: #16a34a;">
+                                Diskon: {{ $inv->mode_diskon === 'persen' ? $inv->diskon . '%' : 'Rp ' . number_format((float) $inv->diskon, 0, ',', '.') }}
+                                | Awal: Rp {{ number_format((float) $inv->harga_awal, 0, ',', '.') }}
+                                | Akhir: Rp {{ number_format((float) $fullTotal, 0, ',', '.') }}
+                            </span>
+                        @else
+                            <span style="float: right; color: #16a34a;">
+                                Total: Rp {{ number_format((float) $fullTotal, 0, ',', '.') }}
+                            </span>
+                        @endif
+                    </td>
                 </tr>
+                @foreach ($items as $item)
+                    <tr>
+                        <td class="text-center">{{ $counter++ }}</td>
+                        <td>{{ $item->tanggal }}</td>
+                        <td>{{ $item->no_invoice ?? $item->kode_spk }}</td>
+                        <td>{{ $item->no_antrian }}</td>
+                        <td>{{ $item->customer->nama ?? '-' }}</td>
+                        <td>{{ $item->kategoridesain->kategori ?? '-' }}</td>
+                        <td class="text-center">{{ $item->qty }}</td>
+                        <td class="text-right">Rp {{ number_format((float) $item->total_harga, 0, ',', '.') }}</td>
+                        <td class="text-center">{{ $item->pembayaran ? ucfirst($item->pembayaran) : '-' }}</td>
+                        <td>{{ $item->desainer->username ?? '-' }}</td>
+                    </tr>
+                @endforeach
             @empty
                 <tr>
                     <td colspan="10" class="text-center">Tidak ada data</td>
