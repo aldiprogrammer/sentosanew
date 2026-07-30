@@ -55,6 +55,7 @@
                 <th>Total Harga</th>
                 <th>Pembayaran</th>
                 <th>Status</th>
+                <th>CS</th>
             </tr>
         </thead>
         <tbody>
@@ -68,7 +69,7 @@
                     $fullTotal = $inv->harga_akhir ?? $groupTotal;
                 @endphp
                 <tr style="background: #d1d5db; font-weight: bold;">
-                    <td colspan="10" style="padding: 6px 8px;">
+                    <td colspan="11" style="padding: 6px 8px;">
                         <span>{{ $noInvoice === '__no_invoice__' ? '-' : $noInvoice }}</span>
                         <span style="margin-left: 20px;">Customer : {{ $items->first()->customer->nama ?? '-' }}</span>
                         @if ($hasDiskon)
@@ -109,11 +110,12 @@
                             @else -
                             @endif
                         </td>
+                        <td>{{ $item->cs->username ?? '-' }}</td>
                     </tr>
                 @endforeach
             @empty
                 <tr>
-                    <td colspan="10" class="text-center">Tidak ada data</td>
+                    <td colspan="11" class="text-center">Tidak ada data</td>
                 </tr>
             @endforelse
         </tbody>

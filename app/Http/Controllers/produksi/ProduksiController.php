@@ -153,32 +153,50 @@ class ProduksiController extends Controller
 
         $nonEksternal = array_diff($ids, $eksternal->toArray());
 
+        $isAdmin = in_array(auth()->user()->role, ['Admin', 'Admin 2']);
+
         if (! empty($nonDisplayIds) || ! empty($nonEksternal)) {
-            Produksi::whereIn('id', array_merge($nonDisplayIds, $nonEksternal))->update([
+            $idsToUpdate = array_merge($nonDisplayIds, $nonEksternal);
+            $baseUpdate = [
                 'status_produksi' => 1,
                 'pembayaran' => $paymentType,
-                'id_cs' => auth()->id(),
-            ]);
+            ];
+            if ($isAdmin) {
+                Produksi::whereIn('id', $idsToUpdate)->whereNull('id_cs')->update($baseUpdate + ['id_cs' => auth()->id()]);
+                Produksi::whereIn('id', $idsToUpdate)->whereNotNull('id_cs')->update($baseUpdate);
+            } else {
+                Produksi::whereIn('id', $idsToUpdate)->update($baseUpdate + ['id_cs' => auth()->id()]);
+            }
         }
 
         if ($displayIds->isNotEmpty()) {
-            Produksi::whereIn('id', $displayIds)->update([
+            $baseUpdate = [
                 'status_produksi' => 1,
                 'status_finishing' => 1,
                 'status_logistik' => 1,
                 'pembayaran' => $paymentType,
-                'id_cs' => auth()->id(),
-            ]);
+            ];
+            if ($isAdmin) {
+                Produksi::whereIn('id', $displayIds)->whereNull('id_cs')->update($baseUpdate + ['id_cs' => auth()->id()]);
+                Produksi::whereIn('id', $displayIds)->whereNotNull('id_cs')->update($baseUpdate);
+            } else {
+                Produksi::whereIn('id', $displayIds)->update($baseUpdate + ['id_cs' => auth()->id()]);
+            }
         }
 
         if ($eksternal->isNotEmpty()) {
-            Produksi::whereIn('id', $eksternal)->update([
+            $baseUpdate = [
                 'status_produksi' => 1,
                 'status_finishing' => 1,
                 'status_logistik' => 1,
                 'pembayaran' => $paymentType,
-                'id_cs' => auth()->id(),
-            ]);
+            ];
+            if ($isAdmin) {
+                Produksi::whereIn('id', $eksternal)->whereNull('id_cs')->update($baseUpdate + ['id_cs' => auth()->id()]);
+                Produksi::whereIn('id', $eksternal)->whereNotNull('id_cs')->update($baseUpdate);
+            } else {
+                Produksi::whereIn('id', $eksternal)->update($baseUpdate + ['id_cs' => auth()->id()]);
+            }
         }
 
         $processedItems = Produksi::with('customer')->whereIn('id', $ids)->get();
