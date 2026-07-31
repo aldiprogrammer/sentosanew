@@ -76,7 +76,7 @@ const receiptStyles = `
     th { border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: 900; text-align: center; font-size: 14px; }
     td { padding-top: 1px; padding-bottom: 1px; }
     .bahan { width: 17mm; text-align: left; }
-    .ukuran-col { width: 14mm; text-align: left; font-size: 13px; font-weight: bold; white-space: nowrap; }
+    .ukuran-col { width: 14mm; text-align: center; font-size: 12px; font-weight: bold; white-space: nowrap; }
     .ukuran { display: block; font-size: 12px; color: #444; margin-top: 0; }
     .qty { width: 7mm; text-align: center; font-variant-numeric: tabular-nums; font-size: 14px; }
     .amount { width: 18mm; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -123,7 +123,7 @@ export const buildProductionReceiptHtml = ({ items, auth, paymentType, diskonInf
     const itemRows = items.map((item, i) => `
             <tr${i % 2 === 1 ? ' class="alt"' : ''}>
                 <td class="bahan">${item.bahan?.kode || '-'}</td>
-                <td class="ukuran-col">${item.lebar || 0}x${item.tinggi || 0}${item.satuan ? ' ' + item.satuan : ''}</td>
+                <td class="ukuran-col" style="text-align: center">${item.lebar || 0}x${item.tinggi || 0}${item.satuan ? ' ' + item.satuan : ''}</td>
                 <td class="qty">${item.qty || 0}</td>
                 <td class="amount" style="font-weight: bold;">${formatMoney(item.total_harga)}</td>
             </tr>
