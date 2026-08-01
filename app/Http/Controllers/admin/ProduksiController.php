@@ -19,7 +19,7 @@ class ProduksiController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
-        $produksi = Produksi::with('customer', 'bahan.hargaBahan', 'pinising', 'mataAyam')
+        $produksi = Produksi::with('customer', 'bahan.hargaBahan', 'pinising', 'mataAyam', 'desainer', 'cs')
             ->when(auth()->user()->role === 'Desainer', function ($q) {
                 $q->where('id_desainer', auth()->id())->whereNull('pembayaran');
             })

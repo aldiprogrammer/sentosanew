@@ -53,7 +53,7 @@ class ProduksiController extends Controller
         $tglAwal = $request->query('tgl_awal');
         $tglAkhir = $request->query('tgl_akhir');
 
-        $items = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam', 'cs')
+        $items = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam', 'cs', 'desainer')
             ->whereNull('alasan_pembatalan')
             ->when(auth()->user()->role === 'Desainer', function ($q) {
                 $q->where('id_desainer', auth()->id())->whereNull('pembayaran');

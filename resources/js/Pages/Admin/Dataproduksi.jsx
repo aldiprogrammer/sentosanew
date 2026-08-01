@@ -504,12 +504,14 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                             <th>Pembayaran</th>
                                             <th>Metode P</th>
                                             <th>Tgl Kirim</th>
+                                            <th>Desainer</th>
+                                            <th>CS</th>
                                         </tr>
                                     </thead>
                                     <tbody className="text-xs">
                                         {(Array.isArray(produksi) ? produksi : []).length === 0 ? (
                                             <tr>
-                                                <td colSpan={16} className="text-center py-8 text-base-content/50">
+                                                <td colSpan={18} className="text-center py-8 text-base-content/50">
                                                     Tidak ada data produksi
                                                 </td>
                                             </tr>
@@ -527,7 +529,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                                             <td className="font-medium">{groupIndex + 1}</td>
                                                             <td className="font-mono font-semibold">{group.no_invoice}</td>
                                                             <td className="font-medium">{group.customer?.nama}</td>
-                                                            <td colSpan={12}>
+                                                            <td colSpan={14}>
                                                                 <div className="flex items-center justify-between gap-3">
                                                                     <div className="flex items-center gap-3">
                                                                         <span className="badge badge-sm badge-success gap-1">
@@ -592,6 +594,8 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                                                 </td>
                                                                 <td>{item.metode_pengantaran}</td>
                                                                 <td>{item.tgl_kirim}</td>
+                                                                <td>{item.desainer?.role === 'Desainer' ? item.desainer.username : '-'}</td>
+                                                                <td>{item.cs?.username || '-'}</td>
                                                             </tr>
                                                         ))}
                                                     </React.Fragment>

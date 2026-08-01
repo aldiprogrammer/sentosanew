@@ -1453,6 +1453,8 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                         <th>Total Harga</th>
                         <th>Metode P</th>
                         <th>Tgl Kirim /Ambil</th>
+                        <th>Desainer</th>
+                        <th>CS</th>
                         <th>Catatan</th>
                       </tr>
                     </thead>
@@ -1477,6 +1479,8 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                           <td className={isDesainer && item.total_harga ? 'blur-sm select-none' : ''}>{isDesainer && item.total_harga ? '••••••' : (item.total_harga ? Math.round(Number(item.total_harga)).toLocaleString('id-ID') : '-')}</td>
                           <td>{item.metode_pengantaran}</td>
                           <td>{item.tgl_kirim}</td>
+                          <td>{item.desainer?.role === 'Desainer' ? item.desainer.username : '-'}</td>
+                          <td>{item.cs?.username || '-'}</td>
                           <td>{item.pinising?.catatan || ''}</td>
                         </tr>
                       ))}

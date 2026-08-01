@@ -32,4 +32,9 @@ class Produksi extends Model
     {
         return $this->belongsTo(Pengguna::class, 'id_cs');
     }
+
+    public function desainer()
+    {
+        return $this->belongsTo(Pengguna::class, 'id_desainer');
+    }
 }
