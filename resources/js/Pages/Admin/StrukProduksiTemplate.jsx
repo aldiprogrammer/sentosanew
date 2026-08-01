@@ -152,7 +152,7 @@ export const buildProductionReceiptHtml = ({ items, auth, paymentType, diskonInf
                 <td class="bahan invoice" style="font-weight: bold;">${invoiceNumber}</td>
                 <td class="ukuran-col"></td>
                 <td class="qty"></td>
-                <td class="amount" style="font-weight: bold;">${formatReceiptDateShort(printedAt)}</td>
+                <td class="amount" style="font-weight: bold;">${formatReceiptDateShort(firstItem?.tanggal || printedAt)}</td>
             </tr>
         </table>
 

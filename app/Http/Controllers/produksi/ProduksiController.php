@@ -153,7 +153,7 @@ class ProduksiController extends Controller
 
         $nonEksternal = array_diff($ids, $eksternal->toArray());
 
-        $isAdmin = in_array(auth()->user()->role, ['Admin', 'Admin 2']);
+        $isAdmin = in_array(auth()->user()->role, ['Admin', 'Admin 2', 'Customer Service']);
 
         if (! empty($nonDisplayIds) || ! empty($nonEksternal)) {
             $idsToUpdate = array_merge($nonDisplayIds, $nonEksternal);
