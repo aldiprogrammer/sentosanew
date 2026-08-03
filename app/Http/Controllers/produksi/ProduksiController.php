@@ -10,6 +10,7 @@ use App\Models\Itemstokbahan;
 use App\Models\PengajuanDiskon;
 use App\Models\Produksi;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
 
 class ProduksiController extends Controller
@@ -102,11 +103,22 @@ class ProduksiController extends Controller
             ];
         })->values();
 
+        $page = max(1, (int) $request->query('page', 1));
+        $perPage = 50;
+        $paginator = new LengthAwarePaginator(
+            $grouped->forPage($page, $perPage)->values(),
+            $grouped->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         $pengajuanDiskons = PengajuanDiskon::orderBy('id', 'desc')->get();
         $customer = Customer::all();
 
         return Inertia::render('Admin/Dataproduksi', [
-            'produksi' => $grouped,
+            'produksi' => $paginator->items(),
+            'pagination' => $paginator,
             'tglAwal' => $tglAwal,
             'tglAkhir' => $tglAkhir,
             'pengajuanDiskons' => $pengajuanDiskons,

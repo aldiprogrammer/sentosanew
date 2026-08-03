@@ -4,7 +4,7 @@ import React, { useCallback, useRef } from 'react'
 import { buildProductionReceiptHtml } from './StrukProduksiTemplate.jsx'
 import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
 
-export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDiskons, customer }) {
+export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDiskons, customer, pagination }) {
     const { auth, flash } = usePage().props;
     const isDesainer = auth.user?.role === 'Desainer';
     const isCs = auth.user?.role === 'Customer Service';
@@ -59,6 +59,9 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
     const allPageItems = React.useMemo(() =>
         (Array.isArray(produksi) ? produksi : []).flatMap(group => group?.items || []),
         [produksi])
+
+    const pageNumber = pagination?.current_page || 1
+    const perPage = pagination?.per_page || 50
 
     const toggleSelectGroup = (group) => {
         const allInGroupSelected = group.items.every(item => selected.some(s => s.id === item.id))
@@ -141,7 +144,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
     const handleSearch = (e) => {
         e.preventDefault()
         setSelected([])
-        router.get('/dataproduksi', { search, tgl_awal, tgl_akhir }, { preserveState: true, replace: true })
+        router.get('/dataproduksi', { search, tgl_awal, tgl_akhir, page: 1 }, { preserveState: true, replace: true })
     }
 
     const buildReceiptHtml = (items) => {
@@ -526,7 +529,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                                             <td onClick={(e) => e.stopPropagation()}>
                                                                 <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={allInGroupSelected} onChange={() => toggleSelectGroup(group)} />
                                                             </td>
-                                                            <td className="font-medium">{groupIndex + 1}</td>
+                                                            <td className="font-medium">{(pageNumber - 1) * perPage + groupIndex + 1}</td>
                                                             <td className="font-mono font-semibold">{group.no_invoice}</td>
                                                             <td className="font-medium">{group.customer?.nama}</td>
                                                             <td colSpan={14}>
@@ -606,6 +609,21 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                 </table>
                             </div>
                         </div>
+
+                        {pagination?.last_page > 1 && (
+                            <div className="flex justify-center mt-4">
+                                <div className="join">
+                                    {pagination.links?.map((link, i) => (
+                                        <button
+                                            key={i}
+                                            className={`join-item btn btn-sm ${link.active ? 'btn-success' : ''} ${!link.url ? 'btn-disabled' : ''}`}
+                                            onClick={() => link.url && router.get(link.url, {}, { preserveState: true, replace: true })}
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
