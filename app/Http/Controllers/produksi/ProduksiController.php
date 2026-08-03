@@ -265,7 +265,7 @@ class ProduksiController extends Controller
         }
         $pr->sisa_putih_panjang = $request->sisa_putih_panjang;
         $pr->sisa_putih_lebar = $request->sisa_putih_lebar;
-        $pr->sisa_putih_total = $request->sisa_putih_total;
+        $pr->sisa_putih_total = round((float) $request->sisa_putih_total, 6);
         $pr->kode_bahanpakai = $request->kode_bahanpakai;
         $pr->update();
 
@@ -292,5 +292,14 @@ class ProduksiController extends Controller
         }
 
         return back()->with('success', 'Finishing berhasil diproses');
+    }
+
+    public function prosesFinishing($id)
+    {
+        $pr = Produksi::findOrFail($id);
+        $pr->status_finishing = 1;
+        $pr->update();
+
+        return back()->with('success', 'Berhasil diproses ke finishing');
     }
 }

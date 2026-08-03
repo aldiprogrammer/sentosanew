@@ -46,4 +46,13 @@ class FinishingController extends Controller
 
         return back()->with('success', 'Finishing berhasil diproses');
     }
+
+    public function kembalikan($id)
+    {
+        $pr = Produksi::findOrFail($id);
+        $pr->status_finishing = 0;
+        $pr->update();
+
+        return back()->with('success', 'Berhasil dikembalikan ke produksi');
+    }
 }

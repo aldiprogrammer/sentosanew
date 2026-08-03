@@ -170,6 +170,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/data-desain/batal-multi', [DesainController::class, 'batalMulti'])->name('batal-multi.desain');
     Route::get('/produksi/produksi', [ProduksiProduksiController::class, 'index'])->name('produksi.produksi');
     Route::put('/produksi/produksi/{id}/proses', [ProduksiProduksiController::class, 'proses'])->name('produksi.produksi');
+    Route::put('/produksi/produksi/{id}/proses-finishing', [ProduksiProduksiController::class, 'prosesFinishing'])->name('proses-finishing.produksi');
 
     Route::post('/verify-password', function (Request $request) {
         $request->validate(['password' => 'required|string']);
@@ -183,9 +184,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/produksi/finishing', [FinishingController::class, 'index'])->name('finishing.finishing');
     Route::put('/finishing/finishing/{id}/proses', [FinishingController::class, 'proses'])->name('finishing.finishing');
+    Route::put('/finishing/finishing/{id}/kembalikan', [FinishingController::class, 'kembalikan'])->name('kembalikan.finishing');
 
     Route::get('/produksi/logistik', [LogistikController::class, 'index'])->name('logistik.logistik');
     Route::put('/logistik/logistik/{id}/proses', [LogistikController::class, 'proses'])->name('logistik.logistik');
+    Route::put('/logistik/logistik/{id}/kembalikan', [LogistikController::class, 'kembalikan'])->name('kembalikan.logistik');
 
     Route::get('/produksi/pengambilan-stok', [PengambilanStokController::class, 'index'])->name('pengambilan-stok');
     Route::post('/produksi/pengambilan-stok/proses', [PengambilanStokController::class, 'proses'])->name('pengambilan-stok.proses');

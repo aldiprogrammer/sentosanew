@@ -257,7 +257,7 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans, sea
         const payload = {
             sisa_putih_panjang: sisaPutihPanjang,
             sisa_putih_lebar: sisaPutihLebar,
-            sisa_putih_total: String(totalAll),
+            sisa_putih_total: String(Number(totalAll.toFixed(6))),
             kode_bahanpakai: selectedBahanpakai,
             total_all: totalAll.toFixed(2),
             no_label: selectedLabels,
@@ -293,6 +293,15 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans, sea
                 break
             case 'proses':
                 handleProses()
+                break
+            case 'prosesFinishing':
+                router.put(`/produksi/produksi/${selected.id}/proses-finishing`, {}, {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Berhasil diproses ke finishing', timer: 1500, showConfirmButton: false })
+                        closeModal()
+                    },
+                })
                 break
         }
         setPendingAction(null)
@@ -705,8 +714,11 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans, sea
                                     </div>
                                 )}
                                 <div className="flex gap-2 w-full">
-                                    <button className="btn btn-success flex-1" disabled={isSisaKurang} onClick={() => requestPassword('review')}>
+                                    <button className="btn btn-outline flex-1" disabled={isSisaKurang} onClick={() => requestPassword('review')}>
                                         <i className="fas fa-eye"></i> Review Struk
+                                    </button>
+                                    <button className="btn btn-warning flex-1" onClick={() => requestPassword('prosesFinishing')}>
+                                        <i className="fas fa-arrow-right"></i> Proses ke Finishing
                                     </button>
                                     <button className="btn btn-primary flex-1" disabled={isSisaKurang} onClick={() => requestPassword('proses')}>
                                         <i className="fas fa-check"></i> Proses & Cetak

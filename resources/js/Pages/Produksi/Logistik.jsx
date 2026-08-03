@@ -241,12 +241,22 @@ table.items tr:nth-child(even) { background: #f0fdf4; }
 
     const handlePasswordConfirmed = useCallback(() => {
         setShowPasswordModal(false)
+        if (!selected) return
         switch (pendingAction) {
             case 'cetak_surat':
                 cetakSuratJalan(selected)
                 break
             case 'selesai':
                 handleProses()
+                break
+            case 'kembalikan':
+                router.put(`/logistik/logistik/${selected.id}/kembalikan`, {}, {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Berhasil dikembalikan ke finishing', timer: 1500, showConfirmButton: false })
+                        closeModal()
+                    },
+                })
                 break
         }
         setPendingAction(null)
@@ -552,6 +562,9 @@ table.items tr:nth-child(even) { background: #f0fdf4; }
                                     <button className="btn btn-ghost" onClick={closeModal}>Batal</button>
                                     <button className="btn btn-secondary flex-1" onClick={() => requestPassword('cetak_surat')}>
                                         <i className="fas fa-truck"></i> Cetak Surat Jalan
+                                    </button>
+                                    <button className="btn btn-warning flex-1" onClick={() => requestPassword('kembalikan')}>
+                                        Kembalikan ke Finishing
                                     </button>
                                     <button className="btn btn-primary flex-1" onClick={() => requestPassword('selesai')}>
                                         <i className="fas fa-check"></i> Selesai

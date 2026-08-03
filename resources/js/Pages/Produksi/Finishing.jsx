@@ -88,13 +88,23 @@ export default function Finishing({ produksi, search: initialSearch, tglAwal: in
 
     const handlePasswordConfirmed = useCallback(() => {
         setShowPasswordModal(false)
+        if (!selected) return
         switch (pendingAction) {
             case 'selesai':
                 handleProses()
                 break
+            case 'kembalikan':
+                router.put(`/finishing/finishing/${selected.id}/kembalikan`, {}, {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Berhasil dikembalikan ke produksi', timer: 1500, showConfirmButton: false })
+                        closeModal()
+                    },
+                })
+                break
         }
         setPendingAction(null)
-    }, [pendingAction])
+    }, [pendingAction, selected])
 
     const handlePasswordCancel = useCallback(() => {
         setShowPasswordModal(false)
@@ -312,6 +322,9 @@ export default function Finishing({ produksi, search: initialSearch, tglAwal: in
 
                             <div className="modal-action mt-5">
                                 <button className="btn btn-ghost" onClick={closeModal}>Batal</button>
+                                <button className="btn btn-warning flex-1" onClick={() => requestPassword('kembalikan')}>
+                                    <i className="fas fa-undo"></i> Kembalikan ke Produksi
+                                </button>
                                 <button className="btn btn-primary flex-1" onClick={() => requestPassword('selesai')}>
                                     <i className="fas fa-check-double"></i> Selesai Finishing
                                 </button>

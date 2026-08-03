@@ -82,4 +82,13 @@ class LogistikController extends Controller
 
         return back()->with('success', 'Logistik berhasil diproses');
     }
+
+    public function kembalikan($id)
+    {
+        $pr = Produksi::findOrFail($id);
+        $pr->status_logistik = 0;
+        $pr->update();
+
+        return back()->with('success', 'Berhasil dikembalikan ke finishing');
+    }
 }
