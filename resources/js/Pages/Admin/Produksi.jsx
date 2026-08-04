@@ -89,6 +89,17 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
   const today = new Date().toISOString().split("T")[0];
   const [search, setSearch] = useState('');
 
+  const generateUniqueInvoice = () => {
+    const prefix = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+    const userId = auth.user?.id || '0';
+    const used = new Set(existingInvoices || []);
+    for (let i = 0; i < 100; i++) {
+      const invoice = `INVOICE-${prefix}-${userId}-${Math.floor(Math.random() * 9000 + 1000)}`;
+      if (!used.has(invoice)) return invoice;
+    }
+    return `INVOICE-${prefix}-${userId}-${Math.floor(Math.random() * 900000 + 100000)}`;
+  };
+
   const hargaFieldByKategori = {
     Umum: 'harga_umum',
     Khusus: 'harga_khusus',
@@ -331,7 +342,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
     if (!cs) return;
 
     const active = todayActiveProduksi?.find(p => Number(p.id_customer) === Number(idCustomer));
-    const invoice = active ? active.no_invoice : 'INVOICE-' + new Date().toISOString().slice(2, 10).replace(/-/g, '') + Math.floor(Math.random() * 900 + 100);
+    const invoice = active ? active.no_invoice : generateUniqueInvoice();
     const spkPrefix = new Date().toISOString().slice(2, 10).replace(/-/g, '');
     const newSpk = 'SPK-' + spkPrefix + Math.floor(Math.random() * 100000);
 
@@ -1034,10 +1045,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   <button
                                     type="button"
                                     className="btn btn-outline btn-success btn-sm"
-                                    onClick={() => {
-                                      const prefix = new Date().toISOString().slice(2, 10).replace(/-/g, '');
-                                      setData('no_invoice', 'INVOICE-' + prefix + Math.floor(Math.random() * 900 + 100));
-                                    }}
+                                    onClick={() => setData('no_invoice', generateUniqueInvoice())}
                                     title="Generate invoice baru"
                                   >
                                     <i className="fas fa-sync-alt"></i>

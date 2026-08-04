@@ -132,8 +132,6 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans, sea
         return parseFloat(stokTerpilih?.total) < totalAll
     }, [stokTerpilih, totalAll, selectedItemStokIds, selected, itemstokbahans, isIndoor2])
 
-    const xsrfToken = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || ''
-
     const reviewReceipt = (item) => {
         const w = window.open('', '_blank', 'width=420,height=640')
         if (!w) return
@@ -147,42 +145,6 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans, sea
         if (!w) return
         w.document.open()
         w.document.write(buildFinishingReceiptHtml(item, selectedLabels))
-        w.document.close()
-        w.addEventListener('load', () => {
-            w.focus()
-            setTimeout(() => w.print(), 300)
-        })
-    }
-
-    const prosesAfterPrint = (item, payload) => {
-        const script = `
-            <script>
-                var _printed = false;
-                window.addEventListener('afterprint', function() {
-                    if (_printed) return;
-                    _printed = true;
-                    fetch('/produksi/produksi/${item.id}/proses', {
-                        method: 'PUT',
-                        credentials: 'same-origin',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-XSRF-TOKEN': decodeURIComponent('${encodeURIComponent(xsrfToken)}')
-                        },
-                        body: JSON.stringify(${JSON.stringify(payload)})
-                    }).then(function() {
-                        if (window.opener && !window.opener.closed) {
-                            window.opener.location.reload();
-                        }
-                        window.close();
-                    });
-                });
-            </script>
-        `
-        const w = window.open('', '_blank', 'width=420,height=640')
-        if (!w) return
-        w.document.open()
-        w.document.write(buildFinishingReceiptHtml(item, selectedLabels).replace('</head>', script + '</head>'))
         w.document.close()
         w.addEventListener('load', () => {
             w.focus()
@@ -251,28 +213,6 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans, sea
         modalRef.current?.close()
     }
 
-    const handleProses = () => {
-        if (!selected) return
-        const item = selected
-        const payload = {
-            sisa_putih_panjang: sisaPutihPanjang,
-            sisa_putih_lebar: sisaPutihLebar,
-            sisa_putih_total: String(Number(totalAll.toFixed(6))),
-            kode_bahanpakai: selectedBahanpakai,
-            total_all: totalAll.toFixed(2),
-            no_label: selectedLabels,
-        }
-        if (selected?.bahan?.satuan == 'LEMBAR') {
-            payload.item_stok_ids = selectedItemStokIds
-            payload.id_item_stok = null
-        } else {
-            payload.item_stok_ids = stokTerpilih?.id ? [stokTerpilih.id] : []
-            payload.id_item_stok = stokTerpilih?.id || null
-        }
-        closeModal()
-        prosesAfterPrint(item, payload)
-    }
-
     const requestPassword = useCallback((action) => {
         setPendingAction(action)
         setShowPasswordModal(true)
@@ -292,7 +232,8 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans, sea
                 closeModal()
                 break
             case 'proses':
-                handleProses()
+                printReceipt(selected)
+                closeModal()
                 break
             case 'prosesFinishing':
                 router.put(`/produksi/produksi/${selected.id}/proses-finishing`, {}, {
@@ -699,7 +640,7 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans, sea
 
                                 <div className="alert alert-info text-xs py-2">
                                     <i className="fas fa-info-circle"></i>
-                                    Setelah diproses, struk akan tercetak dan data berpindah ke halaman Finishing.
+                                    Tombol Cetak hanya mencetak struk tanpa mengubah status. Gunakan "Proses ke Finishing" untuk memproses order ke tahap berikutnya.
                                 </div>
                             </div>
 
@@ -720,8 +661,8 @@ export default function Produksi({ produksi, bahanpakaiList, itemstokbahans, sea
                                     <button className="btn btn-warning flex-1" onClick={() => requestPassword('prosesFinishing')}>
                                         <i className="fas fa-arrow-right"></i> Proses ke Finishing
                                     </button>
-                                    <button className="btn btn-primary flex-1" disabled={isSisaKurang} onClick={() => requestPassword('proses')}>
-                                        <i className="fas fa-check"></i> Proses & Cetak
+                                    <button className="btn btn-primary flex-1" onClick={() => requestPassword('proses')}>
+                                        <i className="fas fa-print"></i> Cetak
                                     </button>
                                 </div>
                             </div>

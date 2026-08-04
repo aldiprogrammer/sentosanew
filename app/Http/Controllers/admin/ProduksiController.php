@@ -48,7 +48,9 @@ class ProduksiController extends Controller
             $kodespk = 'SPK-'.date('ymd').rand(0, 100000);
         } while (Produksi::where('kode_spk', $kodespk)->exists());
         $kode_antrian = $this->kodeAntrianProduksiBerikutnya();
-        $kode_invoice = 'INVOICE-'.date('ymd').rand(0, 1000000);
+        do {
+            $kode_invoice = 'INVOICE-'.date('ymd').'-'.auth()->id().'-'.rand(0, 1000000);
+        } while (Produksi::where('no_invoice', $kode_invoice)->exists());
         $existingInvoices = Produksi::select('no_invoice')
             ->whereNotNull('no_invoice')
             ->where('no_invoice', '!=', '')
@@ -71,6 +73,17 @@ class ProduksiController extends Controller
             'kode_spk.unique' => 'Kode SPK sudah digunakan, silakan ganti dengan yang lain.',
         ]);
 
+        if ($request->filled('no_invoice') && $request->filled('id_customer')) {
+            $dipakaiCustomerLain = Produksi::where('no_invoice', $request->no_invoice)
+                ->where('id_customer', '!=', $request->id_customer)
+                ->exists();
+            if ($dipakaiCustomerLain) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['no_invoice' => 'Nomor invoice sudah digunakan oleh customer lain, silakan ganti dengan nomor yang berbeda.']);
+            }
+        }
+
         $bahan = Databahan::find($request->id_bahan);
         $harga_produk = $this->hargaProduk($bahan, $request);
         $total_harga = $this->totalHarga($bahan, $request, $harga_produk);
@@ -87,11 +100,15 @@ class ProduksiController extends Controller
                 ->where('tanggal', date('Y-m-d'))
                 ->where('status_produksi', 0)
                 ->first();
-            if ($existing) {
+            if ($existing && $existing->no_invoice) {
                 return $existing->no_invoice;
             }
 
-            return 'INVOICE-'.date('ymd').rand(100, 999);
+            do {
+                $invoice = 'INVOICE-'.date('ymd').'-'.auth()->id().'-'.rand(100, 9999);
+            } while (Produksi::where('no_invoice', $invoice)->exists());
+
+            return $invoice;
         })();
         $pr->id_customer = $request->id_customer;
         $pr->id_desain = $desain->id ?? $request->id_desain;
@@ -154,6 +171,18 @@ class ProduksiController extends Controller
         ], [
             'kode_spk.unique' => 'Kode SPK sudah digunakan, silakan ganti dengan yang lain.',
         ]);
+
+        if ($request->filled('no_invoice') && $request->filled('id_customer')) {
+            $dipakaiCustomerLain = Produksi::where('no_invoice', $request->no_invoice)
+                ->where('id_customer', '!=', $request->id_customer)
+                ->where('id', '!=', $id)
+                ->exists();
+            if ($dipakaiCustomerLain) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['no_invoice' => 'Nomor invoice sudah digunakan oleh customer lain, silakan ganti dengan nomor yang berbeda.']);
+            }
+        }
 
         $pr = Produksi::find($id);
 
