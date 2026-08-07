@@ -62,7 +62,15 @@ class ProduksiController extends Controller
             ->where('status_produksi', 0)
             ->get(['id_customer', 'no_invoice']);
 
-        return Inertia::render('Admin/Produksi', compact('produksi', 'desain', 'bahan', 'customer', 'kode_antrian', 'kodespk', 'kode_invoice', 'existingInvoices', 'todayActiveProduksi'));
+        $unpaidInvoices = Produksi::whereNull('pembayaran')
+            ->whereNotNull('no_invoice')
+            ->where('no_invoice', '!=', '')
+            ->distinct()
+            ->orderBy('no_invoice')
+            ->pluck('no_invoice')
+            ->values();
+
+        return Inertia::render('Admin/Produksi', compact('produksi', 'desain', 'bahan', 'customer', 'kode_antrian', 'kodespk', 'kode_invoice', 'existingInvoices', 'todayActiveProduksi', 'unpaidInvoices'));
     }
 
     public function store(Request $request)

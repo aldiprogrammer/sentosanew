@@ -83,11 +83,12 @@ function QtyRangeInfo({ ranges, caraPerhitungan }) {
   );
 }
 
-export default function Produksi({ produksi, desain, bahan, customer, kode_antrian, kodespk, kode_invoice, existingInvoices, todayActiveProduksi }) {
+export default function Produksi({ produksi, desain, bahan, customer, kode_antrian, kodespk, kode_invoice, existingInvoices, todayActiveProduksi, unpaidInvoices }) {
   const { auth } = usePage().props;
   const isDesainer = auth.user?.role === 'Desainer';
   const today = new Date().toISOString().split("T")[0];
   const [search, setSearch] = useState('');
+  const [unpaidWarning, setUnpaidWarning] = useState('');
 
   const generateUniqueInvoice = () => {
     const prefix = new Date().toISOString().slice(2, 10).replace(/-/g, '');
@@ -224,6 +225,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
   const customerModalRef = useRef(null);
 
   const openModal = () => {
+    setUnpaidWarning('');
     modalRef.current.showModal();
   };
 
@@ -242,6 +244,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
 
   const editmodalRef = useRef(null);
   const openModalEdit = (pd) => {
+    setUnpaidWarning('');
     editmodalRef.current.showModal();
     const harga = pd.harga_bahan || 0;
     setData({
@@ -346,6 +349,8 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
     const spkPrefix = new Date().toISOString().slice(2, 10).replace(/-/g, '');
     const newSpk = 'SPK-' + spkPrefix + Math.floor(Math.random() * 100000);
 
+    setUnpaidWarning((unpaidInvoices || []).includes(invoice) ? invoice : '');
+
     setData((prev) => ({
       ...prev,
       id_desain: ds?.id ?? "",
@@ -360,6 +365,16 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
       harga_tampil: hitungHarga(prev.id_bahan, cs.kategori, prev.qty, prev.sisi, cs.id),
       id_kategori_desain: ds?.id_kategori_desain ?? "0",
     }));
+  };
+
+  const handleInvoiceChange = (value) => {
+    setData("no_invoice", value);
+    setUnpaidWarning((unpaidInvoices || []).includes(value) ? value : "");
+  };
+
+  const generateNewInvoice = () => {
+    setData("no_invoice", generateUniqueInvoice());
+    setUnpaidWarning("");
   };
 
   const hitungHarga = (bahanId, pilihan, qty = data.qty, sisi = data.sisi, idCustomer = data.id_customer) => {
@@ -564,29 +579,35 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                     type="text"
                                     name="no_invoice"
                                     value={data.no_invoice}
-                                    onChange={handleChange}
+                                    onChange={(e) => handleInvoiceChange(e.target.value)}
                                     className="input input-bordered input-success w-full"
                                     placeholder="INVOICE-001"
                                     list="existingInvoicesList"
                                     required
                                   />
-                                  {/* <button
+                                </div>
+                                {unpaidWarning && (
+                                  <button
                                     type="button"
-                                    className="btn btn-outline btn-success btn-sm"
-                                    onClick={() => {
-                                      const prefix = new Date().toISOString().slice(2, 10).replace(/-/g, '');
-                                      setData('no_invoice', 'INVOICE-' + prefix + Math.floor(Math.random() * 900 + 100));
-                                    }}
+                                    className="btn btn-outline btn-warning btn-sm mt-2"
+                                    onClick={generateNewInvoice}
                                     title="Generate invoice baru"
                                   >
-                                    <i className="fas fa-sync-alt"></i>
-                                  </button> */}
-                                </div>
+                                    <i className="fas fa-plus"></i> Invoice Baru
+                                  </button>
+                                )}
                                 <datalist id="existingInvoicesList">
                                   {existingInvoices?.map((inv) => (
                                     <option key={inv} value={inv} />
                                   ))}
                                 </datalist>
+                                {unpaidWarning && (
+                                  <div className="alert alert-warning mt-2 py-2 text-xs">
+                                    <span>
+                                      Nomor invoice <b>{unpaidWarning}</b> sudah dipakai di produksi dengan status pembayaran belum lunas. Gunakan invoice yang sudah ada, atau klik <b>Invoice Baru</b> untuk membuat nomor invoice baru.
+                                    </span>
+                                  </div>
+                                )}
                               </label>
                               {/* Alamat */}
                               <label className="form-control w-full col-span-2">
@@ -758,7 +779,6 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   <option value="">Pilih Satuan Ukuran</option>
                                   <option value="Meter">Meter</option>
                                   <option value="Cm">Cm</option>
-                                  <option value="Mm">Mm</option>
                                   <option value="Unit">Unit</option>
                                 </select>
                               </label>
@@ -1036,7 +1056,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                     type="text"
                                     name="no_invoice"
                                     value={data.no_invoice}
-                                    onChange={handleChange}
+                                    onChange={(e) => handleInvoiceChange(e.target.value)}
                                     className="input input-bordered input-success w-full"
                                     placeholder="INVOICE-001"
                                     list="existingInvoicesEditList"
@@ -1045,17 +1065,34 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   <button
                                     type="button"
                                     className="btn btn-outline btn-success btn-sm"
-                                    onClick={() => setData('no_invoice', generateUniqueInvoice())}
+                                    onClick={() => generateNewInvoice()}
                                     title="Generate invoice baru"
                                   >
                                     <i className="fas fa-sync-alt"></i>
                                   </button>
                                 </div>
+                                {unpaidWarning && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-outline btn-warning btn-sm mt-2"
+                                    onClick={() => generateNewInvoice()}
+                                    title="Generate invoice baru"
+                                  >
+                                    <i className="fas fa-plus"></i> Invoice Baru
+                                  </button>
+                                )}
                                 <datalist id="existingInvoicesEditList">
                                   {existingInvoices?.map((inv) => (
                                     <option key={inv} value={inv} />
                                   ))}
                                 </datalist>
+                                {unpaidWarning && (
+                                  <div className="alert alert-warning mt-2 py-2 text-xs">
+                                    <span>
+                                      Nomor invoice <b>{unpaidWarning}</b> sudah dipakai di produksi dengan status pembayaran belum lunas. Gunakan invoice yang sudah ada, atau klik <b>Invoice Baru</b> untuk membuat nomor invoice baru.
+                                    </span>
+                                  </div>
+                                )}
                               </label>
                               {/* Alamat */}
                               <label className="form-control w-full">
