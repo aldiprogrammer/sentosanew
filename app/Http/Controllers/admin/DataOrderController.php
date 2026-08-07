@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\Desain;
 use App\Models\InvoiceDesain;
 use App\Models\InvoiceProduksi;
+use App\Models\PengajuanDiskon;
 use App\Models\Pengguna;
 use App\Models\Produksi;
 use Illuminate\Http\Request;
@@ -129,6 +131,143 @@ class DataOrderController extends Controller
             ->get();
 
         return response()->json($items);
+    }
+
+    public function applyDiskon(Request $request)
+    {
+        $request->validate([
+            'no_invoice' => 'required|string',
+            'id_customer' => 'required',
+            'harga_awal' => 'required|numeric|min:0',
+            'mode_diskon' => 'required|in:persen,rupiah',
+            'diskon' => 'required|numeric|min:0',
+        ]);
+
+        $customer = Customer::find($request->id_customer);
+        $hargaAwal = (float) $request->harga_awal;
+        $modeDiskon = $request->mode_diskon;
+        $diskonVal = (float) $request->diskon;
+        $hargaDiskon = $this->hitungHargaDiskon($hargaAwal, $modeDiskon, $diskonVal);
+
+        $dataPengajuan = [
+            'id_customer' => $request->id_customer,
+            'customer' => $customer->nama ?? '',
+            'harga_awal' => $hargaAwal,
+            'mode_diskon' => $modeDiskon,
+            'diskon' => $diskonVal,
+            'harga_diskon' => $hargaDiskon,
+            'status' => 'disetujui',
+            'tanggal' => date('Y-m-d'),
+        ];
+
+        $pengajuan = PengajuanDiskon::where('no_invoice', $request->no_invoice)
+            ->where('jenis', 'produksi')
+            ->first();
+        if ($pengajuan) {
+            $pengajuan->update($dataPengajuan);
+        } else {
+            PengajuanDiskon::create($dataPengajuan + ['no_invoice' => $request->no_invoice, 'jenis' => 'produksi']);
+        }
+
+        $invoice = InvoiceProduksi::firstOrNew(['no_invoice' => $request->no_invoice]);
+        $invoice->id_customer = $request->id_customer;
+        $invoice->customer = $customer->nama ?? '';
+        $invoice->harga_awal = $hargaAwal;
+        $invoice->mode_diskon = $modeDiskon;
+        $invoice->diskon = $diskonVal;
+        $invoice->harga_akhir = $hargaDiskon + (float) ($invoice->minimum_faktur ?? 0);
+        $invoice->tanggal = date('Y-m-d');
+        $invoice->save();
+
+        return redirect()->back()->with('success', 'Diskon berhasil diterapkan ke invoice produksi');
+    }
+
+    public function applyMinimumFaktur(Request $request)
+    {
+        $request->validate([
+            'no_invoice' => 'required|string',
+            'id_customer' => 'required',
+            'minimum_faktur' => 'required|numeric|min:0',
+        ]);
+
+        $customer = Customer::find($request->id_customer);
+        $minimumFaktur = (float) $request->minimum_faktur;
+
+        $invoice = InvoiceProduksi::firstOrNew(['no_invoice' => $request->no_invoice]);
+        $approvedDiskon = PengajuanDiskon::where('no_invoice', $request->no_invoice)
+            ->where('jenis', 'produksi')
+            ->where('status', 'disetujui')
+            ->first();
+
+        if ($invoice->exists) {
+            $hargaAwal = (float) ($invoice->harga_awal ?? 0);
+            $baseHarga = (float) ($approvedDiskon?->harga_diskon ?? $hargaAwal);
+        } else {
+            $hargaAwal = (float) Produksi::where('no_invoice', $request->no_invoice)
+                ->whereNull('alasan_pembatalan')
+                ->sum('total_harga');
+            $baseHarga = (float) ($approvedDiskon?->harga_diskon ?? $hargaAwal);
+        }
+
+        $invoice->id_customer = $request->id_customer;
+        $invoice->customer = $customer->nama ?? '';
+        $invoice->harga_awal = $hargaAwal;
+        $invoice->minimum_faktur = $minimumFaktur;
+        $invoice->harga_akhir = $baseHarga + $minimumFaktur;
+        $invoice->tanggal = date('Y-m-d');
+        $invoice->save();
+
+        return redirect()->back()->with('success', 'Minimum harga berhasil diterapkan ke invoice produksi');
+    }
+
+    private function hitungHargaDiskon(float $hargaAwal, string $modeDiskon, float $diskon): float
+    {
+        if ($modeDiskon === 'persen') {
+            $hargaDiskon = $hargaAwal - ($hargaAwal * $diskon / 100);
+        } else {
+            $hargaDiskon = $hargaAwal - $diskon;
+        }
+
+        return max(0, $hargaDiskon);
+    }
+
+    public function cancelDiskon($noInvoice)
+    {
+        $invoice = InvoiceProduksi::where('no_invoice', $noInvoice)->first();
+        if (! $invoice) {
+            return redirect()->back()->with('error', 'Invoice tidak ditemukan');
+        }
+
+        PengajuanDiskon::where('no_invoice', $noInvoice)
+            ->where('jenis', 'produksi')
+            ->where('status', 'disetujui')
+            ->update(['status' => 'ditolak']);
+
+        $invoice->diskon = null;
+        $invoice->mode_diskon = 'persen';
+        $invoice->harga_akhir = (float) $invoice->harga_awal + (float) ($invoice->minimum_faktur ?? 0);
+        $invoice->save();
+
+        return redirect()->back()->with('success', 'Diskon berhasil dibatalkan, total kembali semula');
+    }
+
+    public function cancelMinimumFaktur($noInvoice)
+    {
+        $invoice = InvoiceProduksi::where('no_invoice', $noInvoice)->first();
+        if (! $invoice) {
+            return redirect()->back()->with('error', 'Invoice tidak ditemukan');
+        }
+
+        $approvedDiskon = PengajuanDiskon::where('no_invoice', $noInvoice)
+            ->where('jenis', 'produksi')
+            ->where('status', 'disetujui')
+            ->first();
+
+        $invoice->minimum_faktur = 0;
+        $invoice->harga_akhir = (float) ($approvedDiskon?->harga_diskon ?? $invoice->harga_awal);
+        $invoice->save();
+
+        return redirect()->back()->with('success', 'Minimum harga berhasil dibatalkan, total kembali semula');
     }
 
     public function updateDesainPayment(Request $request, $id)

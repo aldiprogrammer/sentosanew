@@ -1262,7 +1262,7 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                                   <option value="">Pilih Satuan Ukuran</option>
                                   <option value="Meter">Meter</option>
                                   <option value="Cm">Cm</option>
-                                  <option value="Mm">Mm</option>
+                                  {/* <option value="Mm">Mm</option> */}
                                   <option value="Unit">Unit</option>
                                 </select>
                               </label>

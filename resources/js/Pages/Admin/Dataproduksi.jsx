@@ -375,7 +375,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                             <form onSubmit={handleSearch} className="flex flex-wrap gap-2 items-end">
                                 <input
                                     type="text"
-                                    placeholder="Cari kode SPK, keterangan, customer, bahan..."
+                                    placeholder="Cari kode SPK, no invoice, keterangan, customer, bahan..."
                                     className="input input-bordered input-success w-full max-w-xs input-sm"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
@@ -493,9 +493,10 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                                 <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={allSelected} onChange={toggleSelectAll} />
                                             </th>
                                             <th>No</th>
+                                            <th>Tgl</th>
                                             <th>No Inv</th>
-                                            <th>Kode SPK</th>
                                             <th>Customer</th>
+                                            <th>Kode SPK</th>
                                             <th>Bahan</th>
                                             <th>Keterangan</th>
                                             <th>Tinggi</th>
@@ -530,9 +531,10 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                                                 <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={allInGroupSelected} onChange={() => toggleSelectGroup(group)} />
                                                             </td>
                                                             <td className="font-medium">{(pageNumber - 1) * perPage + groupIndex + 1}</td>
+                                                            <td>{group.tanggal}</td>
                                                             <td className="font-mono font-semibold">{group.no_invoice}</td>
                                                             <td className="font-medium">{group.customer?.nama}</td>
-                                                            <td colSpan={14}>
+                                                            <td colSpan={13}>
                                                                 <div className="flex items-center justify-between gap-3">
                                                                     <div className="flex items-center gap-3">
                                                                         <span className="badge badge-sm badge-success gap-1">
@@ -571,9 +573,10 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
                                                                     <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={selected.some(s => s.id === item.id)} onChange={() => toggleSelect(item)} disabled={isCs && item.pembayaran} />
                                                                 </td>
                                                                 <td></td>
-                                                                <td></td>
-                                                                <td className="font-mono font-medium">{item.kode_spk}</td>
+                                                                <td className="text-center tabular-nums">{item.tanggal}</td>
+                                                                <td className="font-mono font-medium">{item.no_invoice}</td>
                                                                 <td>{item.customer?.nama}</td>
+                                                                <td className="font-mono font-medium">{item.kode_spk}</td>
                                                                 <td>{item.bahan?.bahan}</td>
                                                                 <td>{item.keterangan}</td>
                                                                 <td className="tabular-nums">{item.tinggi} {item.satuan}</td>

@@ -48,6 +48,11 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
     const [editIdCs, setEditIdCs] = React.useState('')
     const [editKeterangan, setEditKeterangan] = React.useState('')
     const [saving, setSaving] = React.useState(false)
+    const [diskonModal, setDiskonModal] = React.useState(null)
+    const [diskonForm, setDiskonForm] = React.useState({ mode_diskon: 'persen', diskon: '' })
+    const [minModal, setMinModal] = React.useState(null)
+    const [minValue, setMinValue] = React.useState('')
+    const [submitting, setSubmitting] = React.useState(false)
 
     const openEditProduksi = (item) => {
         setEditProduksi(item)
@@ -125,6 +130,118 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
         if (e.key === 'Enter') handleSearch()
     }
 
+    const openDiskonModal = (group) => {
+        const inv = invoiceProduksiData?.[group.no_invoice]
+        const hargaAwal = inv?.harga_awal ?? produksiInvoiceTotals?.[group.no_invoice] ?? group.total
+        const isEdit = inv?.diskon != null && Number(inv.diskon) !== 0 && inv?.harga_awal != null && inv?.harga_akhir != null
+        setDiskonModal({
+            no_invoice: group.no_invoice,
+            id_customer: group.items[0]?.customer?.id,
+            customer: group.items[0]?.customer?.nama || '-',
+            harga_awal: hargaAwal,
+            isEdit,
+        })
+        setDiskonForm({
+            mode_diskon: inv?.mode_diskon || 'persen',
+            diskon: inv?.diskon ?? '',
+        })
+        document.getElementById('modalDiskon').showModal()
+    }
+
+    const openMinModal = (group) => {
+        setMinModal({
+            no_invoice: group.no_invoice,
+            id_customer: group.items[0]?.customer?.id,
+            customer: group.items[0]?.customer?.nama || '-',
+        })
+        setMinValue('')
+        document.getElementById('modalMinimum').showModal()
+    }
+
+    const submitDiskon = (e) => {
+        e.preventDefault()
+        if (!diskonModal) return
+        setSubmitting(true)
+        router.post('/data-order/diskon', {
+            no_invoice: diskonModal.no_invoice,
+            id_customer: diskonModal.id_customer,
+            harga_awal: diskonModal.harga_awal,
+            mode_diskon: diskonForm.mode_diskon,
+            diskon: diskonForm.diskon,
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                document.getElementById('modalDiskon').close()
+                setDiskonModal(null)
+                setDiskonForm({ mode_diskon: 'persen', diskon: '' })
+                setSubmitting(false)
+            },
+            onError: () => setSubmitting(false),
+        })
+    }
+
+    const submitMinimum = (e) => {
+        e.preventDefault()
+        if (!minModal) return
+        setSubmitting(true)
+        router.post('/data-order/minimum', {
+            no_invoice: minModal.no_invoice,
+            id_customer: minModal.id_customer,
+            minimum_faktur: minValue,
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                document.getElementById('modalMinimum').close()
+                setMinModal(null)
+                setMinValue('')
+                setSubmitting(false)
+            },
+            onError: () => setSubmitting(false),
+        })
+    }
+
+    const batalDiskon = (group) => {
+        Swal.fire({
+            title: 'Batalkan Diskon?',
+            text: `Diskon untuk invoice ${group.no_invoice || '-'} akan dihapus dan total kembali semula.`,
+            icon: 'warning',
+            showCancelButton: true,
+            customClass: {
+                confirmButton: 'bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded',
+                cancelButton: 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded',
+            },
+            confirmButtonText: 'Ya, Batalkan',
+            cancelButtonText: 'Tidak',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                router.put(`/data-order/diskon/${encodeURIComponent(group.no_invoice)}/batal`, {}, {
+                    preserveScroll: true,
+                })
+            }
+        })
+    }
+
+    const batalMinimum = (group) => {
+        Swal.fire({
+            title: 'Batalkan Minimum Harga?',
+            text: `Minimum harga untuk invoice ${group.no_invoice || '-'} akan dihapus dan total kembali semula.`,
+            icon: 'warning',
+            showCancelButton: true,
+            customClass: {
+                confirmButton: 'bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded',
+                cancelButton: 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded',
+            },
+            confirmButtonText: 'Ya, Batalkan',
+            cancelButtonText: 'Tidak',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                router.put(`/data-order/minimum/${encodeURIComponent(group.no_invoice)}/batal`, {}, {
+                    preserveScroll: true,
+                })
+            }
+        })
+    }
+
     return (
         <AdminLayout>
             <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
@@ -198,24 +315,73 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
                                                         <tr className={`${headerBg} font-semibold text-sm`}>
                                                             <td colSpan={12} className="p-2">
                                                                 <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
-                                                                    <span className="font-bold">Inv: {group.no_invoice || '-'}</span>
+                                                                    <span className="font-bold">{group.no_invoice || '-'}</span>
                                                                     <span>Customer: {group.items[0]?.customer?.nama || '-'}</span>
                                                                     {hasDiskon ? (
-                                                                        <span className="ml-auto font-bold text-success">
+                                                                        <span className="font-bold text-success">
                                                                             Diskon: {inv.mode_diskon === 'persen' ? `${inv.diskon}%` : `Rp ${Number(inv.diskon).toLocaleString('id-ID')}`}
                                                                             {` | Awal: Rp ${Number(inv.harga_awal).toLocaleString('id-ID')}`}
                                                                             {` | Akhir: Rp ${Number(fullTotal).toLocaleString('id-ID')}`}
                                                                         </span>
                                                                     ) : hasMinFaktur ? (
-                                                                        <span className="ml-auto font-bold text-success">
+                                                                        <span className="font-bold text-success">
                                                                             Min Faktur: Rp {Number(inv.minimum_faktur).toLocaleString('id-ID')}
                                                                             {` | Awal: Rp ${Number(inv.harga_awal).toLocaleString('id-ID')}`}
                                                                             {` | Akhir: Rp ${Number(fullTotal).toLocaleString('id-ID')}`}
                                                                         </span>
                                                                     ) : (
-                                                                        <span className="ml-auto font-bold text-success">
+                                                                        <span className="font-bold text-success">
                                                                             Total: Rp {Number(fullTotal).toLocaleString('id-ID')}
                                                                         </span>
+                                                                    )}
+                                                                    {canEdit && (
+                                                                        <div className="dropdown dropdown-end ml-auto">
+                                                                            <div tabIndex={0} role="button" className="btn btn-ghost btn-xs text-primary">
+
+                                                                                Diskon & Min Harga <i className="fas fa-ellipsis-vertical"></i>
+                                                                            </div>
+                                                                            <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-50 w-56 p-2 shadow">
+                                                                                <li>
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        onClick={(e) => { e.stopPropagation(); document.activeElement?.blur(); openDiskonModal(group) }}
+                                                                                    >
+                                                                                        <i className={`fas ${hasDiskon ? 'fa-pen' : 'fa-percent'}`}></i>
+                                                                                        {hasDiskon ? 'Edit Diskon' : 'Tambah Diskon'}
+                                                                                    </button>
+                                                                                </li>
+                                                                                <li>
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        onClick={(e) => { e.stopPropagation(); document.activeElement?.blur(); openMinModal(group) }}
+                                                                                    >
+                                                                                        <i className="fas fa-arrow-up"></i> Tambah Minimum
+                                                                                    </button>
+                                                                                </li>
+                                                                                {hasDiskon && (
+                                                                                    <li>
+                                                                                        <button
+                                                                                            type="button"
+                                                                                            className="text-error"
+                                                                                            onClick={(e) => { e.stopPropagation(); document.activeElement?.blur(); batalDiskon(group) }}
+                                                                                        >
+                                                                                            <i className="fas fa-times"></i> Batalkan Diskon
+                                                                                        </button>
+                                                                                    </li>
+                                                                                )}
+                                                                                {hasMinFaktur && (
+                                                                                    <li>
+                                                                                        <button
+                                                                                            type="button"
+                                                                                            className="text-error"
+                                                                                            onClick={(e) => { e.stopPropagation(); document.activeElement?.blur(); batalMinimum(group) }}
+                                                                                        >
+                                                                                            <i className="fas fa-times"></i> Batalkan Minimum
+                                                                                        </button>
+                                                                                    </li>
+                                                                                )}
+                                                                            </ul>
+                                                                        </div>
                                                                     )}
                                                                 </div>
                                                             </td>
@@ -384,6 +550,7 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
                         <div className="space-y-3">
                             <div className="text-sm text-base-content/70">
                                 <p><span className="font-semibold">No Invoice:</span> {editProduksi.no_invoice}</p>
+                                <p><span className="font-semibold">Kode SPK:</span> {editProduksi.kode_spk || '-'}</p>
                                 <p><span className="font-semibold">Customer:</span> {editProduksi.customer?.nama}</p>
                                 <p><span className="font-semibold">Total:</span> Rp {Number(editProduksi.total_harga || 0).toLocaleString('id-ID')}</p>
                             </div>
@@ -435,6 +602,7 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
                         <div className="space-y-3">
                             <div className="text-sm text-base-content/70">
                                 <p><span className="font-semibold">No Invoice:</span> {editDesain.no_invoice}</p>
+                                <p><span className="font-semibold">Kode SPK:</span> {editDesain.kode_spk || editDesain.no_invoice || '-'}</p>
                                 <p><span className="font-semibold">Customer:</span> {editDesain.customer?.nama}</p>
                                 <p><span className="font-semibold">Total:</span> Rp {Number(editDesain.total_harga || 0).toLocaleString('id-ID')}</p>
                             </div>
@@ -468,6 +636,98 @@ export default function DataOrder({ desain, produksi, tglAwal, tglAkhir, searchD
                                 </form>
                             </div>
                         </div>
+                    )}
+                </div>
+            </dialog>
+
+            <dialog id="modalDiskon" className="modal">
+                <div className="modal-box max-w-md">
+                    <form method="dialog">
+                        <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                    </form>
+                    <h3 className="font-bold text-lg mb-4">{diskonModal?.isEdit ? 'Edit Diskon Produksi' : 'Tambah Diskon Produksi'}</h3>
+                    {diskonModal && (
+                        <form onSubmit={submitDiskon} className="space-y-3">
+                            <div className="text-sm text-base-content/70">
+                                <p><span className="font-semibold">No Invoice:</span> {diskonModal.no_invoice || '-'}</p>
+                                <p><span className="font-semibold">Customer:</span> {diskonModal.customer}</p>
+                                <p><span className="font-semibold">Harga Awal:</span> Rp {Number(diskonModal.harga_awal || 0).toLocaleString('id-ID')}</p>
+                            </div>
+                            <div className="divider my-2"></div>
+                            <label className="form-control w-full">
+                                <span className="label-text font-semibold mb-2">Mode Diskon</span>
+                                <div className="flex gap-3">
+                                    <label className="flex items-center gap-1.5 cursor-pointer">
+                                        <input type="radio" name="mode_diskon" className="radio radio-success radio-sm" checked={diskonForm.mode_diskon === 'persen'} onChange={() => setDiskonForm({ ...diskonForm, mode_diskon: 'persen' })} />
+                                        <span className="text-sm">Persen (%)</span>
+                                    </label>
+                                    <label className="flex items-center gap-1.5 cursor-pointer">
+                                        <input type="radio" name="mode_diskon" className="radio radio-success radio-sm" checked={diskonForm.mode_diskon === 'rupiah'} onChange={() => setDiskonForm({ ...diskonForm, mode_diskon: 'rupiah' })} />
+                                        <span className="text-sm">Rupiah (Rp)</span>
+                                    </label>
+                                </div>
+                            </label>
+                            <label className="form-control w-full">
+                                <span className="label-text font-semibold">Diskon</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="any"
+                                    className="input input-bordered input-sm w-full"
+                                    value={diskonForm.diskon}
+                                    onChange={(e) => setDiskonForm({ ...diskonForm, diskon: e.target.value })}
+                                    placeholder={diskonForm.mode_diskon === 'persen' ? 'Contoh: 10' : 'Contoh: 50000'}
+                                    required
+                                />
+                            </label>
+                            <div className="modal-action">
+                                <button className="btn btn-success btn-sm" disabled={submitting}>
+                                    {submitting ? <span className="loading loading-spinner loading-xs"></span> : 'Simpan'}
+                                </button>
+                                <form method="dialog">
+                                    <button className="btn btn-ghost btn-sm">Batal</button>
+                                </form>
+                            </div>
+                        </form>
+                    )}
+                </div>
+            </dialog>
+
+            <dialog id="modalMinimum" className="modal">
+                <div className="modal-box max-w-md">
+                    <form method="dialog">
+                        <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                    </form>
+                    <h3 className="font-bold text-lg mb-4">Tambah Minimum Harga</h3>
+                    {minModal && (
+                        <form onSubmit={submitMinimum} className="space-y-3">
+                            <div className="text-sm text-base-content/70">
+                                <p><span className="font-semibold">No Invoice:</span> {minModal.no_invoice || '-'}</p>
+                                <p><span className="font-semibold">Customer:</span> {minModal.customer}</p>
+                            </div>
+                            <div className="divider my-2"></div>
+                            <label className="form-control w-full">
+                                <span className="label-text font-semibold">Minimum Harga</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="any"
+                                    className="input input-bordered input-sm w-full"
+                                    value={minValue}
+                                    onChange={(e) => setMinValue(e.target.value)}
+                                    placeholder="Masukkan nominal minimum harga..."
+                                    required
+                                />
+                            </label>
+                            <div className="modal-action">
+                                <button className="btn btn-success btn-sm" disabled={submitting}>
+                                    {submitting ? <span className="loading loading-spinner loading-xs"></span> : 'Simpan'}
+                                </button>
+                                <form method="dialog">
+                                    <button className="btn btn-ghost btn-sm">Batal</button>
+                                </form>
+                            </div>
+                        </form>
                     )}
                 </div>
             </dialog>

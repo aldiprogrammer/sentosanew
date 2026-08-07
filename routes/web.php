@@ -159,6 +159,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/pengajuan-diskon/{id}/reject', [PengajuanDiskonController::class, 'reject'])->name('reject.pengajuan-diskon');
     Route::put('/pengajuan-diskon/{id}/cancel', [PengajuanDiskonController::class, 'cancel'])->name('cancel.pengajuan-diskon');
     Route::get('/data-order', [DataOrderController::class, 'index'])->name('data-order');
+    Route::post('/data-order/diskon', [DataOrderController::class, 'applyDiskon'])->name('data-order.diskon');
+    Route::put('/data-order/diskon/{noInvoice}/batal', [DataOrderController::class, 'cancelDiskon'])->name('data-order.batal-diskon');
+    Route::post('/data-order/minimum', [DataOrderController::class, 'applyMinimumFaktur'])->name('data-order.minimum');
+    Route::put('/data-order/minimum/{noInvoice}/batal', [DataOrderController::class, 'cancelMinimumFaktur'])->name('data-order.batal-minimum');
     Route::get('/data-order/produksi-by-invoice/{noInvoice}', [DataOrderController::class, 'produksiByInvoice'])->name('data-order.produksi-by-invoice');
     Route::put('/data-order/produksi/{id}/payment', [DataOrderController::class, 'updateProduksiPayment'])->name('data-order.update-produksi-payment');
     Route::get('/data-order/desain-by-invoice/{noInvoice}', [DataOrderController::class, 'desainByInvoice'])->name('data-order.desain-by-invoice');

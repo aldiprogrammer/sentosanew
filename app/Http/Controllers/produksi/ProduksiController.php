@@ -88,6 +88,7 @@ class ProduksiController extends Controller
 
             return [
                 'no_invoice' => $firstItem->no_invoice,
+                'tanggal' => $firstItem->tanggal,
                 'items' => $group->values(),
                 'customer' => $firstItem->customer,
                 'total_qty' => $group->sum('qty'),
