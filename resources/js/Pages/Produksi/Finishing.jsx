@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout'
 import { router } from '@inertiajs/react'
 import React, { useMemo, useRef, useState, useCallback } from 'react'
 import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
+import FinishingInfo from '@/Components/FinishingInfo'
 
 export default function Finishing({ produksi, search: initialSearch, tglAwal: initialTglAwal, tglAkhir: initialTglAkhir }) {
     const [selected, setSelected] = useState(null)
@@ -318,6 +319,10 @@ export default function Finishing({ produksi, search: initialSearch, tglAwal: in
                                         <p className="font-medium">{selected.pinising?.catatan || '-'}</p>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="mt-3">
+                                <FinishingInfo item={selected} />
                             </div>
 
                             <div className="modal-action mt-5">

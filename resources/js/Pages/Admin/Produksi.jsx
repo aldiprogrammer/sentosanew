@@ -1,5 +1,6 @@
 import AdminLayout from "@/Layouts/AdminLayout";
 import NewCustomerModal from "@/Components/NewCustomerModal";
+import FinishingInfo from "@/Components/FinishingInfo";
 import { Link, router, useForm, usePage } from "@inertiajs/react";
 import React, { useEffect, useRef, useState } from "react";
 import { jsPDF } from "jspdf";
@@ -994,6 +995,21 @@ export default function Produksi({ produksi, desain, bahan, customer, kode_antri
                       </button>
 
                       <h3 className="text-lg font-bold">Edit Produksi</h3>
+
+                      <div className="mt-3">
+                        <FinishingInfo
+                          item={{
+                            pinising: data.pinising,
+                            mata_ayam: data.mata_ayam,
+                            bahan: { kode: '', bahan: data.bahan },
+                            tinggi: data.tinggi,
+                            lebar: data.lebar,
+                            satuan: data.satuan,
+                            qty: data.qty,
+                            sisi: data.sisi,
+                          }}
+                        />
+                      </div>
 
                       <form onSubmit={update}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
