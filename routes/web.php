@@ -251,6 +251,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/test-print-produksi', function () {
         return Inertia::render('Admin/TestPrintProduksi');
     })->name('test-print-produksi');
+
+    Route::get('/test-print-serial', function () {
+        return Inertia::render('TestPrintSerial');
+    })->name('test-print-serial');
+
+    Route::get('/test-print-qz', function () {
+        return Inertia::render('TestPrintQz');
+    })->name('test-print-qz');
 });
 
 require __DIR__.'/auth.php';

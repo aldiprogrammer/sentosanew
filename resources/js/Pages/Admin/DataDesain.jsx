@@ -154,7 +154,15 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
 
     const buildProcessScript = (ids, paymentTypeVal) => `
         <script>
+            var _printed = false;
             window.addEventListener('afterprint', function() {
+                if (_printed) return;
+                _printed = true;
+                var confirmed = confirm('Apakah struk sudah berhasil dicetak?\\n\\nKlik OK jika sudah dicetak, klik Batal jika belum.');
+                if (!confirmed) {
+                    window.close();
+                    return;
+                }
                 fetch('/data-desain/proses-pembayaran', {
                     method: 'PUT',
                     credentials: 'same-origin',
@@ -164,7 +172,12 @@ export default function DataDesain({ desain, tglAwal, tglAkhir, pengajuanDiskons
                         'X-XSRF-TOKEN': decodeURIComponent('${encodeURIComponent(xsrfToken)}')
                     },
                     body: JSON.stringify({ ids: ${JSON.stringify(ids)}, payment_type: '${paymentTypeVal}', uang: ${JSON.stringify(uangDibayar)}, kembalian: ${JSON.stringify(kembalian)} })
-                }).then(function() { window.close(); });
+                }).then(function() {
+                    if (window.opener && !window.opener.closed) {
+                        window.opener.location.reload();
+                    }
+                    window.close();
+                });
             });
         </script>
     `

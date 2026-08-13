@@ -170,6 +170,11 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
             window.addEventListener('afterprint', function() {
                 if (_printed) return;
                 _printed = true;
+                var confirmed = confirm('Apakah struk sudah berhasil dicetak?\\n\\nKlik OK jika sudah dicetak, klik Batal jika belum.');
+                if (!confirmed) {
+                    window.close();
+                    return;
+                }
                 fetch('/dataproduksi/proses-produksi', {
                     method: 'PUT',
                     credentials: 'same-origin',

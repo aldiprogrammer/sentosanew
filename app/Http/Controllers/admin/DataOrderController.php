@@ -175,7 +175,8 @@ class DataOrderController extends Controller
         $invoice->harga_awal = $hargaAwal;
         $invoice->mode_diskon = $modeDiskon;
         $invoice->diskon = $diskonVal;
-        $invoice->harga_akhir = $hargaDiskon + (float) ($invoice->minimum_faktur ?? 0);
+        $invoice->minimum_faktur = (float) ($invoice->minimum_faktur ?? 0);
+        $invoice->harga_akhir = $hargaDiskon + (float) $invoice->minimum_faktur;
         $invoice->tanggal = date('Y-m-d');
         $invoice->save();
 

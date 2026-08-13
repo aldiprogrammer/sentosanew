@@ -267,6 +267,9 @@ export default function AdminLayout({ children }) {
                                                 <Link href="/produksi/logistik">Logistik</Link>
                                             </li>
                                         )}
+                                        <li>
+                                            <Link href={route('test-print-qz')}>Test Print (QZ Tray)</Link>
+                                        </li>
                                     </ul>
                                 </details>
                             </li>
