@@ -58,6 +58,22 @@ const formatSatuan = (satuan) => {
   return satuan === 'M2' ? 'Meter' : (satuan || '-');
 };
 
+const normalizeAngka = (val) => {
+  const s = String(val ?? '').replace(/,/g, '.');
+  let out = '';
+  let seenDot = false;
+  for (const ch of s) {
+    if (ch === '.') {
+      if (seenDot) continue;
+      seenDot = true;
+      out += '.';
+    } else if (/\d/.test(ch)) {
+      out += ch;
+    }
+  }
+  return out;
+};
+
 export default function PoPembelianBahanDetail({ po, bahanpakais }) {
   const { data, setData, post, delete: destroy, put, processing, reset, errors } = useForm({
     id: 0,
@@ -86,18 +102,19 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
 
   const selectedBahan = bahanpakais.find((b) => b.id == data.id_bahan);
 
+  const bulatkan2 = (val) => Math.round((val + Number.EPSILON) * 100) / 100;
+
   const hitungLuas = (panjang, lebar) => {
-    const p = parseFloat(panjang) || 0;
-    const l = parseFloat(lebar) || 0;
-    return Math.round(p * l);
+    const p = parseFloat(normalizeAngka(panjang)) || 0;
+    const l = parseFloat(normalizeAngka(lebar)) || 0;
+    return bulatkan2(p * l);
   };
 
-  const hitungTotal = (luas, qty, harga, satuan) => {
-    const l = parseFloat(luas) || 0;
-    const q = parseFloat(qty) || 0;
-    const h = parseFloat(harga) || 0;
-    if (satuan === 'M2') return Math.round(l * h * q);
-    return q * h;
+  const hitungTotal = (luas, qty, harga) => {
+    const l = parseFloat(normalizeAngka(luas)) || 0;
+    const q = parseFloat(normalizeAngka(qty)) || 0;
+    const h = parseFloat(normalizeAngka(harga)) || 0;
+    return bulatkan2(l * h * q);
   };
 
   const totalSemua = po.items.reduce((sum, item) => sum + parseFloat(item.total_harga || 0), 0);
@@ -105,18 +122,20 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
   const isLembar = (data.satuan || '').toLowerCase() === 'lembar';
 
   useEffect(() => {
-    if (!isLembar) {
-      const luas = hitungLuas(data.panjang, data.lebar);
-      setData("luas", luas);
-    }
-    const total = hitungTotal(data.luas, data.qty, data.harga, data.satuan);
-    setData("total_harga", total);
-  }, [data.panjang, data.lebar, data.qty, data.harga, data.satuan]);
+    const luas = isLembar
+      ? parseFloat(normalizeAngka(data.luas)) || 0
+      : hitungLuas(data.panjang, data.lebar);
+
+    if (!isLembar && data.luas !== luas) setData("luas", luas);
+
+    const total = hitungTotal(luas, data.qty, data.harga);
+    if (data.total_harga !== total) setData("total_harga", total);
+  }, [data.panjang, data.lebar, data.luas, data.qty, data.harga, data.satuan]);
 
   useEffect(() => {
     if (selectedBahan) {
-      setData("panjang", selectedBahan.panjang || "");
-      setData("lebar", selectedBahan.lebar || "");
+      setData("panjang", normalizeAngka(selectedBahan.panjang));
+      setData("lebar", normalizeAngka(selectedBahan.lebar));
       setData("satuan", selectedBahan.satuan || "");
     }
   }, [data.id_bahan]);
@@ -133,8 +152,8 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
     setData({
       id: item.id,
       id_bahan: item.id_bahan?.toString() || "",
-      panjang: item.panjang,
-      lebar: item.lebar,
+      panjang: normalizeAngka(item.panjang),
+      lebar: normalizeAngka(item.lebar),
       luas: item.luas,
       harga: item.harga,
       qty: item.qty,
@@ -729,12 +748,12 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                 <div className="grid grid-cols-2 gap-2">
                   <label className="form-control">
                     <div className="label"><span className="label-text">Panjang</span></div>
-                    <input type="number" step="0.01" value={data.panjang} className="input input-bordered input-success w-full" onChange={(e) => setData("panjang", e.target.value)} />
+                    <input type="text" inputMode="decimal" value={data.panjang} className="input input-bordered input-success w-full" onChange={(e) => setData("panjang", normalizeAngka(e.target.value))} />
                     {errors.panjang && <span className="text-error text-xs mt-1 block">{errors.panjang}</span>}
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Lebar</span></div>
-                    <input type="number" step="0.01" value={data.lebar} className="input input-bordered input-success w-full" onChange={(e) => setData("lebar", e.target.value)} />
+                    <input type="text" inputMode="decimal" value={data.lebar} className="input input-bordered input-success w-full" onChange={(e) => setData("lebar", normalizeAngka(e.target.value))} />
                     {errors.lebar && <span className="text-error text-xs mt-1 block">{errors.lebar}</span>}
                   </label>
                   {isLembar ? (
@@ -804,12 +823,12 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                 <div className="grid grid-cols-2 gap-2">
                   <label className="form-control">
                     <div className="label"><span className="label-text">Panjang</span></div>
-                    <input type="number" step="0.01" value={data.panjang} className="input input-bordered input-success w-full" onChange={(e) => setData("panjang", e.target.value)} />
+                    <input type="text" inputMode="decimal" value={data.panjang} className="input input-bordered input-success w-full" onChange={(e) => setData("panjang", normalizeAngka(e.target.value))} />
                     {errors.panjang && <span className="text-error text-xs mt-1 block">{errors.panjang}</span>}
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Lebar</span></div>
-                    <input type="number" step="0.01" value={data.lebar} className="input input-bordered input-success w-full" onChange={(e) => setData("lebar", e.target.value)} />
+                    <input type="text" inputMode="decimal" value={data.lebar} className="input input-bordered input-success w-full" onChange={(e) => setData("lebar", normalizeAngka(e.target.value))} />
                     {errors.lebar && <span className="text-error text-xs mt-1 block">{errors.lebar}</span>}
                   </label>
                   {isLembar ? (
@@ -825,12 +844,12 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
                   )}
                   <label className="form-control">
                     <div className="label"><span className="label-text">Qty</span></div>
-                    <input type="number" step="0.01" value={data.qty} className="input input-bordered input-success w-full" onChange={(e) => setData("qty", e.target.value)} />
+                    <input type="number" step="0.01" value={data.qty} className="input input-bordered input-success w-full" onChange={(e) => setData("qty", e.target.value)} required />
                     {errors.qty && <span className="text-error text-xs mt-1 block">{errors.qty}</span>}
                   </label>
                   <label className="form-control">
                     <div className="label"><span className="label-text">Harga</span></div>
-                    <input type="number" step="0.01" value={data.harga} className="input input-bordered input-success w-full" onChange={(e) => setData("harga", e.target.value)} />
+                    <input type="number" step="0.01" value={data.harga} className="input input-bordered input-success w-full" onChange={(e) => setData("harga", e.target.value)} required />
                     {errors.harga && <span className="text-error text-xs mt-1 block">{errors.harga}</span>}
                   </label>
                   <label className="form-control">
