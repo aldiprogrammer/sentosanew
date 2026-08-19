@@ -4,7 +4,6 @@ namespace App\Http\Controllers\produksi;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bahanpakai;
-use App\Models\Customer;
 use App\Models\InvoiceProduksi;
 use App\Models\Itemstokbahan;
 use App\Models\PengajuanDiskon;
@@ -54,7 +53,7 @@ class ProduksiController extends Controller
         $tglAwal = $request->query('tgl_awal');
         $tglAkhir = $request->query('tgl_akhir');
 
-        $items = Produksi::with('customer', 'bahan', 'pinising', 'mataAyam', 'cs', 'desainer')
+        $items = Produksi::with('customer', 'bahan', 'cs', 'desainer')
             ->whereNull('alasan_pembatalan')
             ->when(auth()->user()->role === 'Desainer', function ($q) {
                 $q->where('id_desainer', auth()->id())->whereNull('pembayaran');
@@ -81,9 +80,14 @@ class ProduksiController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        $grouped = $items->groupBy('no_invoice')->map(function ($group) {
+        $invoiceNumbers = $items->pluck('no_invoice')->unique()->filter()->values()->all();
+        $invoiceProduksiMap = InvoiceProduksi::whereIn('no_invoice', $invoiceNumbers)
+            ->get()
+            ->keyBy('no_invoice');
+
+        $grouped = $items->groupBy('no_invoice')->map(function ($group) use ($invoiceProduksiMap) {
             $firstItem = $group->first();
-            $invoiceProduksi = InvoiceProduksi::where('no_invoice', $firstItem->no_invoice)->first();
+            $invoiceProduksi = $invoiceProduksiMap->get($firstItem->no_invoice);
             $minimumFaktur = $invoiceProduksi?->minimum_faktur ?? 0;
 
             return [
@@ -114,8 +118,9 @@ class ProduksiController extends Controller
             ['path' => $request->url(), 'query' => $request->query()]
         );
 
-        $pengajuanDiskons = PengajuanDiskon::orderBy('id', 'desc')->get();
-        $customer = Customer::all();
+        $pengajuanDiskons = PengajuanDiskon::whereIn('status', ['pending', 'disetujui'])
+            ->orderBy('id', 'desc')
+            ->get();
 
         return Inertia::render('Admin/Dataproduksi', [
             'produksi' => $paginator->items(),
@@ -123,7 +128,6 @@ class ProduksiController extends Controller
             'tglAwal' => $tglAwal,
             'tglAkhir' => $tglAkhir,
             'pengajuanDiskons' => $pengajuanDiskons,
-            'customer' => $customer,
         ]);
     }
 

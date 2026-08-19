@@ -4,7 +4,7 @@ import React, { useCallback, useRef } from 'react'
 import { buildProductionReceiptHtml } from './StrukProduksiTemplate.jsx'
 import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
 
-export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDiskons, customer, pagination }) {
+export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDiskons, pagination }) {
     const { auth, flash } = usePage().props;
     const isDesainer = auth.user?.role === 'Desainer';
     const isCs = auth.user?.role === 'Customer Service';

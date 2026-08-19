@@ -5,34 +5,68 @@ import React, { useEffect, useRef } from "react";
 export default function PoEksternalDetail({ po, bahans, invoices }) {
   const getHargaRows = (bahan) => bahan?.harga_bahan || bahan?.hargaBahan || [];
 
-  const hargaPoSesuaiQty = (bahan, qty) => {
-    const jumlah = Number(qty || 0);
+  const hargaPoSesuaiQty = (bahan, qty, sisi) => {
     const rows = getHargaRows(bahan);
-
     if (rows.length === 0) return 0;
 
+    const jumlah = Number(qty || 0);
+    const cara = String(bahan?.cara_perhitungan || "").toUpperCase();
+
+    const sisiOptions = [...new Set(rows.map((r) => String(r.sisi || "").trim()).filter(Boolean))];
+    const pakaiSisi = sisiOptions.length > 0;
+
+    const cocokSisi = (row) => {
+      const sisiHarga = String(row.sisi || "").trim();
+      if (pakaiSisi) return sisiHarga.toLowerCase() === String(sisi || "").trim().toLowerCase();
+
+      return sisiHarga === "";
+    };
+
+    const urutByQtyMin = (list) =>
+      [...list].sort((a, b) => Number(a.qty_min || 0) - Number(b.qty_min || 0));
+
+    const kandidat = rows.filter(cocokSisi);
+    if (kandidat.length === 0) return 0;
+
     if (!jumlah) {
-      return [...rows].sort((a, b) => Number(a.qty_min || 0) - Number(b.qty_min || 0))[0]?.harga_po || 0;
+      const base = urutByQtyMin(kandidat)[0];
+
+      return base ? Number(base.harga_po) || 0 : 0;
     }
 
-    const harga = rows
+    const matched = kandidat
       .filter((row) => {
         const qtyMin = Number(row.qty_min || 0);
-        const qtyMax = row.qty_max === null || String(row.qty_max).trim() === ""
-          ? Infinity
-          : Number(row.qty_max);
+        const qtyMaxKosong = row.qty_max === null || String(row.qty_max).trim() === "";
+        const qtyMax = qtyMaxKosong ? Infinity : Number(row.qty_max);
 
-        return jumlah >= qtyMin && jumlah <= qtyMax;
+        if ((cara === "QTY KHUSUS" || cara === "QTY2") && qtyMaxKosong && jumlah !== qtyMin) {
+          return false;
+        }
+        if (jumlah < qtyMin || jumlah > qtyMax) return false;
+
+        return true;
       })
       .sort((a, b) => Number(b.qty_min || 0) - Number(a.qty_min || 0))[0];
 
-    return harga?.harga_po || 0;
+    if (matched) return Number(matched.harga_po) || 0;
+
+    const berharga = urutByQtyMin(
+      kandidat.filter(
+        (r) =>
+          r.harga_po !== null && r.harga_po !== undefined && r.harga_po !== "" && Number(r.harga_po) !== 0
+      )
+    );
+    const pool = berharga.length > 0 ? berharga : urutByQtyMin(kandidat);
+    const fallback = pool.reduce((acc, cur) => (jumlah >= Number(cur.qty_min || 0) ? cur : acc), null) || pool[0];
+
+    return fallback ? Number(fallback.harga_po) || 0 : 0;
   };
 
-  const hitungHargaPo = (idBahan, qty) => {
+  const hitungHargaPo = (idBahan, qty, sisi) => {
     const bahan = bahans.find((b) => Number(b.id) === Number(idBahan));
 
-    return hargaPoSesuaiQty(bahan, qty);
+    return hargaPoSesuaiQty(bahan, qty, sisi);
   };
 
   const [selectedInvoice, setSelectedInvoice] = React.useState('');
@@ -78,10 +112,11 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
     setData("spk", inv.kode_spk);
     setData("lebar", inv.lebar);
     setData("tinggi", inv.tinggi);
-    setData("harga", hitungHargaPo(inv.id_bahan, inv.qty));
+    setData("harga", hitungHargaPo(inv.id_bahan, inv.qty, inv.sisi));
     setData("qty", inv.qty);
     setData("satuan", satuanBahanById(inv.id_bahan));
     setData("satuan_ukuran", inv.satuan || '');
+    setData("sisi", inv.sisi || '');
   };
 
   const bahanById = (idBahan) => bahans.find((b) => Number(b.id) === Number(idBahan));
@@ -110,6 +145,12 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
     const inv = invoices.find((item) => item.no_invoice === invoice);
 
     return inv?.satuan || "";
+  };
+
+  const sisiBySpk = (kodeSpk) => {
+    const inv = invoices.find((item) => item.kode_spk === kodeSpk);
+
+    return inv?.sisi || "";
   };
 
   const customerByInvoice = (invoice) => {
@@ -162,6 +203,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
     luas: "",
     satuan: "",
     satuan_ukuran: "",
+    sisi: "",
     qty: "",
     harga: "",
     total: "",
@@ -249,6 +291,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
       luas: item.luas?.toString() || "",
       satuan: satuanBahan(item),
       satuan_ukuran: satuanProduksiByInvoice(item.invoice),
+      sisi: sisiBySpk(item.spk),
       qty: item.qty?.toString() || "",
       harga: item.harga?.toString() || "",
       total: item.total?.toString() || "",
@@ -631,7 +674,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                     <input type="number" step="0.01" value={data.qty} className="input input-bordered input-success w-full" onChange={(e) => {
                       const qty = e.target.value;
                       setData("qty", qty);
-                      setData("harga", hitungHargaPo(data.id_bahan, qty));
+                      setData("harga", hitungHargaPo(data.id_bahan, qty, data.sisi));
                     }} />
                   </label>
                   <label className="form-control">
@@ -716,7 +759,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                     <input type="number" step="0.01" value={data.qty} className="input input-bordered input-success w-full" onChange={(e) => {
                       const qty = e.target.value;
                       setData("qty", qty);
-                      setData("harga", hitungHargaPo(data.id_bahan, qty));
+                      setData("harga", hitungHargaPo(data.id_bahan, qty, data.sisi));
                     }} />
                   </label>
                   <label className="form-control">
