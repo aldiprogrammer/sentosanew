@@ -152,10 +152,26 @@ class DesainController extends Controller
             }
         }
 
-        Desain::whereIn('id', $ids)->update([
-            'pembayaran' => $paymentType,
-            'id_cs' => auth()->id(),
-        ]);
+        $userRole = auth()->user()->role;
+
+        $desainsForTarikBon = Desain::with('cs')->whereIn('id', $ids)->get();
+        foreach ($desainsForTarikBon as $item) {
+            if ($userRole === 'Customer Service') {
+                $tarikBonValue = auth()->user()->username;
+            } elseif (! $item->tarik_bon) {
+                $tarikBonValue = $item->cs->username ?? auth()->user()->username;
+            }
+
+            $updateData = [
+                'pembayaran' => $paymentType,
+                'id_cs' => auth()->id(),
+            ];
+            if (isset($tarikBonValue)) {
+                $updateData['tarik_bon'] = $tarikBonValue;
+            }
+            $item->update($updateData);
+            $tarikBonValue = null;
+        }
 
         $desains = Desain::with('kategoridesain')->whereIn('id', $ids)->get();
         $today = now()->toDateString();

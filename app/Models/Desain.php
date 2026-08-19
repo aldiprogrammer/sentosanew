@@ -8,6 +8,7 @@ class Desain extends Model
 {
     protected $fillable = [
         'alasan_pembatalan',
+        'tarik_bon',
     ];
 
     public function customer()

@@ -106,7 +106,10 @@ export const buildProductionReceiptHtml = ({ items, auth, paymentType, diskonInf
     const firstCustomer = firstItem?.customer
     const invoiceNumber = firstItem?.no_invoice || firstItem?.kode_spk || '-'
     const selesaiDate = firstItem?.tgl_kirim || printedAt
-    const cashierName = items[0]?.cs?.username || auth?.user?.username || auth?.user?.name || 'Admin'
+    const isCs = auth?.user?.role === 'Customer Service'
+    const cashierName = isCs
+        ? (auth?.user?.username || auth?.user?.name || 'Admin')
+        : (items[0]?.cs?.username || auth?.user?.username || auth?.user?.name || 'Admin')
     const paymentLabels = { lunas: 'TUNAI', utang: 'UTANG', transfer: 'TRANSFER', qris: 'QRIS' }
     const paymentLabel = paymentLabels[paymentType] || 'TUNAI'
 

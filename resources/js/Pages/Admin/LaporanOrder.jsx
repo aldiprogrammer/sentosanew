@@ -355,12 +355,13 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                                 <th>Pembayaran</th>
                                                 <th>Status</th>
                                                 <th>CS</th>
+                                                <th>Tarik Bon</th>
                                             </tr>
                                         </thead>
                                         <tbody className="text-xs">
                                             {produksi.data.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan={11} className="text-center py-8 text-base-content/50">Tidak ada data produksi</td>
+                                                    <td colSpan={12} className="text-center py-8 text-base-content/50">Tidak ada data produksi</td>
                                                 </tr>
                                             ) : (() => {
                                                 let counter = produksi.from
@@ -374,7 +375,7 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                                             const headerBg = hasDiskon ? 'bg-orange-100' : hasMinFaktur ? 'bg-blue-100' : 'bg-base-300'
                                                             return (
                                                                 <tr className={`${headerBg} font-semibold text-sm`}>
-                                                                    <td colSpan={11} className="p-2">
+                                                                    <td colSpan={12} className="p-2">
                                                                         <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
                                                                             <span className="font-bold">Inv: {group.no_invoice || '-'}</span>
                                                                             <span>Customer: {group.items[0]?.customer?.nama || '-'}</span>
@@ -429,6 +430,7 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                                                     })()}
                                                                 </td>
                                                                 <td>{item.cs?.username || '-'}</td>
+                                                                <td>{item.tarik_bon || item.cs?.username || '-'}</td>
                                                             </tr>
                                                         ))}
                                                     </React.Fragment>
@@ -475,12 +477,13 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                                 <th>Pembayaran</th>
                                                 <th>Desainer</th>
                                                 <th>CS</th>
+                                                <th>Tarik Bon</th>
                                             </tr>
                                         </thead>
                                         <tbody className="text-xs">
                                             {desain.data.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan={11} className="text-center py-8 text-base-content/50">Tidak ada data desain</td>
+                                                    <td colSpan={12} className="text-center py-8 text-base-content/50">Tidak ada data desain</td>
                                                 </tr>
                                             ) : (() => {
                                                 let counter = desain.from
@@ -493,7 +496,7 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                                             const headerBg = hasDiskon ? 'bg-orange-100' : 'bg-base-300'
                                                             return (
                                                                 <tr className={`${headerBg} font-semibold text-sm`}>
-                                                                    <td colSpan={11} className="p-2">
+                                                                    <td colSpan={12} className="p-2">
                                                                         <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
                                                                             <span className="font-bold">Inv: {group.no_invoice || '-'}</span>
                                                                             <span>Customer: {group.items[0]?.customer?.nama || '-'}</span>
@@ -534,6 +537,7 @@ export default function LaporanOrder({ desain, produksi, tglAwal, tglAkhir, sear
                                                                 </td>
                                                                 <td>{item.desainer?.username || '-'}</td>
                                                                 <td>{item.cs?.username || '-'}</td>
+                                                                <td>{item.tarik_bon || item.cs?.username || '-'}</td>
                                                             </tr>
                                                         ))}
                                                     </React.Fragment>
