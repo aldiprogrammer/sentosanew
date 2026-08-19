@@ -171,9 +171,6 @@ class ProduksiController extends Controller
         $nonEksternal = array_diff($ids, $eksternal->toArray());
 
         $isAdmin = in_array(auth()->user()->role, ['Admin', 'Admin 2', 'Customer Service']);
-        $userRole = auth()->user()->role;
-
-        $itemsForTarikBon = Produksi::with('cs')->whereIn('id', $ids)->get();
 
         if (! empty($nonDisplayIds) || ! empty($nonEksternal)) {
             $idsToUpdate = array_merge($nonDisplayIds, $nonEksternal);
@@ -181,23 +178,11 @@ class ProduksiController extends Controller
                 'status_produksi' => 1,
                 'pembayaran' => $paymentType,
             ];
-
-            $itemsToUpdate = $itemsForTarikBon->whereIn('id', $idsToUpdate);
-            foreach ($itemsToUpdate as $item) {
-                if ($userRole === 'Customer Service') {
-                    $tarikBonValue = auth()->user()->username;
-                } elseif (! $item->tarik_bon) {
-                    $tarikBonValue = $item->cs->username ?? auth()->user()->username;
-                }
-
-                $updateData = $item->id_cs
-                    ? $baseUpdate
-                    : $baseUpdate + ['id_cs' => auth()->id()];
-                if (isset($tarikBonValue)) {
-                    $updateData['tarik_bon'] = $tarikBonValue;
-                }
-                $item->update($updateData);
-                $tarikBonValue = null;
+            if ($isAdmin) {
+                Produksi::whereIn('id', $idsToUpdate)->whereNull('id_cs')->update($baseUpdate + ['id_cs' => auth()->id()]);
+                Produksi::whereIn('id', $idsToUpdate)->whereNotNull('id_cs')->update($baseUpdate);
+            } else {
+                Produksi::whereIn('id', $idsToUpdate)->update($baseUpdate + ['id_cs' => auth()->id()]);
             }
         }
 
@@ -208,23 +193,11 @@ class ProduksiController extends Controller
                 'status_logistik' => 1,
                 'pembayaran' => $paymentType,
             ];
-
-            $itemsToUpdate = $itemsForTarikBon->whereIn('id', $displayIds);
-            foreach ($itemsToUpdate as $item) {
-                if ($userRole === 'Customer Service') {
-                    $tarikBonValue = auth()->user()->username;
-                } elseif (! $item->tarik_bon) {
-                    $tarikBonValue = $item->cs->username ?? auth()->user()->username;
-                }
-
-                $updateData = $item->id_cs
-                    ? $baseUpdate
-                    : $baseUpdate + ['id_cs' => auth()->id()];
-                if (isset($tarikBonValue)) {
-                    $updateData['tarik_bon'] = $tarikBonValue;
-                }
-                $item->update($updateData);
-                $tarikBonValue = null;
+            if ($isAdmin) {
+                Produksi::whereIn('id', $displayIds)->whereNull('id_cs')->update($baseUpdate + ['id_cs' => auth()->id()]);
+                Produksi::whereIn('id', $displayIds)->whereNotNull('id_cs')->update($baseUpdate);
+            } else {
+                Produksi::whereIn('id', $displayIds)->update($baseUpdate + ['id_cs' => auth()->id()]);
             }
         }
 
@@ -235,23 +208,11 @@ class ProduksiController extends Controller
                 'status_logistik' => 1,
                 'pembayaran' => $paymentType,
             ];
-
-            $itemsToUpdate = $itemsForTarikBon->whereIn('id', $eksternal);
-            foreach ($itemsToUpdate as $item) {
-                if ($userRole === 'Customer Service') {
-                    $tarikBonValue = auth()->user()->username;
-                } elseif (! $item->tarik_bon) {
-                    $tarikBonValue = $item->cs->username ?? auth()->user()->username;
-                }
-
-                $updateData = $item->id_cs
-                    ? $baseUpdate
-                    : $baseUpdate + ['id_cs' => auth()->id()];
-                if (isset($tarikBonValue)) {
-                    $updateData['tarik_bon'] = $tarikBonValue;
-                }
-                $item->update($updateData);
-                $tarikBonValue = null;
+            if ($isAdmin) {
+                Produksi::whereIn('id', $eksternal)->whereNull('id_cs')->update($baseUpdate + ['id_cs' => auth()->id()]);
+                Produksi::whereIn('id', $eksternal)->whereNotNull('id_cs')->update($baseUpdate);
+            } else {
+                Produksi::whereIn('id', $eksternal)->update($baseUpdate + ['id_cs' => auth()->id()]);
             }
         }
 
