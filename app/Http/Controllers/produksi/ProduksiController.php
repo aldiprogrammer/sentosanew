@@ -102,6 +102,7 @@ class ProduksiController extends Controller
                 'all_lunas' => $group->every(fn ($item) => $item->pembayaran === 'lunas'),
                 'all_utang' => $group->every(fn ($item) => $item->pembayaran === 'utang'),
                 'minimum_faktur' => $minimumFaktur,
+                'ada_invoice' => $invoiceProduksi !== null,
                 'harga_akhir_invoice' => $invoiceProduksi?->harga_akhir ?? null,
                 'uang' => $invoiceProduksi?->uang ?? null,
                 'kembalian' => $invoiceProduksi?->kembalian ?? null,

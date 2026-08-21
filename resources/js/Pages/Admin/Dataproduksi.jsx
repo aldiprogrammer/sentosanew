@@ -157,6 +157,7 @@ export default function Dataproduksi({ produksi, tglAwal, tglAkhir, pengajuanDis
             diskonInfo: diskonInfoForReceipt,
             minimumHarga,
             hargaAkhirInvoice: selectedGroupData?.harga_akhir_invoice ?? null,
+            adaInvoice: Boolean(selectedGroupData?.ada_invoice),
             uang: storedUang ?? (uangDibayar || totalHargaAkhir),
             kembalian: storedKembalian ?? (kembalian < 0 ? 0 : kembalian),
         })

@@ -98,13 +98,16 @@ const receiptStyles = `
     .printed { display: flex; justify-content: space-between; margin-top: 3px; font-size: 12px; }
 `
 
-export const buildProductionReceiptHtml = ({ items, auth, paymentType, diskonInfo, minimumHarga = 0, hargaAkhirInvoice = null, uang = null, kembalian = null }) => {
+export const buildProductionReceiptHtml = ({ items, auth, paymentType, diskonInfo, minimumHarga = 0, hargaAkhirInvoice = null, uang = null, kembalian = null, adaInvoice = false }) => {
     const printedAt = new Date()
     const gtHarga = items.reduce((s, it) => s + Number(it.total_harga || 0), 0)
     const gtQty = items.reduce((s, it) => s + Number(it.qty || 0), 0)
     const firstItem = items[0]
     const firstCustomer = firstItem?.customer
     const invoiceNumber = firstItem?.no_invoice || firstItem?.kode_spk || '-'
+    const toplineDate = adaInvoice && firstItem?.tanggal
+        ? formatReceiptDateShort(firstItem.tanggal)
+        : formatReceiptDateShort()
     const selesaiDate = firstItem?.tgl_kirim || printedAt
     const isCs = auth?.user?.role === 'Customer Service'
     const cashierName = isCs
@@ -155,7 +158,7 @@ export const buildProductionReceiptHtml = ({ items, auth, paymentType, diskonInf
                 <td class="bahan invoice" style="font-weight: bold;">${invoiceNumber}</td>
                 <td class="ukuran-col"></td>
                 <td class="qty"></td>
-                <td class="amount" style="font-weight: bold;">${formatReceiptDateShort()}</td>
+                <td class="amount" style="font-weight: bold;">${toplineDate}</td>
             </tr>
         </table>
 

@@ -99,6 +99,9 @@ export const buildDesainReceiptHtml = ({ items, auth, paymentType, diskonInfo, u
     const firstItem = items[0]
     const firstCustomer = firstItem?.customer
     const invoiceNumber = firstItem?.no_invoice || firstItem?.no_antrian || '-'
+    const toplineDate = firstItem?.invoice_desain && firstItem?.tanggal
+        ? formatReceiptDateShort(firstItem.tanggal)
+        : formatReceiptDateShort()
     const safeKembalian = kembalian !== null ? Math.max(0, Number(kembalian)) : null
     const cashierName = items[0]?.cs?.username || auth?.user?.username || auth?.user?.name || 'Admin'
     const paymentLabels = { lunas: 'TUNAI', utang: 'UTANG', transfer: 'TRANSFER', qris: 'QRIS' }
@@ -144,7 +147,7 @@ export const buildDesainReceiptHtml = ({ items, auth, paymentType, diskonInfo, u
                 <td class="bahan invoice" style="font-weight: bold; font-size: 12px">${invoiceNumber}</td>
                 <td class="ukuran"></td>
                 <td class="qty"></td>
-                <td class="amount" style="font-weight: bold; font-size: 12px">${formatReceiptDateShort()}</td>
+                <td class="amount" style="font-weight: bold; font-size: 12px">${toplineDate}</td>
             </tr>
         </table>
 
