@@ -81,7 +81,14 @@ class PoPembelianBahanController extends Controller
 
         $bahanpakais = Bahanpakai::orderBy('kode_bahan')->get();
 
-        return Inertia::render('Admin/PoPembelianBahanDetail', compact('po', 'bahanpakais'));
+        $hargaTerakhir = PoPembelianBahanItem::query()
+            ->join('bahanpakais', 'bahanpakais.id', '=', 'po_pembelian_bahan_items.id_bahan')
+            ->orderByDesc('po_pembelian_bahan_items.id')
+            ->get(['bahanpakais.kode_bahan', 'po_pembelian_bahan_items.harga'])
+            ->unique('kode_bahan')
+            ->pluck('harga', 'kode_bahan');
+
+        return Inertia::render('Admin/PoPembelianBahanDetail', compact('po', 'bahanpakais', 'hargaTerakhir'));
     }
 
     public function storeItem(Request $request, $id)

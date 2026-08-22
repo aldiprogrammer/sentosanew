@@ -74,7 +74,7 @@ const normalizeAngka = (val) => {
   return out;
 };
 
-export default function PoPembelianBahanDetail({ po, bahanpakais }) {
+export default function PoPembelianBahanDetail({ po, bahanpakais, hargaTerakhir }) {
   const { data, setData, post, delete: destroy, put, processing, reset, errors } = useForm({
     id: 0,
     id_bahan: "",
@@ -137,6 +137,10 @@ export default function PoPembelianBahanDetail({ po, bahanpakais }) {
       setData("panjang", normalizeAngka(selectedBahan.panjang));
       setData("lebar", normalizeAngka(selectedBahan.lebar));
       setData("satuan", selectedBahan.satuan || "");
+      const lastHarga = hargaTerakhir?.[selectedBahan.kode_bahan];
+      if (!data.id && lastHarga != null) {
+        setData("harga", lastHarga);
+      }
     }
   }, [data.id_bahan]);
 
