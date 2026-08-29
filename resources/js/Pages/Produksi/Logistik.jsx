@@ -1,6 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout'
 import { router } from '@inertiajs/react'
-import React, { useMemo, useRef, useState, useCallback } from 'react'
+import React, { useMemo, useRef, useState, useCallback, useEffect } from 'react'
 import KonfirmasiPassword from '@/Components/KonfirmasiPassword'
 
 export default function Logistik({ produksi, kurir, bahanpakaiList, itemstokbahans, search: initialSearch, tglAwal: initialTglAwal, tglAkhir: initialTglAkhir }) {
@@ -15,7 +15,9 @@ export default function Logistik({ produksi, kurir, bahanpakaiList, itemstokbaha
     const [selectedItemStoks, setSelectedItemStoks] = useState([])
     const [showPasswordModal, setShowPasswordModal] = useState(false)
     const [pendingAction, setPendingAction] = useState(null)
+    const [pages, setPages] = useState({})
     const modalRef = useRef(null)
+    const PAGE_SIZE = 50
 
     const kategoriList = ['INDOOR', 'INDOOR 2', 'OUTDOOR', 'OUTDOOR 2', 'DISPLAY', 'OFFSET', 'DLL']
     const jenisBahanList = ['DLL', 'DYE', 'UV', 'OFFSET', 'TONER', 'ECOSOLVENT', 'SOLVENT']
@@ -108,6 +110,24 @@ export default function Logistik({ produksi, kurir, bahanpakaiList, itemstokbaha
         Object.values(itemsByKategori).reduce((sum, groups) =>
             sum + Object.values(groups).reduce((s, items) => s + items.length, 0), 0
         ), [itemsByKategori])
+
+    const groupKey = (kategori, jenis) => `${kategori}::${jenis}`
+
+    const currentPage = (kategori, jenis) => pages[groupKey(kategori, jenis)] || 1
+
+    const setPage = (kategori, jenis, page) =>
+        setPages((prev) => ({ ...prev, [groupKey(kategori, jenis)]: page }))
+
+    const pageItems = (items, kategori, jenis) => {
+        const totalPages = Math.ceil(items.length / PAGE_SIZE)
+        const page = Math.min(currentPage(kategori, jenis), Math.max(totalPages, 1))
+        const start = (page - 1) * PAGE_SIZE
+        return { visible: items.slice(start, start + PAGE_SIZE), totalPages, page }
+    }
+
+    useEffect(() => {
+        setPages({})
+    }, [produksi, filterKategori, filterJenisBahan])
 
     const openModal = (item) => {
         setSelected(item)
@@ -355,65 +375,93 @@ table.items tr:nth-child(even) { background: #f0fdf4; }
                                         </div>
 
                                         <div className="divide-y divide-base-200">
-                                            {Object.entries(jenisGroups).map(([jenis, items]) => (
-                                                <div key={jenis}>
-                                                    <div className="bg-base-200/50 px-4 py-1.5 flex items-center gap-2">
-                                                        <i className="fas fa-layer-group text-[10px] text-base-content/40"></i>
-                                                        <span className="font-semibold text-xs text-base-content/70">{jenis}</span>
-                                                        <span className="badge badge-xs badge-ghost">{items.length}</span>
-                                                    </div>
-                                                    <div className="overflow-x-auto">
-                                                        <table className="table table-xs w-full">
-                                                            <thead>
-                                                                <tr className="text-[10px] text-base-content/50 uppercase tracking-wider">
-                                                                    <th className="py-2">No SPK</th>
-                                                                    <th className="py-2">Kode Bahan</th>
-                                                                    <th className="py-2">Customer</th>
-                                                                    <th className="py-2 text-center">Tinggi</th>
-                                                                    <th className="py-2 text-center">Lebar</th>
-                                                                    <th className="py-2 text-center">QTY</th>
-                                                                    <th className="py-2 text-center">Sisi</th>
-                                                                    <th className="py-2 text-center">Pengantaran</th>
-                                                                    <th className="py-2 text-center">Tgl Kirim</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {items.map((item) => (
-                                                                    <tr
-                                                                        key={item.id}
-                                                                        onClick={() => openModal(item)}
-                                                                        className="hover:bg-primary/5 transition-colors cursor-pointer group"
+                                            {Object.entries(jenisGroups).map(([jenis, items]) =>
+                                                (() => {
+                                                    const { visible, totalPages, page } = pageItems(items, kategori, jenis)
+                                                    return (
+                                                        <div key={jenis}>
+                                                            <div className="bg-base-200/50 px-4 py-1.5 flex items-center gap-2">
+                                                                <i className="fas fa-layer-group text-[10px] text-base-content/40"></i>
+                                                                <span className="font-semibold text-xs text-base-content/70">{jenis}</span>
+                                                                <span className="badge badge-xs badge-ghost">{items.length}</span>
+                                                            </div>
+                                                            <div className="overflow-x-auto">
+                                                                <table className="table table-xs w-full">
+                                                                    <thead>
+                                                                        <tr className="text-[10px] text-base-content/50 uppercase tracking-wider">
+                                                                            <th className="py-2">No SPK</th>
+                                                                            <th className="py-2">Kode Bahan</th>
+                                                                            <th className="py-2">Customer</th>
+                                                                            <th className="py-2 text-center">Tinggi</th>
+                                                                            <th className="py-2 text-center">Lebar</th>
+                                                                            <th className="py-2 text-center">QTY</th>
+                                                                            <th className="py-2 text-center">Sisi</th>
+                                                                            <th className="py-2 text-center">Pengantaran</th>
+                                                                            <th className="py-2 text-center">Tgl Kirim</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {visible.map((item) => (
+                                                                            <tr
+                                                                                key={item.id}
+                                                                                onClick={() => openModal(item)}
+                                                                                className="hover:bg-primary/5 transition-colors cursor-pointer group"
+                                                                            >
+                                                                                <td className="font-mono font-medium text-[11px] group-hover:text-primary">{item.kode_spk}</td>
+                                                                                <td className="text-[11px]">
+                                                                                    <span className="badge badge-outline badge-xs">{item.bahan?.kode}</span>
+                                                                                </td>
+                                                                                <td className="font-medium text-[11px]">{item.customer?.nama}</td>
+                                                                                <td className="text-[11px] text-center tabular-nums">
+                                                                                    {item.tinggi} <span className="text-[9px] text-base-content/40">{item.satuan}</span>
+                                                                                </td>
+                                                                                <td className="text-[11px] text-center tabular-nums">
+                                                                                    {item.lebar} <span className="text-[9px] text-base-content/40">{item.satuan}</span>
+                                                                                </td>
+                                                                                <td className="text-[11px] text-center font-bold tabular-nums">{item.qty}</td>
+                                                                                <td className="text-[11px] text-center">
+                                                                                    <span className={`badge badge-xs ${item.sisi === '2 SISI' ? 'badge-warning' : 'badge-ghost'}`}>
+                                                                                        {item.sisi}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="text-[11px] text-center">
+                                                                                    <span className={`badge badge-xs ${item.metode_pengantaran === 'KURIR' ? 'badge-info' : 'badge-success'}`}>
+                                                                                        {item.metode_pengantaran}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="text-[11px] text-center tabular-nums">{item.tgl_kirim}</td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            {totalPages > 1 && (
+                                                                <div className="flex justify-center items-center gap-2 py-2 bg-base-200/30 flex-wrap">
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-xs"
+                                                                        disabled={page <= 1}
+                                                                        onClick={() => setPage(kategori, jenis, page - 1)}
                                                                     >
-                                                                        <td className="font-mono font-medium text-[11px] group-hover:text-primary">{item.kode_spk}</td>
-                                                                        <td className="text-[11px]">
-                                                                            <span className="badge badge-outline badge-xs">{item.bahan?.kode}</span>
-                                                                        </td>
-                                                                        <td className="font-medium text-[11px]">{item.customer?.nama}</td>
-                                                                        <td className="text-[11px] text-center tabular-nums">
-                                                                            {item.tinggi} <span className="text-[9px] text-base-content/40">{item.satuan}</span>
-                                                                        </td>
-                                                                        <td className="text-[11px] text-center tabular-nums">
-                                                                            {item.lebar} <span className="text-[9px] text-base-content/40">{item.satuan}</span>
-                                                                        </td>
-                                                                        <td className="text-[11px] text-center font-bold tabular-nums">{item.qty}</td>
-                                                                        <td className="text-[11px] text-center">
-                                                                            <span className={`badge badge-xs ${item.sisi === '2 SISI' ? 'badge-warning' : 'badge-ghost'}`}>
-                                                                                {item.sisi}
-                                                                            </span>
-                                                                        </td>
-                                                                        <td className="text-[11px] text-center">
-                                                                            <span className={`badge badge-xs ${item.metode_pengantaran === 'KURIR' ? 'badge-info' : 'badge-success'}`}>
-                                                                                {item.metode_pengantaran}
-                                                                            </span>
-                                                                        </td>
-                                                                        <td className="text-[11px] text-center tabular-nums">{item.tgl_kirim}</td>
-                                                                    </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                                        <i className="fas fa-chevron-left"></i>
+                                                                    </button>
+                                                                    <span className="text-xs font-medium">
+                                                                        Halaman {page} / {totalPages}
+                                                                    </span>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-xs"
+                                                                        disabled={page >= totalPages}
+                                                                        onClick={() => setPage(kategori, jenis, page + 1)}
+                                                                    >
+                                                                        <i className="fas fa-chevron-right"></i>
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )
+                                                })()
+                                            )}
                                         </div>
                                     </div>
                                 )
