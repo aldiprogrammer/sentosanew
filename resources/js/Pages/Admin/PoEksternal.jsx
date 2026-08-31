@@ -187,7 +187,7 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
             <div className="mb-3">
               <input
                 type="text"
-                placeholder="Cari No PO / Invoice / SPK..."
+                placeholder="Cari No PO / Suplayer..."
                 className="input input-bordered input-success w-full max-w-xs"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}

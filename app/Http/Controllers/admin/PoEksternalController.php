@@ -22,8 +22,9 @@ class PoEksternalController extends Controller
         $poEksternal = PoEksternal::with('suplayer', 'bahan', 'items.produksi.customer')
             ->when($search, function ($q, $search) {
                 $q->where('no_po', 'like', "%{$search}%")
-                    ->orWhere('invoice', 'like', "%{$search}%")
-                    ->orWhere('spk', 'like', "%{$search}%");
+                    ->orWhereHas('suplayer', function ($sq) use ($search) {
+                        $sq->where('nama_suplayer', 'like', "%{$search}%");
+                    });
             })
             ->orderBy('id', 'desc')
             ->paginate(10);
