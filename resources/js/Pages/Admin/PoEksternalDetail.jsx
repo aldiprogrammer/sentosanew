@@ -342,7 +342,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
   const hitungLuas = (tinggi, lebar) => {
     const t = parseFloat(tinggi) || 0;
     const l = parseFloat(lebar) || 0;
-    return Math.round(t * l);
+    return t * l;
   };
 
   useEffect(() => {

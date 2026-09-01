@@ -17,14 +17,36 @@ class PoPembelianBahanController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
+        $tglDari = $request->query('tgl_dari');
+        $tglSampai = $request->query('tgl_sampai');
+        $bulan = $request->query('bulan');
+
         $po = PoPembelianBahan::with('suplayer')
             ->when($search, function ($q, $search) {
                 $q->where('no_po', 'like', "%{$search}%")
+                    ->orWhereHas('suplayer', function ($sq) use ($search) {
+                        $sq->where('nama_suplayer', 'like', "%{$search}%");
+                    })
                     ->orWhere('hal', 'like', "%{$search}%");
+            })
+            ->when($bulan, function ($q, $bulan) {
+                $q->whereMonth('tgl', substr($bulan, 5, 2))
+                    ->whereYear('tgl', substr($bulan, 0, 4));
+            })
+            ->when($tglDari && ! $bulan, function ($q) use ($tglDari) {
+                $q->where('tgl', '>=', $tglDari);
+            })
+            ->when($tglSampai && ! $bulan, function ($q) use ($tglSampai) {
+                $q->where('tgl', '<=', $tglSampai);
             })
             ->orderBy('id', 'desc')
             ->paginate(10);
-        $po->appends(['search' => $search]);
+        $po->appends([
+            'search' => $search,
+            'tgl_dari' => $tglDari,
+            'tgl_sampai' => $tglSampai,
+            'bulan' => $bulan,
+        ]);
 
         $prefix = 'PB-'.date('ym').'-';
         $last = PoPembelianBahan::where('no_po', 'like', $prefix.'%')->orderBy('no_po', 'desc')->first();

@@ -381,6 +381,30 @@ export default function AdminLayout({ children }) {
                                 </Link>
                             </li>
                         )}
+                        {hasMenu('patty-cash') && (
+                            <li>
+                                <Link href={route('patty-cash')} className="rounded-xl">
+                                    <i className="fas fa-wallet"></i>
+                                    Petty Cash
+                                </Link>
+                            </li>
+                        )}
+                        {hasMenu('nomor-rekening') && (
+                            <li>
+                                <Link href={route('nomor-rekening')} className="rounded-xl">
+                                    <i className="fas fa-credit-card"></i>
+                                    Nomor Rekening
+                                </Link>
+                            </li>
+                        )}
+                        {hasMenu('transaksi-bank') && (
+                            <li>
+                                <Link href={route('transaksi-bank')} className="rounded-xl">
+                                    <i className="fas fa-building-columns"></i>
+                                    Transaksi Bank
+                                </Link>
+                            </li>
+                        )}
                     </ul>
                 </aside>
             </div>

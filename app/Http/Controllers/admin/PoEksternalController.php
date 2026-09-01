@@ -19,12 +19,26 @@ class PoEksternalController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
+        $tglDari = $request->query('tgl_dari');
+        $tglSampai = $request->query('tgl_sampai');
+        $bulan = $request->query('bulan');
+
         $poEksternal = PoEksternal::with('suplayer', 'bahan', 'items.produksi.customer')
             ->when($search, function ($q, $search) {
                 $q->where('no_po', 'like', "%{$search}%")
                     ->orWhereHas('suplayer', function ($sq) use ($search) {
                         $sq->where('nama_suplayer', 'like', "%{$search}%");
                     });
+            })
+            ->when($bulan, function ($q, $bulan) {
+                $q->whereMonth('tgl', substr($bulan, 5, 2))
+                    ->whereYear('tgl', substr($bulan, 0, 4));
+            })
+            ->when($tglDari && ! $bulan, function ($q) use ($tglDari) {
+                $q->where('tgl', '>=', $tglDari);
+            })
+            ->when($tglSampai && ! $bulan, function ($q) use ($tglSampai) {
+                $q->where('tgl', '<=', $tglSampai);
             })
             ->orderBy('id', 'desc')
             ->paginate(10);
@@ -37,9 +51,15 @@ class PoEksternalController extends Controller
                 ->values()
                 ->implode(', ');
             $po->customer_names = $customerNames ?: '-';
+
             return $po;
         });
-        $poEksternal->appends(['search' => $search]);
+        $poEksternal->appends([
+            'search' => $search,
+            'tgl_dari' => $tglDari,
+            'tgl_sampai' => $tglSampai,
+            'bulan' => $bulan,
+        ]);
 
         $prefix = 'PO-'.date('ym').'-';
         $last = PoEksternal::where('no_po', 'like', $prefix.'%')->orderBy('no_po', 'desc')->first();
@@ -287,11 +307,11 @@ class PoEksternalController extends Controller
         $item->id_bahan = $data['id_bahan'] ?: null;
         $item->spk = $data['spk'];
         $item->satuan = $bahan?->satuan;
-        $item->tinggi = round($data['tinggi'] ?? 0);
-        $item->lebar = round($data['lebar'] ?? 0);
-        $item->luas = round($data['luas'] ?? 0);
-        $item->qty = round($data['qty'] ?? 0);
-        $item->harga = round($data['harga'] ?? 0);
+        $item->tinggi = $data['tinggi'] ?? 0;
+        $item->lebar = $data['lebar'] ?? 0;
+        $item->luas = $data['luas'] ?? 0;
+        $item->qty = $data['qty'] ?? 0;
+        $item->harga = $data['harga'] ?? 0;
         $item->total = $this->hitungTotalItem($bahan, $item->luas, $item->qty, $item->harga);
         $item->keterangan = $data['keterangan'];
         $item->save();
@@ -324,11 +344,11 @@ class PoEksternalController extends Controller
         $item->id_bahan = $data['id_bahan'] ?: null;
         $item->spk = $data['spk'];
         $item->satuan = $bahan?->satuan;
-        $item->tinggi = round($data['tinggi'] ?? 0);
-        $item->lebar = round($data['lebar'] ?? 0);
-        $item->luas = round($data['luas'] ?? 0);
-        $item->qty = round($data['qty'] ?? 0);
-        $item->harga = round($data['harga'] ?? 0);
+        $item->tinggi = $data['tinggi'] ?? 0;
+        $item->lebar = $data['lebar'] ?? 0;
+        $item->luas = $data['luas'] ?? 0;
+        $item->qty = $data['qty'] ?? 0;
+        $item->harga = $data['harga'] ?? 0;
         $item->total = $this->hitungTotalItem($bahan, $item->luas, $item->qty, $item->harga);
         $item->keterangan = $data['keterangan'];
         $item->update();

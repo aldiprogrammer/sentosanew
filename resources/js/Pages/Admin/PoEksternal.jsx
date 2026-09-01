@@ -5,18 +5,45 @@ import axios from "axios";
 
 export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, distributors }) {
   const [search, setSearch] = useState('');
+  const [tglDari, setTglDari] = useState('');
+  const [tglSampai, setTglSampai] = useState('');
+  const [bulan, setBulan] = useState('');
+
+  const buildFilters = () => {
+    const params = {};
+    if (search) params.search = search;
+    if (bulan) {
+      params.bulan = bulan;
+    } else {
+      if (tglDari) params.tgl_dari = tglDari;
+      if (tglSampai) params.tgl_sampai = tglSampai;
+    }
+    return params;
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
-    router.get('/po-eksternal', { search }, { preserveState: true, replace: true });
+    router.get('/po-eksternal', buildFilters(), { preserveState: true, replace: true });
+  };
+
+  const handleFilterChange = (setter) => (e) => {
+    setter(e.target.value);
   };
 
   useEffect(() => {
     const t = setTimeout(() => {
-      router.get('/po-eksternal', { search }, { preserveState: true, replace: true });
+      router.get('/po-eksternal', buildFilters(), { preserveState: true, replace: true });
     }, 500);
     return () => clearTimeout(t);
-  }, [search]);
+  }, [search, tglDari, tglSampai, bulan]);
+
+  const resetFilters = () => {
+    setSearch('');
+    setTglDari('');
+    setTglSampai('');
+    setBulan('');
+    router.get('/po-eksternal', {}, { preserveState: true, replace: true });
+  };
 
   const {
     data,
@@ -184,14 +211,49 @@ export default function PoEksternal({ poEksternal, no_po, bahans, suplayers, dis
               </button>
             </div>
 
-            <div className="mb-3">
-              <input
-                type="text"
-                placeholder="Cari No PO / Suplayer..."
-                className="input input-bordered input-success w-full max-w-xs"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+            <div className="flex flex-col md:flex-row md:items-end gap-3 mb-3">
+              <label className="form-control">
+                <div className="label"><span className="label-text text-xs">Cari No PO / Suplayer</span></div>
+                <input
+                  type="text"
+                  placeholder="Cari..."
+                  className="input input-bordered input-success input-sm w-full max-w-xs"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </label>
+              <label className="form-control">
+                <div className="label"><span className="label-text text-xs">Bulan</span></div>
+                <input
+                  type="month"
+                  className="input input-bordered input-success input-sm"
+                  value={bulan}
+                  onChange={handleFilterChange(setBulan)}
+                />
+              </label>
+              <label className="form-control">
+                <div className="label"><span className="label-text text-xs">Dari Tanggal</span></div>
+                <input
+                  type="date"
+                  className="input input-bordered input-success input-sm"
+                  value={tglDari}
+                  onChange={handleFilterChange(setTglDari)}
+                  disabled={!!bulan}
+                />
+              </label>
+              <label className="form-control">
+                <div className="label"><span className="label-text text-xs">Sampai Tanggal</span></div>
+                <input
+                  type="date"
+                  className="input input-bordered input-success input-sm"
+                  value={tglSampai}
+                  onChange={handleFilterChange(setTglSampai)}
+                  disabled={!!bulan}
+                />
+              </label>
+              <button className="btn btn-sm btn-ghost" onClick={resetFilters}>
+                <i className="fas fa-times"></i> Reset
+              </button>
             </div>
 
             <div className="overflow-x-auto">

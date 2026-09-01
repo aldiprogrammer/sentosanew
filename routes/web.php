@@ -17,7 +17,9 @@ use App\Http\Controllers\admin\LaporanFeeDesainController;
 use App\Http\Controllers\admin\LaporanOrderController;
 use App\Http\Controllers\admin\LaporanPembukuanController;
 use App\Http\Controllers\admin\MaterbahanController;
+use App\Http\Controllers\admin\NomorRekeningController;
 use App\Http\Controllers\admin\OtorisasiController;
+use App\Http\Controllers\admin\PattyCashController;
 use App\Http\Controllers\admin\PembatalanOrderController;
 use App\Http\Controllers\admin\PembayaranHutangController;
 use App\Http\Controllers\admin\PengajuanDiskonController;
@@ -27,6 +29,7 @@ use App\Http\Controllers\admin\PoPembelianBahanController;
 use App\Http\Controllers\admin\ProduksiController;
 use App\Http\Controllers\admin\SuplayerController;
 use App\Http\Controllers\admin\SuplayerPembelianBahanController;
+use App\Http\Controllers\admin\TransaksiBankController;
 use App\Http\Controllers\produksi\FinishingController;
 use App\Http\Controllers\produksi\LogistikController;
 use App\Http\Controllers\produksi\PengambilanStokController;
@@ -243,6 +246,21 @@ Route::middleware('auth')->group(function () {
     Route::put('/po-pembelian-bahan/item/{id}/update-stok', [PoPembelianBahanController::class, 'updateStokItem'])->name('update-stok-item.po-pembelian-bahan');
     Route::delete('/po-pembelian-bahan/item/{id}/tarik-stok', [PoPembelianBahanController::class, 'tarikStokItem'])->name('tarik-stok-item.po-pembelian-bahan');
     Route::get('/po-pembelian-bahan/{id}/cetak-label', [PoPembelianBahanController::class, 'cetakLabel'])->name('cetak-label.po-pembelian-bahan');
+
+    Route::get('/patty-cash', [PattyCashController::class, 'index'])->name('patty-cash');
+    Route::post('/patty-cash', [PattyCashController::class, 'store'])->name('store.patty-cash');
+    Route::put('/patty-cash/{id}', [PattyCashController::class, 'update'])->name('update.patty-cash');
+    Route::delete('/patty-cash/{id}', [PattyCashController::class, 'delete'])->name('delete.patty-cash');
+
+    Route::get('/nomor-rekening', [NomorRekeningController::class, 'index'])->name('nomor-rekening');
+    Route::post('/nomor-rekening', [NomorRekeningController::class, 'store'])->name('store.nomor-rekening');
+    Route::put('/nomor-rekening/{id}', [NomorRekeningController::class, 'update'])->name('update.nomor-rekening');
+    Route::delete('/nomor-rekening/{id}', [NomorRekeningController::class, 'delete'])->name('delete.nomor-rekening');
+
+    Route::get('/transaksi-bank', [TransaksiBankController::class, 'index'])->name('transaksi-bank');
+    Route::post('/transaksi-bank', [TransaksiBankController::class, 'store'])->name('store.transaksi-bank');
+    Route::put('/transaksi-bank/{id}', [TransaksiBankController::class, 'update'])->name('update.transaksi-bank');
+    Route::delete('/transaksi-bank/{id}', [TransaksiBankController::class, 'delete'])->name('delete.transaksi-bank');
 
     Route::get('/test-print', function () {
         return Inertia::render('TestPrint');
