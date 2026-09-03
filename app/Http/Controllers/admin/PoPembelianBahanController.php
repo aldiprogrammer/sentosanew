@@ -281,6 +281,57 @@ class PoPembelianBahanController extends Controller
         return redirect()->back()->with('success', 'Stok berhasil ditarik');
     }
 
+    public function pdfList(Request $request)
+    {
+        $search = $request->query('search');
+        $tglDari = $request->query('tgl_dari');
+        $tglSampai = $request->query('tgl_sampai');
+        $bulan = $request->query('bulan');
+
+        $po = PoPembelianBahan::with('suplayer')
+            ->when($search, function ($q, $search) {
+                $q->where('no_po', 'like', "%{$search}%")
+                    ->orWhereHas('suplayer', function ($sq) use ($search) {
+                        $sq->where('nama_suplayer', 'like', "%{$search}%");
+                    })
+                    ->orWhere('hal', 'like', "%{$search}%");
+            })
+            ->when($bulan, function ($q, $bulan) {
+                $q->whereMonth('tgl', substr($bulan, 5, 2))
+                    ->whereYear('tgl', substr($bulan, 0, 4));
+            })
+            ->when($tglDari && ! $bulan, function ($q) use ($tglDari) {
+                $q->where('tgl', '>=', $tglDari);
+            })
+            ->when($tglSampai && ! $bulan, function ($q) use ($tglSampai) {
+                $q->where('tgl', '<=', $tglSampai);
+            })
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $po->each(function ($p) {
+            $totalHarga = PoPembelianBahanItem::where('po_pembelian_bahan_id', $p->id)->sum('total_harga');
+            $diskonAmount = $this->hitungDiskon($totalHarga, $p->diskon, $p->diskon_type);
+            $ppnAmount = $totalHarga * ((float) $p->ppn / 100);
+            $p->total_harga = $totalHarga;
+            $p->sub_total = $totalHarga - $diskonAmount + $ppnAmount;
+        });
+
+        $filters = [
+            'search' => $search,
+            'tgl_dari' => $tglDari,
+            'tgl_sampai' => $tglSampai,
+            'bulan' => $bulan,
+        ];
+        $totalKeseluruhan = $po->sum('sub_total');
+        $user = auth()->user();
+
+        $pdf = Pdf::loadView('pdf.po-pembelian-bahan-list', compact('po', 'filters', 'totalKeseluruhan', 'user'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->stream('daftar-po-pembelian-bahan.pdf');
+    }
+
     private function hitungDiskon($totalHarga, $diskon, $diskonType)
     {
         if (($diskonType ?? 'persen') === 'rupiah') {

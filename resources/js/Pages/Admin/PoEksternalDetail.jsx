@@ -405,7 +405,7 @@ export default function PoEksternalDetail({ po, bahans, invoices }) {
                 <a className="btn btn-primary" href={`/po-eksternal/${po.id}/detail/pdf`} target="_blank" rel="noreferrer">
                   <i className="fas fa-file-pdf"></i> Cetak PDF
                 </a>
-                <Link href="/po-eksternal" className="btn btn-sm btn-ghost">
+                <Link href={"/po-eksternal" + (location.search || "")} className="btn btn-sm btn-ghost">
                   <i className="fas fa-arrow-left"></i> Kembali
                 </Link>
               </div>

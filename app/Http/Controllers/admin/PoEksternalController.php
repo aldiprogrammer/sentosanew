@@ -282,6 +282,59 @@ class PoEksternalController extends Controller
         return $pdf->stream('po_eksternal_'.$po->no_po.'.pdf');
     }
 
+    public function pdfList(Request $request)
+    {
+        $search = $request->query('search');
+        $tglDari = $request->query('tgl_dari');
+        $tglSampai = $request->query('tgl_sampai');
+        $bulan = $request->query('bulan');
+
+        $poEksternal = PoEksternal::with('suplayer', 'items.produksi.customer')
+            ->when($search, function ($q, $search) {
+                $q->where('no_po', 'like', "%{$search}%")
+                    ->orWhereHas('suplayer', function ($sq) use ($search) {
+                        $sq->where('nama_suplayer', 'like', "%{$search}%");
+                    });
+            })
+            ->when($bulan, function ($q, $bulan) {
+                $q->whereMonth('tgl', substr($bulan, 5, 2))
+                    ->whereYear('tgl', substr($bulan, 0, 4));
+            })
+            ->when($tglDari && ! $bulan, function ($q) use ($tglDari) {
+                $q->where('tgl', '>=', $tglDari);
+            })
+            ->when($tglSampai && ! $bulan, function ($q) use ($tglSampai) {
+                $q->where('tgl', '<=', $tglSampai);
+            })
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $poEksternal->each(function ($po) {
+            $customerNames = $po->items
+                ->pluck('produksi.customer.nama')
+                ->filter()
+                ->unique()
+                ->values()
+                ->implode(', ');
+            $po->customer_names = $customerNames ?: '-';
+            $po->total_harga = ListPoEksternal::where('po_eksternal_id', $po->id)->sum('total');
+        });
+
+        $filters = [
+            'search' => $search,
+            'tgl_dari' => $tglDari,
+            'tgl_sampai' => $tglSampai,
+            'bulan' => $bulan,
+        ];
+        $totalKeseluruhan = $poEksternal->sum('total_harga');
+        $user = auth()->user();
+
+        $pdf = Pdf::loadView('pdf.po-eksternal-list', compact('poEksternal', 'filters', 'totalKeseluruhan', 'user'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->stream('daftar-po-eksternal.pdf');
+    }
+
     public function storeItem(Request $request, $id)
     {
         $po = PoEksternal::findOrFail($id);

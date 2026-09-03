@@ -20,6 +20,7 @@ class ProduksiController extends Controller
     {
         $search = $request->query('search');
         $produksi = Produksi::with('customer', 'bahan.hargaBahan', 'pinising', 'mataAyam', 'desainer', 'cs')
+            ->whereNull('alasan_pembatalan')
             ->when(auth()->user()->role === 'Desainer', function ($q) {
                 $q->where('id_desainer', auth()->id())->whereNull('pembayaran');
             })
@@ -55,6 +56,7 @@ class ProduksiController extends Controller
             $kode_invoice = 'INVOICE-'.date('ymd').'-'.auth()->id().'-'.rand(0, 1000000);
         } while (Produksi::where('no_invoice', $kode_invoice)->exists());
         $existingInvoices = Produksi::select('no_invoice')
+            ->whereNull('alasan_pembatalan')
             ->whereNotNull('no_invoice')
             ->where('no_invoice', '!=', '')
             ->distinct()
@@ -62,10 +64,12 @@ class ProduksiController extends Controller
             ->pluck('no_invoice');
 
         $todayActiveProduksi = Produksi::where('tanggal', date('Y-m-d'))
+            ->whereNull('alasan_pembatalan')
             ->where('status_produksi', 0)
             ->get(['id_customer', 'no_invoice']);
 
         $unpaidInvoices = Produksi::whereNull('pembayaran')
+            ->whereNull('alasan_pembatalan')
             ->whereNotNull('no_invoice')
             ->where('no_invoice', '!=', '')
             ->distinct()

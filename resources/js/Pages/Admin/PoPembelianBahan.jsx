@@ -1,12 +1,15 @@
 import AdminLayout from "@/Layouts/AdminLayout";
-import { Link, router, useForm } from "@inertiajs/react";
+import { Link, router, usePage, useForm } from "@inertiajs/react";
 import React, { useEffect, useRef, useState } from "react";
 
 export default function PoPembelianBahan({ po, no_po, suplayers }) {
-  const [search, setSearch] = useState("");
-  const [tglDari, setTglDari] = useState("");
-  const [tglSampai, setTglSampai] = useState("");
-  const [bulan, setBulan] = useState("");
+  const { url } = usePage();
+  const initialParams = new URLSearchParams(url.split("?")[1] || "");
+  const [search, setSearch] = useState(initialParams.get("search") || "");
+  const [tglDari, setTglDari] = useState(initialParams.get("tgl_dari") || "");
+  const [tglSampai, setTglSampai] = useState(initialParams.get("tgl_sampai") || "");
+  const [bulan, setBulan] = useState(initialParams.get("bulan") || "");
+  const [page, setPage] = useState(initialParams.get("page") || "");
 
   const formatRp = (val) => {
     const num = parseFloat(val);
@@ -23,6 +26,7 @@ export default function PoPembelianBahan({ po, no_po, suplayers }) {
       if (tglDari) params.tgl_dari = tglDari;
       if (tglSampai) params.tgl_sampai = tglSampai;
     }
+    if (page) params.page = page;
     return params;
   };
 
@@ -35,18 +39,24 @@ export default function PoPembelianBahan({ po, no_po, suplayers }) {
     setter(e.target.value);
   };
 
+  const isFirstRender = useRef(true);
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     const t = setTimeout(() => {
       router.get("/po-pembelian-bahan", buildFilters(), { preserveState: true, replace: true });
     }, 500);
     return () => clearTimeout(t);
-  }, [search, tglDari, tglSampai, bulan]);
+  }, [search, tglDari, tglSampai, bulan, page]);
 
   const resetFilters = () => {
     setSearch("");
     setTglDari("");
     setTglSampai("");
     setBulan("");
+    setPage("");
     router.get("/po-pembelian-bahan", {}, { preserveState: true, replace: true });
   };
 
@@ -123,9 +133,23 @@ export default function PoPembelianBahan({ po, no_po, suplayers }) {
           <div className="card-body">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-2">
               <h2 className="card-title">PO Pembelian Bahan</h2>
-              <button className="btn btn-success" onClick={openModal}>
-                <i className="fas fa-plus"></i> Tambah PO
-              </button>
+              <div className="flex gap-2">
+                <a
+                  href={"/po-pembelian-bahan/pdf" + (() => {
+                    const p = buildFilters();
+                    const qs = new URLSearchParams(p).toString();
+                    return qs ? "?" + qs : "";
+                  })()}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-info"
+                >
+                  <i className="fas fa-file-pdf"></i> Export PDF
+                </a>
+                <button className="btn btn-success" onClick={openModal}>
+                  <i className="fas fa-plus"></i> Tambah PO
+                </button>
+              </div>
             </div>
 
             <div className="flex flex-col md:flex-row md:items-end gap-3 mb-3">
@@ -202,7 +226,7 @@ export default function PoPembelianBahan({ po, no_po, suplayers }) {
                       <td>{item.ppn ? item.ppn + "%" : "-"}</td>
                       <td>{formatRp(item.sub_total)}</td>
                       <td>
-                        <Link href={"/po-pembelian-bahan/" + item.id + "/detail"} className="btn btn-xs btn-info" onClick={(e) => e.stopPropagation()}>
+                        <Link href={"/po-pembelian-bahan/" + item.id + "/detail" + (url.includes("?") ? "?" : "") + (url.split("?")[1] || "")} preserveState className="btn btn-xs btn-info" onClick={(e) => e.stopPropagation()}>
                           Detail
                         </Link>
                       </td>

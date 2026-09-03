@@ -27,6 +27,7 @@ class ProduksiController extends Controller
         }, 'pinising', 'mataAyam'])
             ->where('status_finishing', 0)
             ->where('status_produksi', 1)
+            ->whereNull('alasan_pembatalan')
             ->when($search, function ($q, $search) {
                 $q->where(function ($qq) use ($search) {
                     $qq->where('kode_spk', 'like', "%{$search}%")

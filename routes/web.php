@@ -225,6 +225,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/po-eksternal/{id}', [PoEksternalController::class, 'update'])->name('update.po-eksternal');
     Route::delete('/po-eksternal/{id}', [PoEksternalController::class, 'delete'])->name('delete.po-eksternal');
     Route::get('/po-eksternal/cari-invoice', [PoEksternalController::class, 'cariInvoice']);
+    Route::get('/po-eksternal/pdf', [PoEksternalController::class, 'pdfList'])->name('pdf-list.po-eksternal');
     Route::get('/po-eksternal/{id}/detail', [PoEksternalController::class, 'detail'])->name('detail.po-eksternal');
     Route::get('/po-eksternal/{id}/detail/pdf', [PoEksternalController::class, 'pdf'])->name('pdf.po-eksternal');
     Route::post('/po-eksternal/{id}/item', [PoEksternalController::class, 'storeItem'])->name('store-item.po-eksternal');
@@ -233,6 +234,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/po-eksternal/{id}/header', [PoEksternalController::class, 'updateHeader'])->name('update-header.po-eksternal');
 
     Route::get('/po-pembelian-bahan', [PoPembelianBahanController::class, 'index'])->name('po-pembelian-bahan');
+    Route::get('/po-pembelian-bahan/pdf', [PoPembelianBahanController::class, 'pdfList'])->name('pdf-list.po-pembelian-bahan');
     Route::post('/po-pembelian-bahan', [PoPembelianBahanController::class, 'store'])->name('store.po-pembelian-bahan');
     Route::put('/po-pembelian-bahan/{id}', [PoPembelianBahanController::class, 'update'])->name('update.po-pembelian-bahan');
     Route::delete('/po-pembelian-bahan/{id}', [PoPembelianBahanController::class, 'delete'])->name('delete.po-pembelian-bahan');

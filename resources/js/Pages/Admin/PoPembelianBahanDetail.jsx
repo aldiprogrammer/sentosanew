@@ -110,25 +110,28 @@ export default function PoPembelianBahanDetail({ po, bahanpakais, hargaTerakhir 
     return bulatkan2(p * l);
   };
 
-  const hitungTotal = (luas, qty, harga) => {
+  const hitungTotal = (luas, qty, harga, satuan) => {
     const l = parseFloat(normalizeAngka(luas)) || 0;
     const q = parseFloat(normalizeAngka(qty)) || 0;
     const h = parseFloat(normalizeAngka(harga)) || 0;
+    if (['pcs', 'lembar'].includes((satuan || '').toLowerCase())) return bulatkan2(l * h * q);
     return bulatkan2(l * h * q);
   };
 
   const totalSemua = po.items.reduce((sum, item) => sum + parseFloat(item.total_harga || 0), 0);
 
-  const isLembar = (data.satuan || '').toLowerCase() === 'lembar';
+  const satuanLower = (data.satuan || '').toLowerCase();
+  const isLembar = satuanLower === 'lembar';
+  const isManualLuas = isLembar || satuanLower === 'pcs';
 
   useEffect(() => {
-    const luas = isLembar
+    const luas = isManualLuas
       ? parseFloat(normalizeAngka(data.luas)) || 0
       : hitungLuas(data.panjang, data.lebar);
 
-    if (!isLembar && data.luas !== luas) setData("luas", luas);
+    if (!isManualLuas && data.luas !== luas) setData("luas", luas);
 
-    const total = hitungTotal(luas, data.qty, data.harga);
+    const total = hitungTotal(luas, data.qty, data.harga, data.satuan);
     if (data.total_harga !== total) setData("total_harga", total);
   }, [data.panjang, data.lebar, data.luas, data.qty, data.harga, data.satuan]);
 
@@ -140,6 +143,9 @@ export default function PoPembelianBahanDetail({ po, bahanpakais, hargaTerakhir 
       const lastHarga = hargaTerakhir?.[selectedBahan.kode_bahan];
       if (!data.id && lastHarga != null) {
         setData("harga", lastHarga);
+      }
+      if ((selectedBahan.satuan || '').toLowerCase() === 'pcs') {
+        setData("luas", "1");
       }
     }
   }, [data.id_bahan]);
@@ -502,7 +508,7 @@ export default function PoPembelianBahanDetail({ po, bahanpakais, hargaTerakhir 
                     <i className="fas fa-box"></i> Update Stok
                   </button>
                 )}
-                <Link href={route("po-pembelian-bahan")} className="btn btn-sm btn-ghost">
+                <Link href={route("po-pembelian-bahan") + (location.search || "")} className="btn btn-sm btn-ghost">
                   <i className="fas fa-arrow-left"></i> Kembali
                 </Link>
               </div>
@@ -760,10 +766,10 @@ export default function PoPembelianBahanDetail({ po, bahanpakais, hargaTerakhir 
                     <input type="text" inputMode="decimal" value={data.lebar} className="input input-bordered input-success w-full" onChange={(e) => setData("lebar", normalizeAngka(e.target.value))} />
                     {errors.lebar && <span className="text-error text-xs mt-1 block">{errors.lebar}</span>}
                   </label>
-                  {isLembar ? (
+                  {isManualLuas ? (
                     <label className="form-control">
-                      <div className="label"><span className="label-text">Jumlah Lembar</span></div>
-                      <input type="number" value={data.luas} className="input input-bordered input-success w-full" onChange={(e) => setData("luas", e.target.value)} />
+                      <div className="label"><span className="label-text">{satuanLower === 'pcs' ? 'Pcs' : 'Jumlah Lembar'}</span></div>
+                      <input type="number" step="0.01" value={data.luas} className="input input-bordered input-success w-full" onChange={(e) => setData("luas", e.target.value)} />
                     </label>
                   ) : (
                     <label className="form-control">
@@ -835,9 +841,9 @@ export default function PoPembelianBahanDetail({ po, bahanpakais, hargaTerakhir 
                     <input type="text" inputMode="decimal" value={data.lebar} className="input input-bordered input-success w-full" onChange={(e) => setData("lebar", normalizeAngka(e.target.value))} />
                     {errors.lebar && <span className="text-error text-xs mt-1 block">{errors.lebar}</span>}
                   </label>
-                  {isLembar ? (
+                  {isManualLuas ? (
                     <label className="form-control">
-                      <div className="label"><span className="label-text">Jumlah Lembar</span></div>
+                      <div className="label"><span className="label-text">{satuanLower === 'pcs' ? 'Pcs' : 'Jumlah Lembar'}</span></div>
                       <input type="number" step="0.01" value={data.luas} className="input input-bordered input-success w-full" onChange={(e) => setData("luas", e.target.value)} />
                     </label>
                   ) : (

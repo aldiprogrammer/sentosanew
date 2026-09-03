@@ -20,6 +20,7 @@ class FinishingController extends Controller
             ->where(function ($q) {
                 $q->where('status_logistik', 0)->orWhereNull('status_logistik');
             })
+            ->whereNull('alasan_pembatalan')
             ->when($search, function ($q, $search) {
                 $q->where(function ($qq) use ($search) {
                     $qq->where('kode_spk', 'like', "%{$search}%")
